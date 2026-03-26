@@ -1,20 +1,18 @@
-# Test Agent (⚙️ Vector Synthesizer)
+# Test Agent
 
 ## Overview
-The **Test Agent** is the computational heart of IronTest. It ingests the structured `Intent Matrix` produced by the Story Agent and mathematically derives an exhaustive suite of test vectors. It operates far beyond simple "happy path" testing by explicitly hunting for boundary conditions and edge-case anomalies.
+The **Test Agent** is where the actual test generation happens. It takes the structured requirements parsed by the Story Agent and figures out exactly what needs to be tested. We wanted to go beyond just the "happy path," so we instructed this agent to actively look for boundary conditions and edge cases.
 
 ## Core Responsibilities
-1. **Vector Generation**: Maps the acceptance criteria into distinct functional test cases.
-2. **Boundary Stressing**: Intelligently creates tests that push numeric limits, state transitions, and temporal constraints.
-3. **Automated Code Synthesis**: For critical vectors, it writes actual executable automation script snippets (e.g., Playwright or Selenium syntax) that engineers can instantly drop into their CI/CD pipeline.
-4. **Risk Scoring**: Assigns an initial complexity and risk score to each test vector.
+1. **Test Case Generation**: Maps the acceptance criteria into clear, functional test steps.
+2. **Edge Case Checking**: Specifically generates tests for boundary conditions, unusual inputs, and state changes.
+3. **Code Snippet Generation**: Writes sample automation scripts (like Playwright or Selenium snippets) for the most critical tests, saving developers time.
+4. **Risk Scoring**: Gives each test a quick risk and complexity score.
 
-## The Generation Matrix
-The agent cross-references the targeted microservices against a historic knowledge base of common failure patterns.
-
+## Test Generation Flow
 ```mermaid
 graph LR
-    A[Structured Intent] --> B(Path Analysis)
+    A[Structured Requirements] --> B(Path Analysis)
     B --> C[Happy Path]
     B --> D[Edge Cases]
     B --> E[Boundary Limits]
@@ -23,5 +21,5 @@ graph LR
     F --> H[Code Snippet Generation]
 ```
 
-## Why it's Revolutionary
-Instead of a QA engineer spending hours reverse-engineering a feature, the Test Agent utilizes LLM-driven dimensional generation to cover 99% of edge cases in seconds, outputting them in instantly readable formats with copy-pasteable automation code.
+## Our Motivation
+Writing tests for edge cases is tedious and often skipped during tight deadlines. By having an agent handle the heavy lifting of figuring out *what* could break, we can cover way more ground than standard manual testing, and give developers a tangible head start with copy-pasteable snippets.

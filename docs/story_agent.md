@@ -1,13 +1,13 @@
-# Story Agent (🧠 Intent Architect)
+# Story Agent
 
 ## Overview
-The **Story Agent** is the genesis of the IronTest autonomous pipeline. It acts as the "Intent Architect," parsing raw, unstructured human language (often messy Jira tickets, PR descriptions, or rough Slack messages) and transforming it into a strict, mathematically rigid **Intent Matrix**. 
+The **Story Agent** kicks off the IronTest pipeline. We designed it to take unstructured text—like a messy Jira ticket or PR description—and parse it into a structured format that the rest of our system can rely on. 
 
 ## Core Responsibilities
-1. **Semantic Parsing**: Uses LLM-driven Natural Language Understanding (NLU) to digest the user story and extract the true business intent.
-2. **Acceptance Criteria Extraction**: Identifies and formalizes the underlying acceptance criteria, separating hard requirements from "nice-to-haves."
-3. **Microservice Mapping**: Automatically infers which system modules, databases, or third-party APIs will be impacted by the intent.
-4. **Risk Topography**: Flags immediate structural risks (e.g., "This requires a 3rd party API, latency might be an issue").
+1. **Requirements Parsing**: Uses an LLM to read the user story and figure out what the actual feature or change is.
+2. **Acceptance Criteria Extraction**: Pulls out specific acceptance criteria to define what "done" actually looks like.
+3. **Impact Mapping**: Tries to figure out which modules, databases, or APIs will be affected by the change.
+4. **Risk Identification**: Flags obvious risks early on (for example, pointing out that adding a new 3rd-party API call might introduce latency).
 
 ## Technical Flow
 ```mermaid
@@ -21,5 +21,5 @@ graph TD
     G --> H[Test Agent]
 ```
 
-## Prompt Engineering specifics
-The agent is prompted utilizing a systemic constraint methodology. It is forced to output strictly valid JSON, enforcing keys for `modules`, `core_intent`, `acceptance_criteria`, and `risk_factors`. This guarantees that downstream agents receive untainted, machine-processable data.
+## How We Built It
+To make this work reliably, we heavily constrained the prompt. We force the LLM to output valid JSON with specific keys for `modules`, `core_intent`, `acceptance_criteria`, and `risk_factors`. This step is crucial because down the line, our other agents need clean, structured data to work properly.

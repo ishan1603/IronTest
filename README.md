@@ -1,7 +1,11 @@
 <div align="center">
   <img src="https://img.icons8.com/fluency/256/hexagon.png" width="80" alt="IronTest Logo"/>
-  <h1>IronTest Autonomous QA Engine</h1>
-  <p><strong>Transform fragmented Jira stories into production-ready test suites in 4.5 seconds.</strong></p>
+  <h1>IronTest Autonomous QA</h1>
+  <p><strong>Transform fragmented Jira stories into production-ready test suites in seconds.</strong></p>
+
+  <p>
+    **Thanks to Team ATOS for giving us this opportunity.**
+  </p>
 
   <p>
     <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/React-18.2-blue?style=for-the-badge&logo=react" alt="React"></a>
@@ -13,23 +17,23 @@
 
 ---
 
-## 🚀 The Vision
-QA is the last major bottleneck in modern software delivery. **IronTest** is a multi-agent artificial intelligence orchestrator designed to completely automate the QA engineering lifecycle. By deploying specialized, autonomous agents, it parses raw human intent, synthesizes edge-case test vectors, generates automation codes, and calculates mathematical deployment confidence—all wrapped in an Awwwards-winning, Apple-inspired interface.
+## 🚀 The Problem We Solved
+QA is often the last major bottleneck before shipping to production. Writing comprehensive tests takes time, and edge cases are frequently missed. We built **IronTest** to automate the QA engineering lifecycle. Our goal was to take raw human intent—like a Jira ticket—and automatically generate test cases, edge case scenarios, and automation code snippets, ultimately giving a confidence score for deployment.
 
-## 🧠 The Multi-Agent Architecture
-IronTest is powered by three specialized AI nodes working in sequential harmony:
+## 🧠 How It Works
+We designed IronTest around three specialized agents that handle distinct parts of the testing process:
 
-1. **[Story Agent (Intent Architect)](docs/story_agent.md)**: Converts chaotic user stories into structured topological matrices.
-2. **[Test Agent (Vector Synthesizer)](docs/test_agent.md)**: Maps intent to exhaustive functional, boundary, and edge test vectors, complete with automation snippets.
-3. **[Defect Agent (Verdict Engine)](docs/defect_agent.md)**: Audits the generated suite to calculate a rigorous Go/No-Go deployment confidence score.
+1. **[Story Agent](docs/story_agent.md)**: Parses the user story to extract actual requirements and acceptance criteria.
+2. **[Test Agent](docs/test_agent.md)**: Takes those requirements and generates functional, boundary, and edge-case test vectors, along with code snippets.
+3. **[Defect Agent](docs/defect_agent.md)**: Reviews the generated suite and calculates a Go/No-Go deployment confidence score.
 
-> 📚 **Deep Dive**: Check out the [docs/](./docs/) directory for detailed intelligence profiles and system architecture.
+> 📚 Check out the [docs/](./docs/) directory for an in-depth look at our architecture and agent design.
 
-## 🎨 UI/UX Philosophy
-We believe highly technical tools shouldn't look like spreadsheets. IronTest features:
-- **Awwwards-Style Constraints**: Sub-pixel perfect minimalist typography and dynamic grid layouts.
-- **Framer Motion Integration**: Liquid smooth transitions and zero-layout-shift streams.
-- **Theme Native**: Flawless system-level Dark and Light mode toggling.
+## 🎨 UI/UX 
+Internal developer tools don't have to be ugly. We built the IronTest interface focusing on:
+- Clean, minimalist layout using Tailwind CSS.
+- Smooth transitions and real-time streaming updates via Framer Motion and Server-Sent Events.
+- Full support for system-level Dark and Light modes.
 
 ## ⚡ Getting Started
 ### Prerequisites
@@ -54,7 +58,7 @@ npm install
 npm run dev
 ```
 
-Navigate to `http://localhost:5173` to experience IronTest.
+Navigate to `http://localhost:5173` to explore IronTest locally.
 
 ## 📊 Deployment Flow
 ```mermaid
@@ -73,9 +77,5 @@ sequenceDiagram
     FastAPI-->>Frontend: Display Tabbed QA Dashboard
 ```
 
-## 🏆 Hackathon Ready
-Built aggressively for modern engineering teams. IronTest bridges the gap between PM intent, engineering reality, and CI/CD automation.
-
-<div align="center">
-  <p><i>Design engineered for intelligence.</i></p>
-</div>
+## 🏆 Built for the Hackathon
+We built IronTest to bridge the gap between product management intent and engineering reality, providing a tangible way to speed up the CI/CD pipeline while maintaining high quality. 

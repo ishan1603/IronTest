@@ -1,7 +1,7 @@
 # IronTest System Architecture
 
 ## Overview
-IronTest is a cutting-edge, autonomous QA pipeline driven by a multi-agent LLM infrastructure. It eliminates the manual QA bottleneck by instantly converting raw Jira stories into exhaustive, code-backed test suites and risk topographies.
+We built IronTest to tackle the manual QA bottleneck by converting raw user stories into actionable test suites and identifying potential risk areas. We went with a React frontend and a FastAPI backend to easily handle real-time streaming from our LLM agents.
 
 ## Architecture Topology
 
@@ -24,7 +24,7 @@ graph TD
         Orch <--> Mem
     end
 
-    subgraph Artificial Intelligence [Agents]
+    subgraph Agents [Agent Pipeline]
         A1[🧠 Story Agent]
         A2[⚙️ Test Agent]
         A3[🔍 Defect Agent]
@@ -38,16 +38,16 @@ graph TD
     A1 & A2 & A3 -. "Streaming SSE" .-> Stream
 ```
 
-## Component Interplay
-1. **The Entry Point**: The user initiates the sequence via the React frontend. The payload is sent to the FastAPI orchestration layer.
-2. **The Orchestrator**: The backend spins up an isolated, async session. Using Server-Sent Events (SSE), it streams exact, real-time logs back to the user.
-3. **Agent Handoffs**:
-   - The **Story Agent** receives the raw string, outputting structured JSON (Intent Matrix).
-   - The **Test Agent** reads the Intent Matrix, outputting an array of Test Vectors.
-   - The **Defect Agent** reads all prior output, calculating the final deployment verdict.
-4. **Data Visualization**: The final merged payload is pushed to the frontend, instantly rendering the interactive, Awwwards-style data dashboard.
+## How the Pieces Fit Together
+1. **The Entry Point**: The user submits a story or ticket via the React frontend. This payload hits our FastAPI backend.
+2. **The Orchestrator**: The backend spins up an async session to manage the agent pipeline. We use Server-Sent Events (SSE) to stream logs back to the frontend in real-time so the user isn't stuck waiting.
+3. **Agent Pipeline**:
+   - The **Story Agent** parses the raw text and outputs structured JSON containing the core requirements.
+   - The **Test Agent** takes those requirements and generates specific test cases.
+   - The **Defect Agent** reviews the entire output to provide a final deployment recommendation.
+4. **Data Visualization**: Once the pipeline completes, the final structured payload is sent to the frontend, which renders an interactive dashboard of the results.
 
 ## Technology Stack
-- **Frontend**: React, Tailwind CSS, Framer Motion, Vite (Awwwards-style UI).
-- **Backend**: Python 3.12+, FastAPI, Pydantic, HTTPX.
-- **AI Core**: Groq AI (Llama 3), structured JSON extraction protocols.
+- **Frontend**: React, Tailwind CSS, Framer Motion, Vite.
+- **Backend**: Python 3.12, FastAPI, Pydantic, HTTPX.
+- **AI Integration**: Groq API (Llama 3) with structured JSON extraction to ensure consistent agent outputs.
