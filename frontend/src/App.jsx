@@ -28,8 +28,36 @@ const PRESET_STORIES = [
 const initialAgents = {
   story: { status: "idle", summary: "", message: "" },
   test: { status: "idle", summary: "", message: "" },
+  execution: { status: "idle", summary: "", message: "" },
   defect: { status: "idle", summary: "", message: "" },
 };
+
+function TypingEffect({ text }) {
+  const [displayed, setDisplayed] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [loop, setLoop] = useState(0);
+
+  useEffect(() => {
+    let timer;
+    if (!isDeleting && displayed.length < text.length) {
+      timer = setTimeout(() => setDisplayed(text.slice(0, displayed.length + 1)), 100);
+    } else if (!isDeleting && displayed.length === text.length) {
+      timer = setTimeout(() => setIsDeleting(true), 3000);
+    } else if (isDeleting && displayed.length > 0) {
+      timer = setTimeout(() => setDisplayed(text.slice(0, displayed.length - 1)), 50);
+    } else if (isDeleting && displayed.length === 0) {
+      setIsDeleting(false);
+      setLoop(loop + 1);
+    }
+    return () => clearTimeout(timer);
+  }, [displayed, isDeleting, text, loop]);
+
+  return (
+    <span className="relative border-r-2 border-accent pr-1 animate-pulse">
+      {displayed}
+    </span>
+  );
+}
 
 export default function App() {
   const [userStory, setUserStory] = useState(PRESET_STORIES[0].text);
@@ -39,6 +67,9 @@ export default function App() {
   const [dashboardData, setDashboardData] = useState(null);
   const [error, setError] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [jiraUrl, setJiraUrl] = useState("");
+  const [jiraToken, setJiraToken] = useState("");
+  const [ingesting, setIngesting] = useState(false);
   
   // Tabs: 'hero', 'pipeline', 'tests', 'score'
   const [activeTab, setActiveTab] = useState("hero");
@@ -101,6 +132,27 @@ export default function App() {
     }
   };
 
+  const handleJiraIngest = async () => {
+    if (!jiraUrl.trim()) return;
+    setIngesting(true);
+    setError("");
+    try {
+      const res = await fetch(`${API_BASE}/api/ingest/jira`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: jiraUrl, token: jiraToken }),
+      });
+      if (!res.ok) throw new Error("Jira ingestion failed");
+      const { user_story } = await res.json();
+      setUserStory(user_story);
+      setUseSample(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIngesting(false);
+    }
+  };
+
   const startStream = (sessionId) => {
     const es = new EventSource(`${API_BASE}/api/stream/${sessionId}`);
     eventSourceRef.current = es;
@@ -139,6 +191,17 @@ export default function App() {
               },
             }));
           }
+          if (data.agent === "execution") {
+            const results = data.result.results;
+            const passed = results.filter(r => r.status === "pass").length;
+            setAgents((prev) => ({
+              ...prev,
+              execution: {
+                status: "done",
+                summary: `${passed}/${results.length} tests passed in ${data.result.duration_seconds}s.`,
+              },
+            }));
+          }
           if (data.agent === "defect") {
             const score = data.result.overall_confidence_score;
             setAgents((prev) => ({
@@ -153,6 +216,7 @@ export default function App() {
           setDashboardData({
             story: data.dashboard.story,
             tests: data.dashboard.tests,
+            execution: data.dashboard.execution,
             defects: data.dashboard.defects,
           });
           setIsRunning(false);
@@ -225,14 +289,22 @@ export default function App() {
 
       <header className="sticky top-0 z-50 border-b border-black/5 dark:border-white/10 bg-white/70 dark:bg-[#05070d]/70 backdrop-blur-xl transition-colors duration-300">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab("hero")}>
-             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black dark:bg-white text-xl font-black text-white dark:text-black shadow-lg">
-                I
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab("hero")}>
+             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-black dark:bg-white overflow-hidden shadow-lg transition-transform hover:scale-105 active:scale-95">
+                <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white dark:text-black z-10" stroke="currentColor" strokeWidth="3">
+                  <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" />
+                  <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 bg-gradient-to-tr from-accent/20 to-transparent opacity-50" 
+                />
               </div>
             <div>
-              <div className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">IronTest</div>
-              <div className="text-[0.65rem] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">
-                Autonomous QA Platform
+              <div className="text-lg font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-accent transition-colors">IronTest</div>
+              <div className="text-[0.65rem] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-black">
+                Autonomous QA
               </div>
             </div>
           </div>
@@ -249,10 +321,14 @@ export default function App() {
             )}
             <button
               onClick={toggleTheme}
-              className="group flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-black/50 text-gray-600 dark:text-gray-300 shadow-sm transition hover:bg-gray-50 dark:hover:bg-white/10"
+              className="group flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-black/50 text-gray-600 dark:text-gray-300 shadow-sm transition-all hover:bg-gray-50 dark:hover:bg-white/10 hover:rotate-12 active:scale-90"
               aria-label="Toggle Theme"
             >
-              {theme === "dark" ? "☀️" : "🌙"}
+              {theme === "dark" ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              )}
             </button>
           </div>
         </div>
@@ -300,10 +376,10 @@ export default function App() {
                 <div className="inline-block rounded-full border border-black/10 dark:border-white/10 bg-white/50 dark:bg-white/5 px-4 py-1.5 mb-6 text-xs font-semibold text-gray-800 dark:text-gray-200 backdrop-blur-sm">
                   ✨ Engineering Excellence. Automated.
                 </div>
-                <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
-                  Intelligent <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-500">QA Engine</span>
+                <h1 className="text-5xl lg:text-7xl font-black tracking-tight text-gray-900 dark:text-white mb-6">
+                  <TypingEffect text="Intelligent" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-500">QA Engine</span>
                 </h1>
-                <p className="max-w-2xl text-lg text-gray-600 dark:text-gray-400 mb-10">
+                <p className="max-w-2xl text-lg text-gray-600 dark:text-gray-400 mb-10 leading-relaxed">
                   Transform raw product specs into production-ready test suites using the IronTest multi-agent architecture. Define the intent, and let intelligence do the rest.
                 </p>
                 
@@ -312,22 +388,19 @@ export default function App() {
                     <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
                       Target Vector
                     </span>
-                    <div className="flex gap-2 shrink-0 overflow-x-auto no-scrollbar pb-2 sm:pb-0">
-                      <button
-                        onClick={() => setUseSample(!useSample)}
-                        className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all shadow-sm ${
-                          useSample
-                            ? "bg-accent text-white"
-                            : "bg-white dark:bg-white/10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10"
-                        }`}
-                      >
-                        Sample Active
-                      </button>
+                    <div className="flex gap-3 shrink-0 overflow-x-auto no-scrollbar py-3 px-1 sm:pb-2">
                       {PRESET_STORIES.map((story) => (
                         <button
                           key={story.name}
-                          onClick={() => setUserStory(story.text)}
-                          className="rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors whitespace-nowrap"
+                          onClick={() => {
+                            setUserStory(story.text);
+                            setUseSample(true);
+                          }}
+                          className={`rounded-full border px-5 py-2 text-xs font-bold transition-all whitespace-nowrap shadow-sm ${
+                            userStory === story.text && useSample
+                              ? "bg-purple-500/10 border-purple-500/50 text-purple-600 dark:text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.25)] scale-105"
+                              : "bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/20"
+                          }`}
                         >
                           {story.name}
                         </button>
@@ -344,6 +417,37 @@ export default function App() {
                       disabled={useSample}
                     />
                   </div>
+                  
+                  {/* Jira Ingestion Section */}
+                  <div className="mx-2 mb-2 rounded-2xl border border-dashed border-black/10 dark:border-white/10 p-4 bg-gray-50 dark:bg-white/5 flex flex-col sm:flex-row gap-3 items-end">
+                    <div className="flex-1 w-full space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">Jira Ticket URL</label>
+                      <input 
+                        className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                        placeholder="https://company.atlassian.net/browse/PROJ-123"
+                        value={jiraUrl}
+                        onChange={(e) => setJiraUrl(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex-1 w-full space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">Access Token / PAT</label>
+                      <input 
+                        type="password"
+                        className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                        placeholder="ATATT3xFf..."
+                        value={jiraToken}
+                        onChange={(e) => setJiraToken(e.target.value)}
+                      />
+                    </div>
+                    <button 
+                      onClick={handleJiraIngest}
+                      disabled={ingesting || !jiraUrl}
+                      className="rounded-lg bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-bold px-4 py-2 hover:opacity-90 disabled:opacity-50 transition"
+                    >
+                      {ingesting ? "Ingesting..." : "Import"}
+                    </button>
+                  </div>
+
                   <div className="flex justify-end p-2 border-t border-black/5 dark:border-white/10 mt-2">
                     <button
                       onClick={handleRun}
@@ -408,7 +512,11 @@ export default function App() {
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Generated Test Vectors</h2>
                   <p className="text-gray-500 dark:text-gray-400 text-sm">Comprehensive functional, boundary, and edge test cases mathematically derived from intent.</p>
                 </div>
-                <TestCaseTable tests={dashboardData.tests} criticalIds={dashboardData.defects.critical_test_ids} />
+                <TestCaseTable 
+                  tests={dashboardData.tests} 
+                  execution={dashboardData.execution.results || []} 
+                  criticalIds={dashboardData.defects.critical_test_ids} 
+                />
              </motion.div>
           )}
 

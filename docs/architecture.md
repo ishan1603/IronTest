@@ -27,25 +27,31 @@ graph TD
     subgraph Agents [Agent Pipeline]
         A1[🧠 Story Agent]
         A2[⚙️ Test Agent]
-        A3[🔍 Defect Agent]
+        A3[🚀 Execution Agent]
+        A4[🔍 Defect Agent]
         
         Orch --> A1
         A1 --> A2
         A2 --> A3
+        A3 --> A4
+        A3 -.-> DB[(History JSON)]
+        DB -.-> A4
     end
     
-    UI -- "User Story" --> API
-    A1 & A2 & A3 -. "Streaming SSE" .-> Stream
+    UI -- "Story / Jira" --> API
+    A1 & A2 & A3 & A4 -. "Streaming SSE" .-> Stream
 ```
 
 ## How the Pieces Fit Together
-1. **The Entry Point**: The user submits a story or ticket via the React frontend. This payload hits our FastAPI backend.
-2. **The Orchestrator**: The backend spins up an async session to manage the agent pipeline. We use Server-Sent Events (SSE) to stream logs back to the frontend in real-time so the user isn't stuck waiting.
+1. **The Entry Point**: The user submits a story or ticket (via Jira URL) through the React frontend. This payload hits the FastAPI backend.
+2. **The Orchestrator**: The backend spins up an async orchestration session. We use Server-Sent Events (SSE) to stream live state updates back to the frontend.
 3. **Agent Pipeline**:
-   - The **Story Agent** parses the raw text and outputs structured JSON containing the core requirements.
-   - The **Test Agent** takes those requirements and generates specific test cases.
-   - The **Defect Agent** reviews the entire output to provide a final deployment recommendation.
-4. **Data Visualization**: Once the pipeline completes, the final structured payload is sent to the frontend, which renders an interactive dashboard of the results.
+   - **Story Agent**: Parses raw requirements into structured JSON.
+   - **Test Agent**: Generates specific test vectors and executable code.
+   - **Execution Agent**: Runs the code in a mocked subprocess environment.
+   - **Defect Agent**: Aggregates results and compares them with **Historical Trends** to provide a final deployment verdict.
+4. **Data Persistence**: Successful and failed runs are persisted to a `history.json` database, allowing the system to learn from regression trends over time.
+5. **Data Visualization**: The final results are rendered in an interactive dashboard with heatmaps and failure logs.
 
 ## Technology Stack
 - **Frontend**: React, Tailwind CSS, Framer Motion, Vite.

@@ -6,8 +6,10 @@ import uuid
 from typing import Dict
 from agents.story_agent import analyze_story
 from agents.test_agent import generate_tests
+from agents.execution_agent import execute_tests
 from agents.defect_agent import analyze_defects
-from models import PipelineDashboard, StoryAnalysis, TestCase, DefectAnalysis
+from models import PipelineDashboard, StoryAnalysis, TestCase, DefectAnalysis, TestExecutionSummary
+from database import save_execution
 
 logger = logging.getLogger(__name__)
 
@@ -56,13 +58,21 @@ class Orchestrator:
             test_result: list[TestCase] = await generate_tests(self.api_key, self.model_id, story_result)
             await emit({"event": "agent_complete", "agent": "test", "result": [t.model_dump() for t in test_result]})
 
+            await emit({"event": "agent_start", "agent": "execution", "message": "Executing automated tests..."})
+            execution_result: TestExecutionSummary = await execute_tests(test_result)
+            await emit({"event": "agent_complete", "agent": "execution", "result": execution_result.model_dump()})
+
             await emit({"event": "agent_start", "agent": "defect", "message": "Running risk analysis..."})
-            defect_result: DefectAnalysis = await analyze_defects(self.api_key, self.model_id, story_result, test_result)
+            defect_result: DefectAnalysis = await analyze_defects(self.api_key, self.model_id, story_result, test_result, execution_result)
             await emit({"event": "agent_complete", "agent": "defect", "result": defect_result.model_dump()})
+            
+            # Save the execution run to our history file so the defect agent can learn from it next time
+            save_execution(story_result.modules, execution_result)
 
             dashboard = PipelineDashboard(
                 story=story_result,
                 tests=test_result,
+                execution=execution_result,
                 defects=defect_result,
             )
             await emit({"event": "pipeline_complete", "dashboard": dashboard.model_dump()})

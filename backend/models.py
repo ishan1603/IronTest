@@ -6,6 +6,11 @@ class AnalyzeRequest(BaseModel):
     user_story: str = Field(..., min_length=10, description="Jira-style user story text")
 
 
+class JiraIngestRequest(BaseModel):
+    url: str = Field(..., description="Jira ticket URL")
+    token: str = Field(..., description="Jira API Token or PAT")
+
+
 class StoryAnalysis(BaseModel):
     intent: str = ""
     modules: List[str] = Field(default_factory=list)
@@ -31,6 +36,17 @@ class TestCase(BaseModel):
     automation_snippet: List[str] = Field(default_factory=list)
 
 
+class TestResult(BaseModel):
+    test_id: str = ""
+    status: Literal["pass", "fail", "error", "skipped"] = "pass"
+    error_message: str = ""
+
+
+class TestExecutionSummary(BaseModel):
+    results: List[TestResult] = Field(default_factory=list)
+    duration_seconds: float = 0.0
+
+
 RegressionRisk = Literal["low", "medium", "high", "critical"]
 
 
@@ -54,4 +70,5 @@ class DefectAnalysis(BaseModel):
 class PipelineDashboard(BaseModel):
     story: StoryAnalysis
     tests: List[TestCase]
+    execution: TestExecutionSummary
     defects: DefectAnalysis

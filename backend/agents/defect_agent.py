@@ -2,15 +2,16 @@ import asyncio
 import json
 from typing import List
 import requests
-from models import DefectAnalysis, ModuleRisk, StoryAnalysis, TestCase
+from models import DefectAnalysis, ModuleRisk, StoryAnalysis, TestCase, TestExecutionSummary
+from database import get_module_history_stats
 
 
 SYSTEM_PROMPT = """
-You are the Defect Intelligence Agent. You analyze historical defect patterns (simulated from your training knowledge) and the current test suite to produce a predictive risk assessment.
+You are the Defect Intelligence Agent. You analyze test execution results and historical defect patterns to produce a predictive risk assessment.
 
 For each module provided, assign:
-- defect_probability: 0.0 to 1.0 (float)
-- historical_defect_count: integer (simulated, 0-50)
+- defect_probability: 0.0 to 1.0 (float) based on the provided history.
+- historical_defect_count: integer (based on the provided data)
 - regression_risk: 'low' | 'medium' | 'high' | 'critical'
 - top_defect_types: string[] (2-3 defect categories)
 - vulnerability_heatmap: string (e.g. 'Critical SQLi Exposure', 'Safe', 'High PII Risk')
@@ -68,11 +69,30 @@ def _groq_chat(token: str, model_id: str, system_prompt: str, user_content: str,
   return data.get("choices", [{}])[0].get("message", {}).get("content", "")
 
 
-async def analyze_defects(token: str, model_id: str, story: StoryAnalysis, tests: List[TestCase]) -> DefectAnalysis:
+async def analyze_defects(token: str, model_id: str, story: StoryAnalysis, tests: List[TestCase], execution: TestExecutionSummary) -> DefectAnalysis:
   def _call_model() -> DefectAnalysis:
+    
+    historical_data = {
+        m: get_module_history_stats(m) for m in story.modules
+    }
+
+    # Trim payload to prevent token limit errors
+    trimmed_tests = []
+    for test in tests:
+        t_dict = test.model_dump()
+        t_dict.pop("automation_snippet", None) # LLM doesn't need the code to assess risk
+        trimmed_tests.append(t_dict)
+    
+    trimmed_execution = execution.model_dump()
+    for res in trimmed_execution.get("results", []):
+        if len(res.get("error_message", "")) > 300:
+            res["error_message"] = res["error_message"][:300] + "... [truncated]"
+
     payload = {
       "modules": story.modules,
-      "test_cases": [test.model_dump() for test in tests],
+      "test_cases": trimmed_tests,
+      "execution_summary": trimmed_execution,
+      "module_history": historical_data
     }
     prompt = (
       "Input:\n"
@@ -81,12 +101,22 @@ async def analyze_defects(token: str, model_id: str, story: StoryAnalysis, tests
     )
     response_text = _groq_chat(token, model_id, SYSTEM_PROMPT, prompt, max_tokens=768, temperature=0.25)
     data = _extract_json(response_text)
-    module_risks = [ModuleRisk(**m) for m in data.get("module_risks", [])]
+    
+    # Ensure data is a dict and has defaults
+    if not isinstance(data, dict):
+        data = {}
+        
+    raw_module_risks = data.get("module_risks", [])
+    module_risks = []
+    for m in raw_module_risks:
+        if isinstance(m, dict):
+            module_risks.append(ModuleRisk(**m))
+            
     return DefectAnalysis(
       module_risks=module_risks,
-      overall_confidence_score=data["overall_confidence_score"],
-      deployment_recommendation=data["deployment_recommendation"],
-      recommendation_rationale=data["recommendation_rationale"],
+      overall_confidence_score=data.get("overall_confidence_score", 50), # Default to neutral if failed
+      deployment_recommendation=data.get("deployment_recommendation", "CONDITIONAL GO"),
+      recommendation_rationale=data.get("recommendation_rationale", "Automated analysis partially incomplete."),
       critical_test_ids=data.get("critical_test_ids", []),
     )
 

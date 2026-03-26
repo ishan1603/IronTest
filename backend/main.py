@@ -9,8 +9,12 @@ load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from models import AnalyzeRequest
+from models import AnalyzeRequest, JiraIngestRequest, PipelineDashboard
 from agents.orchestrator import Orchestrator, SessionManager
+from agents.story_agent import analyze_story
+from agents.test_agent import generate_tests
+from agents.execution_agent import execute_tests
+from agents.defect_agent import analyze_defects
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -71,6 +75,46 @@ async def stream(session_id: str):
             raise
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.post("/api/ingest/jira")
+async def ingest_jira(request: JiraIngestRequest):
+    # For hackathon purposes, we simulate Jira ticket extraction.
+    # In production, this would use the Jira REST API with the provided URL and Token.
+    ticket_id = request.url.split("/")[-1] if "/" in request.url else "PROJ-123"
+    
+    simulated_story = f"As a user of '{ticket_id}', I need the system to validate inputs correctly so that invalid data is rejected. Acceptance Criteria: - Fields cannot be blank - Email must contain @ symbol - Passwords require 8+ characters and special symbol."
+    
+    return {"user_story": simulated_story}
+
+
+@app.post("/api/webhook/github")
+async def github_webhook(payload: dict):
+    # Simulates a DevOps integration endpoint (e.g. GitHub Action webhook triggering QA run)
+    if not API_KEY:
+        raise HTTPException(status_code=500, detail="Missing GROQ_API_KEY")
+    
+    # We do a quick synchronous run for the CI/CD pipeline
+    try:
+        story_text = payload.get("commit_message", "Automated commit deployment validation. Check stability.")
+        story = await analyze_story(API_KEY, MODEL_ID, story_text)
+        tests = await generate_tests(API_KEY, MODEL_ID, story)
+        execution = await execute_tests(tests)
+        defects = await analyze_defects(API_KEY, MODEL_ID, story, tests, execution)
+        
+        # Save history just like orchestrator
+        from database import save_execution
+        save_execution(story.modules, execution)
+
+        return {
+            "status": "success",
+            "confidence_score": defects.overall_confidence_score,
+            "deployment_recommendation": defects.deployment_recommendation,
+            "dashboard": PipelineDashboard(story=story, tests=tests, execution=execution, defects=defects).model_dump()
+        }
+    except Exception as e:
+        logger.exception("Webhook pipeline failed")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/health")

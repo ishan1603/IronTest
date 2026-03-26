@@ -6,7 +6,7 @@
   :root {
     --bg-color: #fafafa;
     --text-color: #111827;
-    --grid-color: rgba(0, 0, 0, 0.05);
+    --grid-color: rgba(0, 0, 0, 0.12);
     color-scheme: light;
   }
 
@@ -22,7 +22,9 @@
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: "Inter", system-ui, sans-serif;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                --grid-color 0.5s ease;
   }
 
   /* Awwwards style modern grid background */

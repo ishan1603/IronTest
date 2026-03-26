@@ -15,7 +15,14 @@ const riskColors = {
   high: "bg-danger/10 text-red-700 dark:text-danger",
 };
 
-export default function TestCaseTable({ tests = [], criticalIds = [] }) {
+const statusColors = {
+  pass: "text-success bg-success/10",
+  fail: "text-danger bg-danger/10",
+  error: "text-amber-500 bg-amber-500/10",
+  skipped: "text-gray-400 bg-gray-400/10",
+};
+
+export default function TestCaseTable({ tests = [], execution = [], criticalIds = [] }) {
   const [typeFilter, setTypeFilter] = useState("all");
   const [riskFilter, setRiskFilter] = useState("all");
   const [expandedRow, setExpandedRow] = useState(null);
@@ -88,7 +95,7 @@ export default function TestCaseTable({ tests = [], criticalIds = [] }) {
               <th className="px-6 py-4 text-left font-semibold">Service Module</th>
               <th className="px-6 py-4 text-left font-semibold">Topology</th>
               <th className="px-6 py-4 text-left font-semibold">Hypothesis / Description</th>
-              <th className="px-6 py-4 text-left font-semibold">Severity</th>
+              <th className="px-6 py-4 text-left font-semibold text-center">Status</th>
               <th className="px-6 py-4 text-left font-semibold">Scripted</th>
             </tr>
           </thead>
@@ -110,31 +117,56 @@ export default function TestCaseTable({ tests = [], criticalIds = [] }) {
                   {test.type.replace("_", " ")}
                 </td>
                 <td className="px-6 py-4 text-gray-700 dark:text-gray-300 max-w-md truncate group-hover:block transition-all">{test.description}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={clsx(
-                      "rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider",
-                      riskColors[test.risk_level],
-                    )}
-                  >
-                    {test.risk_level}
-                  </span>
+                <td className="px-6 py-4 whitespace-nowrap text-center">
+                   {(() => {
+                      const res = execution.find(r => r.test_id === test.id);
+                      if (!res) return <span className="text-gray-400">-</span>;
+                      return (
+                        <span className={clsx("px-2 py-0.5 rounded-md text-[10px] font-bold uppercase", statusColors[res.status])}>
+                          {res.status}
+                        </span>
+                      );
+                   })()}
                 </td>
                 <td className="px-6 py-4 text-gray-500 dark:text-gray-400 font-semibold">
                   {test.automated ? <span className="text-accent underline decoration-accent/30 decoration-2 underline-offset-4">Yes ▾</span> : "No"}
                 </td>
               </tr>
-              {expandedRow === test.id && test.automation_snippet && test.automation_snippet.length > 0 && (
+              {expandedRow === test.id && (
                 <tr>
                   <td colSpan={6} className="p-0 border-0">
-                    <div className="bg-gray-50 dark:bg-black/60 border-y border-black/5 dark:border-white/10 px-6 py-5">
-                      <div className="text-xs uppercase tracking-widest text-accent mb-3 font-bold flex items-center gap-2">
-                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
-                         Generated Automation Snippet
-                      </div>
-                      <pre className="text-sm text-gray-800 dark:text-emerald-400 overflow-x-auto whitespace-pre-wrap font-mono p-5 bg-white dark:bg-black/80 rounded-xl border border-gray-200 dark:border-white/5 shadow-inner">
-                        {Array.isArray(test.automation_snippet) ? test.automation_snippet.join("\n") : test.automation_snippet}
-                      </pre>
+                    <div className="bg-gray-50 dark:bg-black/60 border-y border-black/5 dark:border-white/10 px-6 py-5 space-y-4">
+                      {/* Automation Snippet */}
+                      {test.automation_snippet && test.automation_snippet.length > 0 && (
+                        <div>
+                          <div className="text-xs uppercase tracking-widest text-accent mb-3 font-bold flex items-center gap-2">
+                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                             Generated Automation Snippet
+                          </div>
+                          <pre className="text-sm text-gray-800 dark:text-emerald-400 overflow-x-auto whitespace-pre-wrap font-mono p-5 bg-white dark:bg-black/80 rounded-xl border border-gray-200 dark:border-white/5 shadow-inner">
+                            {Array.isArray(test.automation_snippet) ? test.automation_snippet.join("\n") : test.automation_snippet}
+                          </pre>
+                        </div>
+                      )}
+
+                      {/* Execution Failure Evidence */}
+                      {(() => {
+                        const res = execution.find(r => r.test_id === test.id);
+                        if (res && res.status !== "pass" && res.error_message) {
+                          return (
+                            <div>
+                               <div className="text-xs uppercase tracking-widest text-danger mb-3 font-bold flex items-center gap-2">
+                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                 Execution Failure Evidence / Logs
+                               </div>
+                               <div className="text-sm text-red-800 dark:text-red-400 overflow-x-auto whitespace-pre-wrap font-mono p-5 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/50 shadow-inner">
+                                 {res.error_message}
+                               </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </td>
                 </tr>

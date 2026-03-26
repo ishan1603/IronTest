@@ -19,7 +19,10 @@ Respond strictly as a JSON object with a single key "test_cases" whose value is 
     "expected_result": string,
     "risk_level": "low" | "medium" | "high",
     "automated": boolean,
-    "automation_snippet": string[] (Array of strings, each string is a single line of a Pytest/Playwright script. DO NOT output \n or triple quotes)
+    "automation_snippet": string[] (Array of strings, each string is a single line of a Pytest/Playwright script. 
+    IMPORTANT: You MUST wrap the code in a function like 'def test_scenario():' and indent the body.
+    DO NOT use 'yield' for HTTP requests; use standard synchronous 'requests' calls and 'assert' logic.
+    DO NOT output \n or triple quotes)
 }
 """
 

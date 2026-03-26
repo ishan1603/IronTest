@@ -47,18 +47,18 @@ export default function AgentCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={clsx(
-        "flex flex-col gap-3 rounded-2xl p-5 shadow-lg backdrop-blur-xl transition-all duration-300",
+        "flex flex-col gap-2 rounded-2xl p-4 shadow-lg backdrop-blur-xl transition-all duration-300 h-full min-h-[140px] lg:min-h-[160px] border",
         statusStyles[status]
       )}
     >
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-3 font-semibold text-gray-900 dark:text-white">
-          <span className="text-2xl drop-shadow-sm">{icon}</span>
-          <span className="tracking-tight text-lg">{title}</span>
+      <div className="flex justify-between items-center mb-1">
+        <div className="flex items-center gap-1.5 font-bold text-gray-900 dark:text-white min-w-0">
+          <span className="text-lg drop-shadow-sm flex-shrink-0">{icon}</span>
+          <span className="tracking-tight text-[11px] uppercase whitespace-nowrap overflow-hidden text-ellipsis">{title}</span>
         </div>
         <span
           className={clsx(
-            "rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider shadow-sm",
+            "rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter shadow-sm flex-shrink-0",
             status === "processing" && "bg-accent text-white",
             status === "done" && "bg-success text-white dark:text-black",
             status === "idle" && "bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-white",
@@ -66,31 +66,33 @@ export default function AgentCard({
           )}
         >
           {status === "processing"
-            ? "Running"
+            ? "Run"
             : status === "done"
-              ? "Complete"
+              ? "Done"
               : status === "error"
-                ? "Error"
+                ? "Err"
                 : "Idle"}
         </span>
       </div>
-      <div className="text-sm text-gray-600 dark:text-gray-300 min-h-[80px] leading-relaxed">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {status === "processing" ? (
-          <div className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 flex flex-col gap-1 mt-3 p-3 bg-black/5 dark:bg-black/40 rounded-lg border border-black/5 dark:border-white/5">
-            <div className="font-bold border-b border-black/5 dark:border-white/10 pb-1 mb-1">{message}</div>
+          <div className="font-mono text-[9px] text-emerald-600 dark:text-emerald-400 flex flex-col gap-0.5 mt-1 p-2 bg-black/5 dark:bg-black/40 rounded-lg border border-black/5 dark:border-white/5 flex-1 overflow-hidden">
+            <div className="font-bold border-b border-black/5 dark:border-white/10 pb-0.5 mb-1 truncate">{message}</div>
             {logs.map((log, i) => (
               <motion.div
-                initial={{ opacity: 0, x: -5 }}
+                initial={{ opacity: 0, x: -2 }}
                 animate={{ opacity: 1, x: 0 }}
                 key={i}
+                className="truncate"
               >
                 {log}
               </motion.div>
             ))}
-            <motion.div animate={{ opacity: [0, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} className="w-2 h-3 bg-emerald-500 mt-1" />
           </div>
         ) : (
-          <p className="mt-2">{summary || message}</p>
+          <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-tight line-clamp-4 mt-1">
+            {summary || message || "Waiting for signal..."}
+          </p>
         )}
       </div>
     </motion.div>

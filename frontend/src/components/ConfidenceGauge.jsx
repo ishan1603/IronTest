@@ -35,9 +35,10 @@ export default function ConfidenceGauge({ score = 0, recommendation = "" }) {
             minAngle={15}
             clockWise
             dataKey="value"
-            animationDuration={800}
-            animationEasing="ease-out"
+            animationDuration={1000}
+            animationEasing="ease-in-out"
             cornerRadius={10}
+            background={{ fill: "rgba(0,0,0,0.05)" }}
           />
         </RadialBarChart>
         <div className="absolute flex flex-col items-center justify-center top-14">
