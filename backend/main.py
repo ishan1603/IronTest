@@ -2,7 +2,10 @@ import asyncio
 import json
 import logging
 import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+
+load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,7 +15,7 @@ from agents.orchestrator import Orchestrator, SessionManager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="ATOS Autonomous QA Agent")
+app = FastAPI(title="IronTest Autonomous QA Agent")
 
 # CORS for demo flexibility
 app.add_middleware(
