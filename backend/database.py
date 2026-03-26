@@ -6,7 +6,11 @@ from models import TestExecutionSummary
 
 logger = logging.getLogger(__name__)
 
-HISTORY_FILE = os.path.join(os.path.dirname(__file__), "history.json")
+HISTORY_DIR = os.path.join(os.path.dirname(__file__), "data")
+HISTORY_FILE = os.path.join(HISTORY_DIR, "history.json")
+
+# Ensure data directory exists
+os.makedirs(HISTORY_DIR, exist_ok=True)
 
 def load_history() -> List[dict]:
     if not os.path.exists(HISTORY_FILE):
