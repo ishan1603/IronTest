@@ -1,82 +1,81 @@
-# ATOS — Autonomous AI Testing Agent for Context-Aware Release Validation
+<div align="center">
+  <img src="https://img.icons8.com/fluency/256/hexagon.png" width="80" alt="IronTest Logo"/>
+  <h1>IronTest Autonomous QA Engine</h1>
+  <p><strong>Transform fragmented Jira stories into production-ready test suites in 4.5 seconds.</strong></p>
 
-ATOS is a full-stack demo that simulates a virtual QA engineer. It ingests a Jira-style user story, runs it through three Groq-backed agents (Story Intelligence, Test Generation, Defect Intelligence), and streams live progress to a release dashboard with a confidence gauge, risk heatmap, test table, and deployment verdict.
+  <p>
+    <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/React-18.2-blue?style=for-the-badge&logo=react" alt="React"></a>
+    <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-0.110-009688?style=for-the-badge&logo=fastapi" alt="FastAPI"></a>
+    <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind"></a>
+    <a href="https://groq.com/"><img src="https://img.shields.io/badge/AI-Groq_Llama3-F6522E?style=for-the-badge" alt="Groq"></a>
+  </p>
+</div>
 
-## Quick Start
+---
 
-1. Install deps
+## 🚀 The Vision
+QA is the last major bottleneck in modern software delivery. **IronTest** is a multi-agent artificial intelligence orchestrator designed to completely automate the QA engineering lifecycle. By deploying specialized, autonomous agents, it parses raw human intent, synthesizes edge-case test vectors, generates automation codes, and calculates mathematical deployment confidence—all wrapped in an Awwwards-winning, Apple-inspired interface.
 
-- Backend: `cd backend && py -3.11 -m venv .venv && .\.venv\Scripts\Activate && pip install -r requirements.txt`
-- Frontend: `cd frontend && npm install`
+## 🧠 The Multi-Agent Architecture
+IronTest is powered by three specialized AI nodes working in sequential harmony:
 
-2. Set env
+1. **[Story Agent (Intent Architect)](docs/story_agent.md)**: Converts chaotic user stories into structured topological matrices.
+2. **[Test Agent (Vector Synthesizer)](docs/test_agent.md)**: Maps intent to exhaustive functional, boundary, and edge test vectors, complete with automation snippets.
+3. **[Defect Agent (Verdict Engine)](docs/defect_agent.md)**: Audits the generated suite to calculate a rigorous Go/No-Go deployment confidence score.
 
-- Required: `GROQ_API_KEY=<your_key>`
-- Optional: `GROQ_MODEL_ID` (default `llama-3.1-8b-instant`; e.g., `llama-3.3-70b-versatile`)
+> 📚 **Deep Dive**: Check out the [docs/](./docs/) directory for detailed intelligence profiles and system architecture.
 
-3. Run
+## 🎨 UI/UX Philosophy
+We believe highly technical tools shouldn't look like spreadsheets. IronTest features:
+- **Awwwards-Style Constraints**: Sub-pixel perfect minimalist typography and dynamic grid layouts.
+- **Framer Motion Integration**: Liquid smooth transitions and zero-layout-shift streams.
+- **Theme Native**: Flawless system-level Dark and Light mode toggling.
 
-- Backend: `cd backend && .\.venv\Scripts\Activate && python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000`
-- Frontend: `cd frontend && npm run dev -- --host --port 5173`
-- Open http://localhost:5173, choose a preset story, Run Analysis.
+## ⚡ Getting Started
+### Prerequisites
+- Python 3.12+ 
+- Node.js 20+
+- A valid `GROQ_API_KEY`
 
-### Docker Compose
-
-```
-docker-compose up --build
-```
-
-Frontend: http://localhost:5173, Backend: http://localhost:8000. Provide envs to compose: `GROQ_API_KEY`, optional `GROQ_MODEL_ID`.
-
-## How it Works
-
-1. User story intake
-
-- React UI (Vite + Tailwind) provides preset Jira-like stories or manual input. The textarea can lock to a sample for deterministic demos.
-
-2. Kickoff
-
-- Frontend calls `POST /api/analyze` with the story; receives a `session_id`.
-
-3. Live streaming
-
-- Frontend opens `GET /api/stream/{session_id}` (SSE). Events drive the animated pipeline (Story → Tests → Defects) and show agent statuses.
-
-4. Agents (Groq chat completions)
-
-- Story Intelligence: extracts intent, modules (3–6), acceptance criteria, risks. Enforced JSON via `response_format`.
-- Test Generation: produces 10–15 structured test cases (functional, boundary, edge, regression) keyed as `test_cases`.
-- Defect Intelligence: scores module risk, computes overall confidence, deployment recommendation, critical tests. Enforced JSON via `response_format`.
-
-5. Orchestration
-
-- FastAPI orchestrator (see `backend/agents/orchestrator.py`) runs agents sequentially, emits `agent_start`, `agent_complete`, `pipeline_complete`, and `error` events over SSE. Errors bubble to UI toasts.
-
-6. Dashboard
-
-- Frontend renders confidence gauge (RadialBar), risk heatmap per module, filterable test table (by type/risk), and deployment verdict. Users can download the full JSON report from the dashboard.
-
-## Architecture
-
-```
-[React + Vite + Tailwind + Framer Motion]
-    |  POST /api/analyze (user story)
-    |  GET  /api/stream/{session}  <-- SSE live agent events
-[FastAPI Orchestrator]
-    |-- Story Intelligence (Groq chat completion)
-    |-- Test Generation    (Groq chat completion, json_object enforced)
-    |-- Defect Intelligence (Groq chat completion, json_object enforced)
-    `--> Dashboard payload -> frontend visuals (confidence, heatmap, tests, verdict)
+### 1. Backend Spin-up
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # Or .venv\Scripts\activate on Windows
+pip install -r requirements.txt
+export GROQ_API_KEY="your-api-key"
+uvicorn main:app --reload
 ```
 
-## Environment
+### 2. Frontend Spin-up
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-- `GROQ_API_KEY` (required)
-- `GROQ_MODEL_ID` (default `llama-3.1-8b-instant`; alt `llama-3.3-70b-versatile`)
-- Frontend uses `VITE_API_BASE` (optional; default `http://localhost:8000`).
+Navigate to `http://localhost:5173` to experience IronTest.
 
-## Notes
+## 📊 Deployment Flow
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant FastAPI
+    participant AI Ensemble
+    
+    User->>Frontend: Submit Raw Jira Ticket
+    Frontend->>FastAPI: /api/analyze
+    FastAPI->>AI Ensemble: Initiate Orchestration
+    AI Ensemble-->>FastAPI: Stream Agent States (SSE)
+    FastAPI-->>Frontend: Render Live Pipeline UI
+    AI Ensemble-->>FastAPI: Final Consensus Payload
+    FastAPI-->>Frontend: Display Tabbed QA Dashboard
+```
 
-- Structured outputs: agents request `response_format: { type: "json_object" }` to minimize parsing errors; fallbacks guard against stray text.
-- UI polish: aurora/glassmorphism background, animated pipeline, quick “Download report (JSON)” button after completion.
-- Presets: curated Jira-like stories for deterministic demos; toggle to lock/unlock sample story for live edits.
+## 🏆 Hackathon Ready
+Built aggressively for modern engineering teams. IronTest bridges the gap between PM intent, engineering reality, and CI/CD automation.
+
+<div align="center">
+  <p><i>Design engineered for intelligence.</i></p>
+</div>

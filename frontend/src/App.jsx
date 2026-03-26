@@ -1,22 +1,27 @@
 import React, { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Pipeline from "./components/Pipeline.jsx";
 import Dashboard from "./components/Dashboard.jsx";
+import TestCaseTable from "./components/TestCaseTable.jsx";
+import ConfidenceGauge from "./components/ConfidenceGauge.jsx";
+import RiskHeatmap from "./components/RiskHeatmap.jsx";
+import DeploymentVerdict from "./components/DeploymentVerdict.jsx";
+import StoryInsights from "./components/StoryInsights.jsx";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 const PRESET_STORIES = [
   {
-    name: "Payment Flow",
-    text: "As a customer, I want to complete a checkout using my saved credit card so that I can make purchases without re-entering payment details. Acceptance Criteria: - Saved card must be retrieved securely via tokenized vault API - 3DS authentication must trigger for transactions over $500 - Payment confirmation email sent within 30 seconds - Failed payments must not decrement inventory - Refund must process within 5 business days",
+    name: "Payment Gateway Core",
+    text: "As a customer, I require a frictionless checkout experience using my tokenized credit card across the ecosystem. Acceptance Criteria: - Vault API must securely retrieve tokenized cards with sub-100ms latency - 3DS authentication triggers dynamically for risk transactions > $500 - Inventory must remain locked during transaction, rolling back strictly on payment failure - Automated refunds trigger SLA workflows within 5 business days.",
   },
   {
-    name: "Auth Module",
-    text: "As a user, I want to log in using Single Sign-On (SSO) with my corporate Google account so that I don't need to maintain a separate password. Acceptance Criteria: - OAuth 2.0 PKCE flow must be implemented - Session token must expire after 8 hours of inactivity - Failed login attempts > 5 must trigger account lockout - MFA must be enforced for admin roles - Audit log must record all login events with IP and timestamp",
+    name: "Identity & Access Auth",
+    text: "As an enterprise user, I need to authenticate via secure Single Sign-On (SSO) to seamlessly access distributed microservices. Acceptance Criteria: - OAuth 2.0 PKCE flow integrated with strict enterprise identity providers - Idle session tokens expire predictably within 8 hours - Intelligent lockout engages upon 5 consecutive failed attempts - Mandatory Multi-Factor Authentication (MFA) step-up for administrative operations - Immutable audit logs capture IP and timestamp per login event.",
   },
   {
-    name: "Notification Service",
-    text: "As a platform admin, I want the notification service to deliver real-time alerts to users via push, email, and SMS so that critical events are never missed. Acceptance Criteria: - Push notifications delivered within 2 seconds of event trigger - Email fallback if push fails after 3 retries - SMS sent only for CRITICAL severity events - User preferences must be respected per channel - Notification delivery status tracked in audit log",
+    name: "Real-time Notification Fabric",
+    text: "As a platform administrator, I expect the notification fabric to broadcast critical alerts synchronously across Push, Email, and SMS endpoints. Acceptance Criteria: - Push delivery maintains a 2-second SLA from event origination - Email gracefully serves as the tertiary fallback after 3 rapid retries - SMS gateways activate exclusively for CRITICAL severity tags - Granular user preferences override global channel broadcasts - Delivery handshakes logged persistently for auditing.",
   },
 ];
 
@@ -34,7 +39,30 @@ export default function App() {
   const [dashboardData, setDashboardData] = useState(null);
   const [error, setError] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  
+  // Tabs: 'hero', 'pipeline', 'tests', 'score'
+  const [activeTab, setActiveTab] = useState("hero");
+  
+  // Theme: light | dark
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") || "dark";
+    }
+    return "dark";
+  });
+
   const eventSourceRef = useRef(null);
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
   const resetAgents = () => setAgents(initialAgents);
 
@@ -43,13 +71,14 @@ export default function App() {
     setError("");
     setPipelineVisible(true);
     setDashboardData(null);
+    setActiveTab("pipeline");
     resetAgents();
     setAgents((prev) => ({
       ...prev,
       story: {
         status: "processing",
         summary: "",
-        message: "Analyzing user story...",
+        message: "Analyzing intent architecture...",
       },
     }));
     setIsRunning(true);
@@ -62,7 +91,7 @@ export default function App() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "Failed to start analysis");
+        throw new Error(err.detail || "Failed to engage IronTest intelligence");
       }
       const { session_id } = await res.json();
       startStream(session_id);
@@ -96,7 +125,7 @@ export default function App() {
               ...prev,
               story: {
                 status: "done",
-                summary: `Intent captured, ${result.modules.length} modules, ${result.risk_factors.length} risks identified.`,
+                summary: `Intent captured, ${result.modules.length} microservices mapped, ${result.risk_factors.length} critical risks identified.`,
               },
             }));
           }
@@ -106,7 +135,7 @@ export default function App() {
               ...prev,
               test: {
                 status: "done",
-                summary: `Generated ${count} test cases across functional, boundary, and regression.`,
+                summary: `Synthesized ${count} automated test vectors across edge, boundary, and core domains.`,
               },
             }));
           }
@@ -127,30 +156,31 @@ export default function App() {
             defects: data.dashboard.defects,
           });
           setIsRunning(false);
+          // Auto switch to tests dashboard tab when done
           setTimeout(() => {
+            setActiveTab("score");
             es.close();
-          }, 400);
+          }, 1500);
         } else if (type === "error") {
-          setError(data.message || "Pipeline error");
+          setError(data.message || "Pipeline trace failure");
           setIsRunning(false);
           es.close();
         }
       } catch (err) {
-        setError("Failed to parse stream event");
+        setError("Failed to parse event stream payload");
         setIsRunning(false);
         es.close();
       }
     };
 
     es.onerror = () => {
-      setError("Stream connection failed. Please retry.");
+      setError("Stream connection severed. Please re-engage.");
       setIsRunning(false);
       es.close();
     };
   };
 
   useEffect(() => {
-    // Keep textarea in sync with sample toggle
     if (useSample) {
       setUserStory(PRESET_STORIES[0].text);
     }
@@ -179,119 +209,249 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "qa-report.json";
+    a.download = "irontest-analysis-report.json";
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#05060c] via-[#0b0f1c] to-[#05060c] text-white">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-32 top-0 h-72 w-72 rounded-full bg-indigo-500/25 blur-3xl" />
-        <div className="absolute right-[-10%] top-16 h-96 w-96 rounded-full bg-cyan-400/25 blur-[140px]" />
-        <div className="absolute left-1/3 bottom-[-10%] h-80 w-80 rounded-full bg-pink-400/15 blur-[140px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.06),transparent_35%)]" />
+    <div className="relative min-h-screen font-inter overflow-x-hidden transition-colors duration-300">
+      {/* Background Grid - Awwwards Style */}
+      <div className="fixed inset-0 pointer-events-none z-[-1]">
+        <div className="absolute inset-0 bg-grid opacity-80" />
+        <div className="absolute -left-[20%] top-[-10%] h-[600px] w-[600px] rounded-full bg-indigo-500/10 blur-[120px] dark:bg-indigo-500/20" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[140px] dark:bg-cyan-500/20" />
       </div>
 
-      <div className="relative">
-        <header className="border-b border-white/10 bg-white/5 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-2xl font-black text-white shadow-lg shadow-accent/30">
-                A
+      <header className="sticky top-0 z-50 border-b border-black/5 dark:border-white/10 bg-white/70 dark:bg-[#05070d]/70 backdrop-blur-xl transition-colors duration-300">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab("hero")}>
+             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black dark:bg-white text-xl font-black text-white dark:text-black shadow-lg">
+                I
               </div>
-              <div>
-                <div className="text-xl font-bold">ATOS QA Intelligence</div>
-                <div className="text-sm text-gray-300">
-                  Multi-Agent Quality Copilot
-                </div>
+            <div>
+              <div className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">IronTest</div>
+              <div className="text-[0.65rem] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">
+                Autonomous QA Platform
               </div>
-            </div>
-            <div className="rounded-full bg-gradient-to-r from-accent to-purple-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-purple-500/30">
-              Autonomous Testing Agent
             </div>
           </div>
-        </header>
-
-        <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
-          <section className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur-xl">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  Paste your Jira User Story
-                </h2>
-                <p className="text-sm text-gray-400">
-                  Select a preset or paste a live story. The multi-agent
-                  pipeline will generate tests and risk insights.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setUseSample((v) => !v)}
-                  className={
-                    useSample
-                      ? "rounded-full bg-accent/20 px-4 py-2 text-sm font-semibold text-white shadow shadow-accent/30"
-                      : "rounded-full bg-white/5 px-4 py-2 text-sm font-semibold text-gray-200 hover:bg-accent/20 hover:text-white"
-                  }
-                >
-                  {useSample ? "Sample story active" : "Use sample story"}
-                </button>
-                {PRESET_STORIES.map((story) => (
-                  <button
-                    key={story.name}
-                    onClick={() => setUserStory(story.text)}
-                    className="rounded-full bg-white/5 px-4 py-2 text-sm font-semibold text-gray-200 hover:bg-accent/20 hover:text-white"
-                  >
-                    {story.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <textarea
-              className="mt-4 w-full rounded-xl border border-white/10 bg-black/40 p-4 text-sm text-gray-100 shadow-inner focus:border-accent"
-              rows={6}
-              placeholder="Paste your Jira User Story here..."
-              value={userStory}
-              onChange={(e) => setUserStory(e.target.value)}
-              disabled={useSample}
-            />
-            <div className="mt-4 flex items-center gap-3">
-              <button
-                onClick={handleRun}
-                disabled={isRunning}
-                className="flex items-center gap-2 rounded-full bg-gradient-to-r from-accent via-indigo-500 to-purple-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5 hover:shadow-purple-500/40 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isRunning ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />{" "}
-                    Running...
-                  </span>
-                ) : (
-                  "Run Analysis"
-                )}
-              </button>
-              {error && <span className="text-sm text-danger">{error}</span>}
-            </div>
-          </section>
-
-          {pipelineVisible && <Pipeline agents={agents} />}
-
-          {dashboardData && (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white">QA Report</h3>
-                <button
+          
+          <div className="flex items-center gap-4">
+            {dashboardData && (
+               <button
                   onClick={handleDownload}
-                  className="rounded-full bg-white/10 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-white/20"
+                  className="hidden md:flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-black/50 px-4 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 transition"
                 >
-                  Download report (JSON)
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Export Data
                 </button>
-              </div>
-              <Dashboard data={dashboardData} />
+            )}
+            <button
+              onClick={toggleTheme}
+              className="group flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-black/50 text-gray-600 dark:text-gray-300 shadow-sm transition hover:bg-gray-50 dark:hover:bg-white/10"
+              aria-label="Toggle Theme"
+            >
+              {theme === "dark" ? "☀️" : "🌙"}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Tabs Navigation (Visible when pipeline active or dashboard exists) */}
+      <AnimatePresence>
+        {(pipelineVisible || dashboardData) && activeTab !== "hero" && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="sticky top-[73px] z-40 border-b border-black/5 dark:border-white/10 bg-white/50 dark:bg-[#05070d]/50 backdrop-blur-md"
+          >
+            <div className="mx-auto flex max-w-7xl gap-6 px-6 overflow-x-auto no-scrollbar">
+              {['pipeline', 'tests', 'score'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`py-4 text-sm font-semibold capitalize transition-all border-b-2 ${
+                    activeTab === tab 
+                      ? "border-accent text-accent" 
+                      : "border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <main className="mx-auto w-full max-w-7xl px-6 py-12">
+        <AnimatePresence mode="wait">
+          {activeTab === "hero" && (
+            <motion.div 
+              key="hero"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="flex flex-col gap-12"
+            >
+              <div className="flex flex-col items-center justify-center text-center py-12 lg:py-20">
+                <div className="inline-block rounded-full border border-black/10 dark:border-white/10 bg-white/50 dark:bg-white/5 px-4 py-1.5 mb-6 text-xs font-semibold text-gray-800 dark:text-gray-200 backdrop-blur-sm">
+                  ✨ Engineering Excellence. Automated.
+                </div>
+                <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
+                  Intelligent <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-500">QA Engine</span>
+                </h1>
+                <p className="max-w-2xl text-lg text-gray-600 dark:text-gray-400 mb-10">
+                  Transform raw product specs into production-ready test suites using the IronTest multi-agent architecture. Define the intent, and let intelligence do the rest.
+                </p>
+                
+                <div className="w-full max-w-3xl rounded-3xl border border-black/10 dark:border-white/10 bg-white/60 dark:bg-black/40 p-2 shadow-2xl backdrop-blur-3xl transition-all">
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
+                      Target Vector
+                    </span>
+                    <div className="flex gap-2 shrink-0 overflow-x-auto no-scrollbar pb-2 sm:pb-0">
+                      <button
+                        onClick={() => setUseSample(!useSample)}
+                        className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all shadow-sm ${
+                          useSample
+                            ? "bg-accent text-white"
+                            : "bg-white dark:bg-white/10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10"
+                        }`}
+                      >
+                        Sample Active
+                      </button>
+                      {PRESET_STORIES.map((story) => (
+                        <button
+                          key={story.name}
+                          onClick={() => setUserStory(story.text)}
+                          className="rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors whitespace-nowrap"
+                        >
+                          {story.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="px-2 pb-2">
+                    <textarea
+                      className="w-full rounded-2xl border-none bg-black/5 dark:bg-black/60 p-5 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-accent resize-none transition-all"
+                      rows={6}
+                      placeholder="Paste your raw user story or technical spec here to initiate generation..."
+                      value={userStory}
+                      onChange={(e) => setUserStory(e.target.value)}
+                      disabled={useSample}
+                    />
+                  </div>
+                  <div className="flex justify-end p-2 border-t border-black/5 dark:border-white/10 mt-2">
+                    <button
+                      onClick={handleRun}
+                      disabled={isRunning}
+                      className="group flex items-center justify-center gap-2 rounded-xl bg-black dark:bg-white px-8 py-3.5 text-sm font-bold text-white dark:text-black shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isRunning ? (
+                        <>
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 dark:border-black/40 border-t-white dark:border-t-black" />
+                          <span>Engaging Systems...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Initiate Analysis</span>
+                          <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+                {error && <motion.div initial={{ opacity:0 }} animate={{opacity:1}} className="mt-4 text-sm font-medium text-danger">{error}</motion.div>}
+              </div>
+            </motion.div>
           )}
-        </main>
-      </div>
+
+          {activeTab === "pipeline" && (
+            <motion.div
+              key="pipeline"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="w-full"
+            >
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Execution Stream</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Real-time trace of the IronTest autonomous agent pipeline.</p>
+              </div>
+              <Pipeline agents={agents} />
+              
+              {!isRunning && dashboardData && (
+                <div className="mt-8 flex justify-center">
+                   <button
+                    onClick={() => setActiveTab("score")}
+                    className="flex items-center gap-2 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-6 py-2.5 text-sm font-semibold text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition"
+                  >
+                    View Final Report →
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === "tests" && dashboardData && (
+             <motion.div
+               key="tests"
+               initial={{ opacity: 0, x: -20 }}
+               animate={{ opacity: 1, x: 0 }}
+               exit={{ opacity: 0, x: 20 }}
+               className="w-full"
+             >
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Generated Test Vectors</h2>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Comprehensive functional, boundary, and edge test cases mathematically derived from intent.</p>
+                </div>
+                <TestCaseTable tests={dashboardData.tests} criticalIds={dashboardData.defects.critical_test_ids} />
+             </motion.div>
+          )}
+
+          {activeTab === "score" && dashboardData && (
+             <motion.div
+               key="score"
+               initial={{ opacity: 0, x: -20 }}
+               animate={{ opacity: 1, x: 0 }}
+               exit={{ opacity: 0, x: 20 }}
+               className="w-full flex flex-col gap-8"
+             >
+                <div className="mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Intelligence Dashboard</h2>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Deployment readiness and structural risk analysis.</p>
+                </div>
+                
+                <div className="grid gap-6 lg:grid-cols-3">
+                  <div className="lg:col-span-1 rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                    <ConfidenceGauge
+                      score={dashboardData.defects.overall_confidence_score}
+                      recommendation={dashboardData.defects.deployment_recommendation}
+                    />
+                  </div>
+                  <div className="lg:col-span-2 rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                    <RiskHeatmap moduleRisks={dashboardData.defects.module_risks} />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                  <StoryInsights story={dashboardData.story} />
+                </div>
+                
+                <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                   <DeploymentVerdict
+                    recommendation={dashboardData.defects.deployment_recommendation}
+                    rationale={dashboardData.defects.recommendation_rationale}
+                  />
+                </div>
+             </motion.div>
+          )}
+
+        </AnimatePresence>
+      </main>
     </div>
   );
 }

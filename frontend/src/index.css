@@ -2,36 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
-}
+@layer base {
+  :root {
+    --bg-color: #fafafa;
+    --text-color: #111827;
+    --grid-color: rgba(0, 0, 0, 0.05);
+    color-scheme: light;
+  }
 
-body {
-  margin: 0;
-  background:
-    radial-gradient(
-      circle at 20% 20%,
-      rgba(124, 58, 237, 0.12),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 80% 10%,
-      rgba(14, 165, 233, 0.12),
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at 40% 70%,
-      rgba(244, 114, 182, 0.1),
-      transparent 35%
-    ),
-    #05070d;
-  color: #e5e7eb;
-  font-family: "Inter", system-ui, sans-serif;
-}
+  .dark {
+    --bg-color: #05070d;
+    --text-color: #f3f4f6;
+    --grid-color: rgba(255, 255, 255, 0.05);
+    color-scheme: dark;
+  }
 
-button:focus-visible,
-textarea:focus-visible,
-input:focus-visible {
-  outline: 2px solid #6366f1;
-  outline-offset: 2px;
+  body {
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: "Inter", system-ui, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Awwwards style modern grid background */
+  .bg-grid {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+
+  button:focus-visible,
+  textarea:focus-visible,
+  input:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+  }
 }

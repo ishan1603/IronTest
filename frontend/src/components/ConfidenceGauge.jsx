@@ -10,45 +10,50 @@ export default function ConfidenceGauge({ score = 0, recommendation = "" }) {
     return () => clearTimeout(timeout);
   }, [score]);
 
-  const color = score > 65 ? "#22c55e" : score > 40 ? "#f59e0b" : "#ef4444";
+  const color = score > 65 ? "#10b981" : score > 40 ? "#f59e0b" : "#ef4444";
 
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30 backdrop-blur-xl">
-      <h3 className="text-lg font-semibold text-gray-100">
+    <div className="flex flex-col items-center gap-4 w-full h-full justify-center">
+      <h3 className="text-sm font-bold tracking-widest uppercase text-gray-500 dark:text-gray-400">
         Release Confidence
       </h3>
-      <RadialBarChart
-        width={280}
-        height={220}
-        cx={140}
-        cy={110}
-        innerRadius={70}
-        outerRadius={100}
-        barSize={16}
-        data={[{ name: "score", value: animatedScore, fill: color }]}
-        startAngle={180}
-        endAngle={0}
-      >
-        <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-        <RadialBar
-          minAngle={15}
-          clockWise
-          dataKey="value"
-          animationDuration={800}
-          animationEasing="ease-out"
-        />
-      </RadialBarChart>
-      <div className="text-center">
-        <div className="text-5xl font-black" style={{ color }}>
-          {animatedScore}
+      <div className="relative flex items-center justify-center mt-2">
+        <RadialBarChart
+          width={240}
+          height={200}
+          cx={120}
+          cy={100}
+          innerRadius={75}
+          outerRadius={100}
+          barSize={12}
+          data={[{ name: "score", value: animatedScore, fill: color }]}
+          startAngle={180}
+          endAngle={0}
+        >
+          <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+          <RadialBar
+            minAngle={15}
+            clockWise
+            dataKey="value"
+            animationDuration={800}
+            animationEasing="ease-out"
+            cornerRadius={10}
+          />
+        </RadialBarChart>
+        <div className="absolute flex flex-col items-center justify-center top-14">
+          <div className="text-5xl font-black tracking-tighter" style={{ color }}>
+            {animatedScore}
+          </div>
         </div>
+      </div>
+      <div className="text-center -mt-6">
         <div
           className={clsx(
-            "mt-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide",
-            recommendation === "GO" && "bg-success/20 text-success",
-            recommendation === "NO-GO" && "bg-danger/20 text-danger",
+            "rounded-xl px-4 py-2 text-xs font-black uppercase tracking-widest shadow-sm",
+            recommendation === "GO" && "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+            recommendation === "NO-GO" && "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30",
             recommendation === "CONDITIONAL GO" &&
-              "bg-amber-200/10 text-amber-300",
+              "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400",
           )}
         >
           {recommendation || "PENDING"}
