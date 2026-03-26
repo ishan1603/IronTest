@@ -24,7 +24,7 @@ app.add_middleware(
 )
 
 API_KEY = os.getenv("GROQ_API_KEY")
-MODEL_ID = os.getenv("GROQ_MODEL_ID", "llama3-8b-8192")
+MODEL_ID = os.getenv("GROQ_MODEL_ID", "llama-3.1-8b-instant")
 if not API_KEY:
     logger.error("GROQ_API_KEY is not set. API calls will fail.")
 
@@ -38,7 +38,7 @@ if API_KEY:
 @app.post("/api/analyze")
 async def analyze(request: AnalyzeRequest):
     if not API_KEY:
-        raise HTTPException(status_code=500, detail="Missing HUGGINGFACE_API_TOKEN environment variable.")
+        raise HTTPException(status_code=500, detail="Missing GROQ_API_KEY environment variable.")
 
     session_id = await session_manager.create_session()
     assert orchestrator is not None
@@ -57,7 +57,10 @@ async def stream(session_id: str):
             while True:
                 event = await queue.get()
                 if event is None:
-                    break
+                    # Keep socket open so frontend can run es.close() without triggering onerror
+                    while True:
+                        yield ": keepalive\n\n"
+                        await asyncio.sleep(5)
                 payload = f"data: {json.dumps(event)}\n\n"
                 yield payload
         except asyncio.CancelledError:

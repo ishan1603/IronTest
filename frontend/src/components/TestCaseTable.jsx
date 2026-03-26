@@ -18,6 +18,7 @@ const riskColors = {
 export default function TestCaseTable({ tests = [], criticalIds = [] }) {
   const [typeFilter, setTypeFilter] = useState("all");
   const [riskFilter, setRiskFilter] = useState("all");
+  const [expandedRow, setExpandedRow] = useState(null);
 
   const filtered = useMemo(() => {
     return tests.filter((t) => {
@@ -88,9 +89,10 @@ export default function TestCaseTable({ tests = [], criticalIds = [] }) {
           </thead>
           <tbody>
             {filtered.map((test) => (
+              <React.Fragment key={test.id}>
               <tr
-                key={test.id}
-                className="border-t border-white/5 odd:bg-white/5"
+                onClick={() => setExpandedRow(expandedRow === test.id ? null : test.id)}
+                className="cursor-pointer border-t border-white/5 odd:bg-white/5 hover:bg-white/10"
               >
                 <td className="px-4 py-3 font-semibold text-gray-100">
                   {test.id}{" "}
@@ -114,9 +116,20 @@ export default function TestCaseTable({ tests = [], criticalIds = [] }) {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-200">
-                  {test.automated ? "Yes" : "No"}
+                  {test.automated ? "Yes ▾" : "No"}
                 </td>
               </tr>
+              {expandedRow === test.id && test.automation_snippet && test.automation_snippet.length > 0 && (
+                <tr>
+                  <td colSpan={6} className="p-4 bg-black/60 border-b border-white/10">
+                    <div className="text-xs text-accent mb-2 font-semibold">Generated Automation Script</div>
+                    <pre className="text-xs text-green-400 overflow-x-auto whitespace-pre-wrap font-mono p-4 bg-black/80 rounded-xl border border-white/5 shadow-inner">
+                      {Array.isArray(test.automation_snippet) ? test.automation_snippet.join("\n") : test.automation_snippet}
+                    </pre>
+                  </td>
+                </tr>
+              )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>

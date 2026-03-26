@@ -1,15 +1,16 @@
 import React from "react";
 import { motion } from "framer-motion";
+import clsx from "clsx";
 import AgentCard from "./AgentCard";
 
 function Arrow({ active }) {
   return (
     <motion.div
-      animate={{ opacity: active ? [0.2, 1, 0.2] : 0.2 }}
+      animate={{ opacity: active ? [0.4, 1, 0.4] : 0.2 }}
       transition={{ repeat: active ? Infinity : 0, duration: 1.2 }}
       className="flex items-center justify-center px-4"
     >
-      <div className="h-1 w-16 bg-gradient-to-r from-accent to-transparent" />
+      <div className={clsx("h-1 w-16 bg-gradient-to-r from-accent to-transparent rounded-full", active && "shadow-[0_0_20px_rgba(99,102,241,0.9)] bg-accent")} />
     </motion.div>
   );
 }

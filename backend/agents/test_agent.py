@@ -18,7 +18,8 @@ Respond strictly as a JSON object with a single key "test_cases" whose value is 
     "steps": string[],
     "expected_result": string,
     "risk_level": "low" | "medium" | "high",
-    "automated": boolean
+    "automated": boolean,
+    "automation_snippet": string[] (Array of strings, each string is a single line of a Pytest/Playwright script. DO NOT output \n or triple quotes)
 }
 """
 
@@ -65,7 +66,7 @@ async def generate_tests(token: str, model_id: str, story: StoryAnalysis) -> Lis
             "risk_factors": story.risk_factors,
         }
         prompt = f"Input:\n{json.dumps(user_payload)}\nReturn only the JSON object with key test_cases."
-        response_text = _groq_chat(token, model_id, SYSTEM_PROMPT, prompt, max_tokens=768, temperature=0.35)
+        response_text = _groq_chat(token, model_id, SYSTEM_PROMPT, prompt, max_tokens=2500, temperature=0.35)
         parsed = _extract_json(response_text)
         raw_items = parsed.get("test_cases", parsed if isinstance(parsed, list) else [])
         return [TestCase(**item) for item in raw_items]

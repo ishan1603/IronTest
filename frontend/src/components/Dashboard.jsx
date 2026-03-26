@@ -4,6 +4,7 @@ import ConfidenceGauge from "./ConfidenceGauge";
 import RiskHeatmap from "./RiskHeatmap";
 import TestCaseTable from "./TestCaseTable";
 import DeploymentVerdict from "./DeploymentVerdict";
+import StoryInsights from "./StoryInsights";
 
 export default function Dashboard({ data }) {
   if (!data) return null;
@@ -28,6 +29,7 @@ export default function Dashboard({ data }) {
           <RiskHeatmap moduleRisks={defects.module_risks} />
         </div>
       </div>
+      <StoryInsights story={data.story} />
       <TestCaseTable tests={tests} criticalIds={defects.critical_test_ids} />
       <DeploymentVerdict
         recommendation={defects.deployment_recommendation}

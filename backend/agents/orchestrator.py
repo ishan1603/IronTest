@@ -71,4 +71,5 @@ class Orchestrator:
             await emit({"event": "error", "message": f"Pipeline failed: {exc}"})
         finally:
             await queue.put(None)
+            await asyncio.sleep(4)
             await self.sessions.close_session(session_id)

@@ -13,6 +13,7 @@ For each module provided, assign:
 - historical_defect_count: integer (simulated, 0-50)
 - regression_risk: 'low' | 'medium' | 'high' | 'critical'
 - top_defect_types: string[] (2-3 defect categories)
+- vulnerability_heatmap: string (e.g. 'Critical SQLi Exposure', 'Safe', 'High PII Risk')
 
 Then compute:
 - overall_confidence_score: integer 0-100 
@@ -25,7 +26,7 @@ Return JSON matching this schema:
 {
   'module_risks': [{ 'module': string, 'defect_probability': float, 
     'historical_defect_count': int, 'regression_risk': string,
-    'top_defect_types': string[] }],
+    'top_defect_types': string[], 'vulnerability_heatmap': string }],
   'overall_confidence_score': int,
   'deployment_recommendation': string,
   'recommendation_rationale': string,

@@ -46,6 +46,12 @@ export default function RiskHeatmap({ moduleRisks = [] }) {
             <div className="mt-2 text-xs text-amber-200">
               Top defects: {module.top_defect_types.join(", ")}
             </div>
+            {module.vulnerability_heatmap && (
+              <div className="mt-3 rounded-lg bg-danger/20 p-3 text-xs text-danger font-mono shadow-inner border border-danger/30">
+                <div className="font-semibold mb-1 text-danger">⚠️ Vulnerability Scan</div>
+                {module.vulnerability_heatmap}
+              </div>
+            )}
           </div>
         ))}
       </div>
