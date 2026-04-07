@@ -1,19 +1,44 @@
-# 🚀 Execution Agent
+# Execution Agent
 
 ## Overview
-The **Execution Agent** is responsible for taking AI-generated test snippets and running them in a live, isolated environment. This transforms IronTest from a documentation generator into a functional validation engine.
 
-## Core Responsibilities
-1. **Isolation**: Every test run occurs in a unique `TemporaryDirectory` to prevent file-system pollution.
-2. **Resilience**: The agent automatically wraps raw code snippets into valid `pytest` functions if the LLM forgets the structure.
-3. **Network Mocking**: Injects a global `sys.modules` stub for `requests` to stop real network calls and allow hallucinated domains (e.g., `vault-api.com`) to "work" during the demo.
-4. **Dependency Stubbing**: Provides a `MockFactory` that handles common hallucinated objects like `payment_gateway` or `inventory` via `MagicMock`.
+The Execution Agent runs generated automation snippets and produces normalized pass/fail/error outputs with evidence logs.
 
-## How It Works
-- **Subprocess Execution**: It spawns a `pytest` subprocess using `sys.executable -m pytest`.
-- **Intelligent Feedback**: It captures `stdout` and `stderr`, truncating massive logs to provide concise failure evidence to the user.
-- **Dynamic Realism**: If a URL contains keywords like `fail` or `error`, the internal stub will trigger a failure response (400/500), testing the system's ability to catch defects.
+## Implemented Responsibilities
 
-## Technical Details
-- **Timeout**: Enforced **20s** timeout per test to ensure the environment remains responsive.
-- **Reporting**: Outputs a unified `TestExecutionSummary` used by the Defect Agent for risk assessment.
+1. Isolate each run in a TemporaryDirectory.
+2. Build runnable pytest files from generated snippet lines.
+3. Prevent external side effects by stubbing requests and common hallucinated service handles.
+4. Return structured TestExecutionSummary for downstream risk analysis.
+
+## Runtime Behavior
+
+- If snippet has no function definition, it auto-wraps the code in a test function.
+- Executes tests via subprocess: python -m pytest <temp_file> -v --tb=short.
+- Enforces per-test timeout (20s).
+- Captures and truncates long logs before returning results.
+- Works independently of MongoDB and Jira env configuration.
+
+## Output
+
+Each test receives one of:
+
+- pass
+- fail
+- error
+- skipped
+
+Returned as TestExecutionSummary:
+
+- results[] (test_id, status, error_message)
+- duration_seconds
+
+## Flow
+
+```mermaid
+graph TD
+	A[TestCase JSON] --> B[Temp File Builder]
+	B --> C[Pytest Subprocess]
+	C --> D[Result Normalization]
+	D --> E[TestExecutionSummary]
+```

@@ -1,112 +1,74 @@
-<div align="center">
-  <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="#6366f1" stroke-width="2">
-    <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" />
-    <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" />
-  </svg>
-  <h1>IronTest Autonomous QA</h1>
-  <p><strong>Transform fragmented Jira stories into production-ready test suites in seconds.</strong></p>
+# IronTest Autonomous QA
 
-  <p>
-    **Thanks to Team ATOS for giving us this opportunity.**
-  </p>
+Transform Jira tickets and product stories into test vectors, execution evidence, and a deployment confidence score.
 
-  <p>
-    <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/React-18.2-blue?style=for-the-badge&logo=react" alt="React"></a>
-    <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-0.110-009688?style=for-the-badge&logo=fastapi" alt="FastAPI"></a>
-    <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind"></a>
-    <a href="https://groq.com/"><img src="https://img.shields.io/badge/AI-Groq_Llama3-F6522E?style=for-the-badge" alt="Groq"></a>
-  </p>
-</div>
+## What Changed In This Version
 
----
+- LLM stack migrated from Groq to Gemini with a shared JSON client.
+- Real Jira ingestion implemented using Jira REST API v3.
+- MongoDB-backed history enabled for long-term trend and regression analysis (with local JSON fallback).
+- Defect scoring improved with blended logic across model output, current execution, and historical pass-rate trends.
+- Frontend stability updates for stream lifecycle, manual story editing, and Jira import UX.
 
-## 🚀 The Problem We Solved
-QA is often the last major bottleneck before shipping to production. Writing comprehensive tests takes time, and edge cases are frequently missed. We built **IronTest** to automate the QA engineering lifecycle. Our goal was to take raw human intent—like a Jira ticket—and automatically generate test cases, edge case scenarios, and automation code snippets, ultimately giving a confidence score for deployment.
+## Core Pipeline
 
-## 🧠 How It Works
-We designed IronTest around four specialized agents that handle the full autonomous QA lifecycle:
+1. [Story Agent](docs/story_agent.md): converts story text into structured risk-aware requirements.
+2. [Test Agent](docs/test_agent.md): generates functional, boundary, edge, and regression tests.
+3. [Execution Agent](docs/execution_agent.md): runs generated snippets in an isolated pytest environment.
+4. [Defect Agent](docs/defect_agent.md): computes module risks and a deployment verdict from live + historical signals.
 
-1.  **[Story Agent](docs/story_agent.md)**: Parses user stories or Jira tickets to extract modules, requirements, and acceptance criteria.
-2.  **[Test Agent](docs/test_agent.md)**: Generates comprehensive test vectors (functional, boundary, edge-case) and executable Python snippets.
-3.  **[Execution Agent](docs/execution_agent.md)**: Runs generated tests in a secure, isolated environment with intelligent stubs to handle external dependencies.
-4.  **[Defect Agent](docs/defect_agent.md)**: Analyzes execution results against **Historical Run Data** to calculate regression risk and deployment confidence.
+System architecture details are in [docs/architecture.md](docs/architecture.md).
 
-## 🏢 Enterprise & DevOps Integration
-IronTest is built to fit into the modern enterprise stack:
-- **Jira / Azure DevOps**: Native ingestion of requirements via URL and Token.
-- **CI/CD Webhooks**: Trigger an autonomous multi-agent analysis directly from a GitHub Action or Jenkins pipeline.
-- **Historical DB**: Persistently tracks every test run to detect long-term stability trends and regressions.
+## Local Setup
 
-> 📚 Check out the [docs/](./docs/) directory for an in-depth look at our architecture and agent design.
+Use [setup.md](setup.md) for complete local setup instructions on Windows, macOS, and Linux.
 
-## 🎨 Premium UI Engine
-Internal developer tools don't have to be ugly. The IronTest interface is designed for a high-fidelity automation experience:
-- **Typing Hero Effect**: Dynamic "type & retract" header for a live-terminal aesthetic.
-- **Hexagon-Check Branding**: Custom vector logo symbolizing stability and algorithmic precision.
-- **Live Selection Glow**: Active indicators for preset stories providing instant context feedback.
-- **Surgical Iconography**: Custom SVG sun/moon tokens for a seamless Dark/Light mode transition.
-- **Stream-First UX**: Zero-latency status updates via Framer Motion and SSE.
+Quick requirements:
 
-## ⚡ Getting Started
-### Prerequisites
-- Python 3.12+ 
+- Python 3.12+
 - Node.js 20+
-- A valid `GROQ_API_KEY`
+- GEMINI_API_KEY
+- MongoDB (local or Atlas, optional for now)
+- Optional Jira credentials (JIRA_EMAIL, JIRA_API_TOKEN)
 
-### 1. Backend Spin-up
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate  # Or .venv\Scripts\activate on Windows
-pip install -r requirements.txt
-export GROQ_API_KEY="your-api-key"
-python -m uvicorn main:app --reload
-```
+## Current Local Environment Status
 
-### 2. Frontend Spin-up
-```bash
-cd frontend
-npm install
-npm run dev
-```
+This repository is currently being run in a Gemini-only local mode.
 
-Navigate to `http://localhost:5173` to explore IronTest locally.
+- Configured now: GEMINI_API_KEY only.
+- Pending user-side setup: MongoDB variables and Jira credentials.
 
-## 📊 Technical Flow
-```mermaid
-graph TD
-    A[Jira / Story Input] --> B[Story Intel Agent]
-    B --> C[Test Generation Agent]
-    C --> D[Execution Agent]
-    D --> E[Defect Intel Agent]
-    E --> F[Pipeline Dashboard]
-    
-    subgraph Persistence
-        G[(History JSON)]
-    end
-    
-    D -.->|Run Results| G
-    G -.->|Regression Data| E
-```
+What this means right now:
 
-## 🎮 Deployment Lifecycle
-```mermaid
-sequenceDiagram
-    participant User
-    participant Frontend
-    participant FastAPI
-    participant Agents
-    participant MockEnv
-    
-    User->>Frontend: Submit Jira Ticket
-    Frontend->>FastAPI: /api/analyze
-    FastAPI->>Agents: Initiate Ensemble
-    Agents->>MockEnv: Execute Python Snippets
-    MockEnv-->>Agents: Status/Logs
-    Agents-->>FastAPI: SSE State Updates
-    FastAPI-->>Frontend: Render Live Pipeline UI
-    FastAPI-->>Frontend: Final Dashboard Payload
-```
+- Pipeline runs with Gemini as expected.
+- Historical persistence falls back to backend/data/history.json when MongoDB is not configured or reachable.
+- Jira ingestion endpoint requires credentials in request body (or env vars once added).
 
-## 🏆 Built for the Hackathon
-We built IronTest to bridge the gap between product management intent and engineering reality, providing a tangible way to speed up the CI/CD pipeline while maintaining high quality. 
+## API Endpoints
+
+- POST /api/analyze
+- GET /api/stream/{session_id}
+- POST /api/ingest/jira
+- POST /api/webhook/github
+- GET /health
+
+## Environment Variables
+
+See [.env.example](.env.example) for all supported settings.
+
+Key variables:
+
+- GEMINI_API_KEY
+- GEMINI_MODEL_ID (default: gemini-2.5-flash)
+- GEMINI_MODEL_CANDIDATES (comma-separated failover list)
+- USE_MONGODB (optional for now)
+- MONGODB_URI (optional for now)
+- MONGODB_DB_NAME (optional for now)
+- MONGODB_COLLECTION (optional for now)
+- JIRA_EMAIL (optional for now)
+- JIRA_API_TOKEN (optional for now)
+
+## Notes
+
+- For student-friendly usage, the backend defaults to gemini-2.5-flash and can fail over across GEMINI_MODEL_CANDIDATES (for example gemini-2.5-flash-lite, gemini-1.5-flash-8b) when one model hits quota or parsing issues.
+- If MongoDB is unavailable, execution history falls back to backend/data/history.json so the app remains usable.

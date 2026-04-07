@@ -8,7 +8,9 @@ class AnalyzeRequest(BaseModel):
 
 class JiraIngestRequest(BaseModel):
     url: str = Field(..., description="Jira ticket URL")
-    token: str = Field(..., description="Jira API Token or PAT")
+    token: str | None = Field(default=None, description="Jira API Token or PAT")
+    email: str | None = Field(default=None, description="Jira user email for API auth")
+    issue_key: str | None = Field(default=None, description="Optional issue key like PROJ-123")
 
 
 class StoryAnalysis(BaseModel):

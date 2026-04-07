@@ -10,19 +10,34 @@ function Arrow({ active }) {
       transition={{ repeat: active ? Infinity : 0, duration: 1.2 }}
       className="flex items-center justify-center px-1 lg:px-2 self-center flex-shrink-0"
     >
-      <div className={clsx("h-0.5 w-4 lg:w-8 bg-gradient-to-r from-accent to-transparent rounded-full", active && "shadow-[0_0_20px_rgba(99,102,241,0.9)] bg-accent")} />
+      <div
+        className={clsx(
+          "h-0.5 w-4 lg:w-8 bg-gradient-to-r from-accent to-transparent rounded-full",
+          active && "shadow-[0_0_20px_rgba(99,102,241,0.9)] bg-accent",
+        )}
+      />
     </motion.div>
   );
 }
 
-export default function Pipeline({ agents }) {
+export default function Pipeline({ agents, isRunning = false }) {
   return (
     <div className="flex w-full flex-col gap-4 rounded-3xl border border-black/5 dark:border-white/10 bg-white/40 dark:bg-white/5 p-4 lg:p-6 shadow-2xl backdrop-blur-3xl transition-colors duration-300 overflow-hidden">
       <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
         <span>Live Autonomous Orchestration</span>
-        <span className="text-accent flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent animate-ping" />
-          System Engaged
+        <span
+          className={clsx(
+            "flex items-center gap-2",
+            isRunning ? "text-accent" : "text-gray-400",
+          )}
+        >
+          <span
+            className={clsx(
+              "h-1.5 w-1.5 rounded-full",
+              isRunning ? "bg-accent animate-ping" : "bg-gray-400",
+            )}
+          />
+          {isRunning ? "System Engaged" : "Standby"}
         </span>
       </div>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch lg:justify-between lg:gap-1">

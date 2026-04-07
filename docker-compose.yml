@@ -1,13 +1,30 @@
 version: "3.9"
 services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
   backend:
     build: ./backend
     environment:
-      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL_ID=${GEMINI_MODEL_ID:-gemini-2.5-flash}
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017}
+      - MONGODB_DB_NAME=${MONGODB_DB_NAME:-irontest}
+      - MONGODB_COLLECTION=${MONGODB_COLLECTION:-executions}
+      - JIRA_EMAIL=${JIRA_EMAIL}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN}
     volumes:
       - ./backend/data:/app/data
     ports:
       - "8000:8000"
+    depends_on:
+      - mongo
+
   frontend:
     build: ./frontend
     environment:
@@ -16,3 +33,6 @@ services:
       - backend
     ports:
       - "5173:5173"
+
+volumes:
+  mongo_data:

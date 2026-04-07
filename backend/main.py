@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import requests
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
@@ -15,6 +16,7 @@ from agents.story_agent import analyze_story
 from agents.test_agent import generate_tests
 from agents.execution_agent import execute_tests
 from agents.defect_agent import analyze_defects
+from jira_client import fetch_jira_issue
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,10 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_KEY = os.getenv("GROQ_API_KEY")
-MODEL_ID = os.getenv("GROQ_MODEL_ID", "llama-3.1-8b-instant")
+API_KEY = os.getenv("GEMINI_API_KEY")
+MODEL_ID = os.getenv("GEMINI_MODEL_ID", "gemini-2.5-flash")
 if not API_KEY:
-    logger.error("GROQ_API_KEY is not set. API calls will fail.")
+    logger.error("GEMINI_API_KEY is not set. API calls will fail.")
 
 session_manager = SessionManager()
 orchestrator: Orchestrator | None = None
@@ -45,7 +47,7 @@ if API_KEY:
 @app.post("/api/analyze")
 async def analyze(request: AnalyzeRequest):
     if not API_KEY:
-        raise HTTPException(status_code=500, detail="Missing GROQ_API_KEY environment variable.")
+        raise HTTPException(status_code=500, detail="Missing GEMINI_API_KEY environment variable.")
 
     session_id = await session_manager.create_session()
     assert orchestrator is not None
@@ -79,20 +81,37 @@ async def stream(session_id: str):
 
 @app.post("/api/ingest/jira")
 async def ingest_jira(request: JiraIngestRequest):
-    # For hackathon purposes, we simulate Jira ticket extraction.
-    # In production, this would use the Jira REST API with the provided URL and Token.
-    ticket_id = request.url.split("/")[-1] if "/" in request.url else "PROJ-123"
-    
-    simulated_story = f"As a user of '{ticket_id}', I need the system to validate inputs correctly so that invalid data is rejected. Acceptance Criteria: - Fields cannot be blank - Email must contain @ symbol - Passwords require 8+ characters and special symbol."
-    
-    return {"user_story": simulated_story}
+    jira_email = request.email or os.getenv("JIRA_EMAIL")
+    jira_token = request.token or os.getenv("JIRA_API_TOKEN")
+
+    if not jira_email or not jira_token:
+        raise HTTPException(
+            status_code=400,
+            detail="Jira credentials missing. Provide email and token in request or set JIRA_EMAIL and JIRA_API_TOKEN in environment.",
+        )
+
+    try:
+        issue_payload = fetch_jira_issue(
+            url=request.url,
+            email=jira_email,
+            token=jira_token,
+            issue_key=request.issue_key,
+        )
+        return issue_payload
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except requests.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Jira ingestion failed")
+        raise HTTPException(status_code=500, detail=f"Jira ingestion failed: {exc}") from exc
 
 
 @app.post("/api/webhook/github")
 async def github_webhook(payload: dict):
     # Simulates a DevOps integration endpoint (e.g. GitHub Action webhook triggering QA run)
     if not API_KEY:
-        raise HTTPException(status_code=500, detail="Missing GROQ_API_KEY")
+        raise HTTPException(status_code=500, detail="Missing GEMINI_API_KEY")
     
     # We do a quick synchronous run for the CI/CD pipeline
     try:

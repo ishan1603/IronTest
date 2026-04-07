@@ -2,9 +2,11 @@ import React from "react";
 import clsx from "clsx";
 
 const riskColor = {
-  critical: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30",
+  critical:
+    "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30",
   high: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30",
-  medium: "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30",
+  medium:
+    "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30",
   low: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30",
 };
 
@@ -29,7 +31,8 @@ export default function RiskHeatmap({ moduleRisks = [] }) {
               <span
                 className={clsx(
                   "rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-wider whitespace-nowrap",
-                  riskColor[module.regression_risk] || "bg-gray-100 text-gray-500",
+                  riskColor[module.regression_risk] ||
+                    "bg-gray-100 text-gray-500",
                 )}
               >
                 {module.regression_risk} Risk
@@ -37,21 +40,36 @@ export default function RiskHeatmap({ moduleRisks = [] }) {
             </div>
             <div className="mt-4 flex flex-col gap-1">
               <div className="flex justify-between text-xs font-semibold">
-                <span className="text-gray-500 dark:text-gray-400">Failure Probability:</span>
-                <span className="text-gray-900 dark:text-gray-200">{(module.defect_probability * 100).toFixed(0)}%</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  Failure Probability:
+                </span>
+                <span className="text-gray-900 dark:text-gray-200">
+                  {(module.defect_probability * 100).toFixed(0)}%
+                </span>
               </div>
               <div className="flex justify-between text-xs font-semibold">
-                <span className="text-gray-500 dark:text-gray-400">Prior Defects:</span>
-                <span className="text-gray-900 dark:text-gray-200">{module.historical_defect_count}</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  Prior Defects:
+                </span>
+                <span className="text-gray-900 dark:text-gray-200">
+                  {module.historical_defect_count}
+                </span>
               </div>
             </div>
             <div className="mt-3 text-[11px] font-medium text-amber-600 dark:text-amber-400 border-t border-black/5 dark:border-white/10 pt-3">
-              <span className="block text-[10px] uppercase text-gray-400 mb-1">Top Failure Patterns:</span>
-              {module.top_defect_types.join(", ")}
+              <span className="block text-[10px] uppercase text-gray-400 mb-1">
+                Top Failure Patterns:
+              </span>
+              {Array.isArray(module.top_defect_types) &&
+              module.top_defect_types.length > 0
+                ? module.top_defect_types.join(", ")
+                : "No recurring pattern detected"}
             </div>
             {module.vulnerability_heatmap && (
               <div className="mt-3 rounded-xl bg-red-50 dark:bg-red-500/10 p-3 text-[11px] text-red-700 dark:text-red-400 font-mono shadow-inner border border-red-200 dark:border-red-500/20">
-                <div className="font-bold mb-1 uppercase tracking-wider">⚠️ Vulnerability Vector</div>
+                <div className="font-bold mb-1 uppercase tracking-wider">
+                  ⚠️ Vulnerability Vector
+                </div>
                 {module.vulnerability_heatmap}
               </div>
             )}

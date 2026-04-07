@@ -1,21 +1,35 @@
-# 🎨 Premium Interface Engine
+# Interface Engine
 
-## Visual Identity
-IronTest departs from generic "dashboard" aesthetics, opting for a surgical, high-fidelity interface that mirrors the precision of the agents underneath.
+## Overview
 
-### 1. Hexagon-Check Logo
-The core symbol of IronTest is a **Hexagon with an internal Checkmark**. 
-- **Hexagon**: Represents the structured, multi-agent ensemble (Story, Test, Execution, Defect).
-- **Checkmark**: Signifies the final deployment verdict and automated validation phase.
+The frontend is designed for live, presentation-friendly observability of the multi-agent QA pipeline.
 
-### 2. Typing Hero (Type & Retract)
-The hero section features a dynamic typing animation. This serves two purposes:
-- **Aesthetic**: Mimics the feel of a developer's IDE or terminal.
-- **Conceptual**: Represents the "Story Agent" parsing human intent into digital logic.
+## Implemented UX Features
 
-### 3. Interactive State Feedback
-- **Active Story Highlight**: When a preset story is selected, the button gains a `purple-500` glow and scales slightly (1.05x). 
-- **Progress Trackers**: The Confidence Gauge features a semi-transparent track, allowing users to visualize the "X/100" ratio as a physical filling bar.
+1. Hero input supports both preset vectors and manual story editing.
+2. Jira import panel supports:
+   - Jira URL
+   - Jira email
+   - Jira token
+   - optional issue key override
+3. Streaming pipeline cards show real-time agent status transitions.
+4. Tabs separate pipeline telemetry, generated tests, and final score dashboard.
+5. Export action downloads the final analysis payload as JSON.
 
-### 4. Mode-Aware Iconography
-Instead of simple emojis, IronTest uses high-fidelity **SVG tokens** for theme switching, ensuring the interface remains visually consistent across both Light and Dark modes.
+## Reliability Improvements
+
+- EventSource lifecycle is guarded to avoid false connection errors on intentional stream close.
+- Pipeline header status now reflects active run vs standby state.
+- Risk and table renderers include null/empty guards to prevent brittle UI crashes.
+
+## Current Setup Note
+
+- Current environment has GEMINI_API_KEY configured.
+- MongoDB and Jira env credentials are still pending configuration.
+- UI impact: Jira import works when credentials are provided in the form; history trends run from fallback JSON when MongoDB is not available.
+
+## Visual System
+
+- Glassmorphism card surfaces with light/dark support.
+- Typing hero effect and animated system indicators for demo pacing.
+- Heatmap + confidence gauge pairing for immediate release-readiness interpretation.

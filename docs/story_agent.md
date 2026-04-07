@@ -1,25 +1,45 @@
 # Story Agent
 
 ## Overview
-The **Story Agent** kicks off the IronTest pipeline. We designed it to take unstructured text—like a messy Jira ticket or PR description—and parse it into a structured format that the rest of our system can rely on. 
 
-## Core Responsibilities
-1. **Requirements Parsing**: Uses an LLM to read the user story and figure out what the actual feature or change is.
-2. **Acceptance Criteria Extraction**: Pulls out specific acceptance criteria to define what "done" actually looks like.
-3. **Impact Mapping**: Tries to figure out which modules, databases, or APIs will be affected by the change.
-4. **Risk Identification**: Flags obvious risks early on (for example, pointing out that adding a new 3rd-party API call might introduce latency).
+The Story Agent converts free-form requirement text into a normalized structure used by all downstream agents. Input can come from manual text entry or from the Jira ingestion endpoint output.
 
-## Technical Flow
+## Implemented Responsibilities
+
+1. Parse business intent from ambiguous story text.
+2. Extract acceptance criteria and likely impacted modules.
+3. Identify risk and security vectors early.
+4. Suggest probable microservices impacted by the change.
+
+## Input and Output
+
+Input:
+
+- Raw user story text from POST /api/analyze.
+- Or formatted Jira issue text returned by POST /api/ingest/jira.
+
+Output schema:
+
+- intent
+- modules[]
+- acceptance_criteria[]
+- risk_factors[]
+- security_vectors[]
+- microservices[]
+
+## Technical Notes
+
+- Uses Gemini through backend/llm_client.py.
+- Requests JSON-only output (responseMimeType application/json).
+- Parsed into the StoryAnalysis Pydantic model for strict downstream consistency.
+- Current local environment uses GEMINI_API_KEY only; this agent is fully functional in that mode.
+
+## Flow
+
 ```mermaid
-graph TD
-    A[Raw Jira Story] -->|Ingestion| B(LLM Intent Parser)
-    B --> C{Semantic Extraction}
-    C -->|Criteria| D[Formal Ruleset]
-    C -->|Context| E[Module Topology]
-    C -->|Threats| F[Risk Vectors]
-    D & E & F --> G[(Structured JSON Output)]
-    G --> H[Test Agent]
+graph LR
+    A[Story or Jira Text] --> B[Gemini Prompted Extraction]
+    B --> C[JSON Validation]
+    C --> D[StoryAnalysis Model]
+    D --> E[Test Agent]
 ```
-
-## How We Built It
-To make this work reliably, we heavily constrained the prompt. We force the LLM to output valid JSON with specific keys for `modules`, `core_intent`, `acceptance_criteria`, and `risk_factors`. This step is crucial because down the line, our other agents need clean, structured data to work properly.

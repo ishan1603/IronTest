@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Pipeline from "./components/Pipeline.jsx";
-import Dashboard from "./components/Dashboard.jsx";
 import TestCaseTable from "./components/TestCaseTable.jsx";
 import ConfidenceGauge from "./components/ConfidenceGauge.jsx";
 import RiskHeatmap from "./components/RiskHeatmap.jsx";
@@ -40,11 +39,17 @@ function TypingEffect({ text }) {
   useEffect(() => {
     let timer;
     if (!isDeleting && displayed.length < text.length) {
-      timer = setTimeout(() => setDisplayed(text.slice(0, displayed.length + 1)), 100);
+      timer = setTimeout(
+        () => setDisplayed(text.slice(0, displayed.length + 1)),
+        100,
+      );
     } else if (!isDeleting && displayed.length === text.length) {
       timer = setTimeout(() => setIsDeleting(true), 3000);
     } else if (isDeleting && displayed.length > 0) {
-      timer = setTimeout(() => setDisplayed(text.slice(0, displayed.length - 1)), 50);
+      timer = setTimeout(
+        () => setDisplayed(text.slice(0, displayed.length - 1)),
+        50,
+      );
     } else if (isDeleting && displayed.length === 0) {
       setIsDeleting(false);
       setLoop(loop + 1);
@@ -66,14 +71,18 @@ export default function App() {
   const [pipelineVisible, setPipelineVisible] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
   const [error, setError] = useState("");
+  const [pipelineError, setPipelineError] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [jiraUrl, setJiraUrl] = useState("");
+  const [jiraEmail, setJiraEmail] = useState("");
   const [jiraToken, setJiraToken] = useState("");
+  const [jiraIssueKey, setJiraIssueKey] = useState("");
+  const [ingestMessage, setIngestMessage] = useState("");
   const [ingesting, setIngesting] = useState(false);
-  
+
   // Tabs: 'hero', 'pipeline', 'tests', 'score'
   const [activeTab, setActiveTab] = useState("hero");
-  
+
   // Theme: light | dark
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
@@ -83,6 +92,7 @@ export default function App() {
   });
 
   const eventSourceRef = useRef(null);
+  const streamClosedRef = useRef(false);
 
   useEffect(() => {
     if (theme === "dark") {
@@ -93,13 +103,16 @@ export default function App() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const toggleTheme = () => setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  const toggleTheme = () =>
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
   const resetAgents = () => setAgents(initialAgents);
 
   const handleRun = async () => {
     if (!userStory.trim() || isRunning) return;
     setError("");
+    setPipelineError("");
+    setIngestMessage("");
     setPipelineVisible(true);
     setDashboardData(null);
     setActiveTab("pipeline");
@@ -127,7 +140,9 @@ export default function App() {
       const { session_id } = await res.json();
       startStream(session_id);
     } catch (err) {
+      console.error("[Pipeline] Failed to start analysis", err);
       setError(err.message);
+      setPipelineError(err.message);
       setIsRunning(false);
     }
   };
@@ -136,17 +151,32 @@ export default function App() {
     if (!jiraUrl.trim()) return;
     setIngesting(true);
     setError("");
+    setIngestMessage("");
     try {
       const res = await fetch(`${API_BASE}/api/ingest/jira`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: jiraUrl, token: jiraToken }),
+        body: JSON.stringify({
+          url: jiraUrl,
+          email: jiraEmail || undefined,
+          token: jiraToken || undefined,
+          issue_key: jiraIssueKey || undefined,
+        }),
       });
-      if (!res.ok) throw new Error("Jira ingestion failed");
-      const { user_story } = await res.json();
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload.detail || "Jira ingestion failed");
+      }
+      const { user_story, issue_key } = payload;
       setUserStory(user_story);
       setUseSample(false);
+      setIngestMessage(
+        issue_key
+          ? `Imported ${issue_key} successfully.`
+          : "Jira issue imported successfully.",
+      );
     } catch (err) {
+      console.error("[Jira] Ingestion failed", err);
       setError(err.message);
     } finally {
       setIngesting(false);
@@ -154,8 +184,14 @@ export default function App() {
   };
 
   const startStream = (sessionId) => {
+    if (eventSourceRef.current) {
+      streamClosedRef.current = true;
+      eventSourceRef.current.close();
+    }
+
     const es = new EventSource(`${API_BASE}/api/stream/${sessionId}`);
     eventSourceRef.current = es;
+    streamClosedRef.current = false;
 
     es.onmessage = (event) => {
       try {
@@ -193,7 +229,7 @@ export default function App() {
           }
           if (data.agent === "execution") {
             const results = data.result.results;
-            const passed = results.filter(r => r.status === "pass").length;
+            const passed = results.filter((r) => r.status === "pass").length;
             setAgents((prev) => ({
               ...prev,
               execution: {
@@ -223,23 +259,40 @@ export default function App() {
           // Auto switch to tests dashboard tab when done
           setTimeout(() => {
             setActiveTab("score");
+            streamClosedRef.current = true;
             es.close();
           }, 1500);
         } else if (type === "error") {
+          console.error("[Pipeline] Streamed backend error", data);
           setError(data.message || "Pipeline trace failure");
+          setPipelineError(data.message || "Pipeline trace failure");
           setIsRunning(false);
+          streamClosedRef.current = true;
           es.close();
         }
       } catch (err) {
+        console.error(
+          "[Pipeline] Failed to parse SSE payload",
+          err,
+          event.data,
+        );
         setError("Failed to parse event stream payload");
+        setPipelineError("Failed to parse event stream payload");
         setIsRunning(false);
+        streamClosedRef.current = true;
         es.close();
       }
     };
 
     es.onerror = () => {
+      if (streamClosedRef.current) {
+        return;
+      }
+      console.error("[Pipeline] Stream connection error");
       setError("Stream connection severed. Please re-engage.");
+      setPipelineError("Stream connection severed. Please re-engage.");
       setIsRunning(false);
+      streamClosedRef.current = true;
       es.close();
     };
   };
@@ -249,15 +302,12 @@ export default function App() {
       setUserStory(PRESET_STORIES[0].text);
     }
     return () => {
-      if (eventSourceRef.current) eventSourceRef.current.close();
+      if (eventSourceRef.current) {
+        streamClosedRef.current = true;
+        eventSourceRef.current.close();
+      }
     };
   }, []);
-
-  useEffect(() => {
-    if (!useSample) {
-      setUserStory("");
-    }
-  }, [useSample]);
 
   const handleDownload = () => {
     if (!dashboardData) return;
@@ -289,35 +339,64 @@ export default function App() {
 
       <header className="sticky top-0 z-50 border-b border-black/5 dark:border-white/10 bg-white/70 dark:bg-[#05070d]/70 backdrop-blur-xl transition-colors duration-300">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab("hero")}>
-             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-black dark:bg-white overflow-hidden shadow-lg transition-transform hover:scale-105 active:scale-95">
-                <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white dark:text-black z-10" stroke="currentColor" strokeWidth="3">
-                  <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" />
-                  <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 bg-gradient-to-tr from-accent/20 to-transparent opacity-50" 
+          <div
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => setActiveTab("hero")}
+          >
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-black dark:bg-white overflow-hidden shadow-lg transition-transform hover:scale-105 active:scale-95">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                className="w-6 h-6 text-white dark:text-black z-10"
+                stroke="currentColor"
+                strokeWidth="3"
+              >
+                <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" />
+                <path
+                  d="M9 12l2 2 4-4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-              </div>
+              </svg>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 bg-gradient-to-tr from-accent/20 to-transparent opacity-50"
+              />
+            </div>
             <div>
-              <div className="text-lg font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-accent transition-colors">IronTest</div>
+              <div className="text-lg font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-accent transition-colors">
+                IronTest
+              </div>
               <div className="text-[0.65rem] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-black">
                 Autonomous QA
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {dashboardData && (
-               <button
-                  onClick={handleDownload}
-                  className="hidden md:flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-black/50 px-4 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 transition"
+              <button
+                onClick={handleDownload}
+                className="hidden md:flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-black/50 px-4 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 transition"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Export Data
-                </button>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export Data
+              </button>
             )}
             <button
               onClick={toggleTheme}
@@ -325,9 +404,41 @@ export default function App() {
               aria-label="Toggle Theme"
             >
               {theme === "dark" ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
               )}
             </button>
           </div>
@@ -337,19 +448,19 @@ export default function App() {
       {/* Tabs Navigation (Visible when pipeline active or dashboard exists) */}
       <AnimatePresence>
         {(pipelineVisible || dashboardData) && activeTab !== "hero" && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="sticky top-[73px] z-40 border-b border-black/5 dark:border-white/10 bg-white/50 dark:bg-[#05070d]/50 backdrop-blur-md"
           >
             <div className="mx-auto flex max-w-7xl gap-6 px-6 overflow-x-auto no-scrollbar">
-              {['pipeline', 'tests', 'score'].map((tab) => (
+              {["pipeline", "tests", "score"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`py-4 text-sm font-semibold capitalize transition-all border-b-2 ${
-                    activeTab === tab 
-                      ? "border-accent text-accent" 
+                    activeTab === tab
+                      ? "border-accent text-accent"
                       : "border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                   }`}
                 >
@@ -364,7 +475,7 @@ export default function App() {
       <main className="mx-auto w-full max-w-7xl px-6 py-12">
         <AnimatePresence mode="wait">
           {activeTab === "hero" && (
-            <motion.div 
+            <motion.div
               key="hero"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -377,17 +488,36 @@ export default function App() {
                   ✨ Engineering Excellence. Automated.
                 </div>
                 <h1 className="text-5xl lg:text-7xl font-black tracking-tight text-gray-900 dark:text-white mb-6">
-                  <TypingEffect text="Intelligent" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-500">QA Engine</span>
+                  <TypingEffect text="Intelligent" />{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-500">
+                    QA Engine
+                  </span>
                 </h1>
                 <p className="max-w-2xl text-lg text-gray-600 dark:text-gray-400 mb-10 leading-relaxed">
-                  Transform raw product specs into production-ready test suites using the IronTest multi-agent architecture. Define the intent, and let intelligence do the rest.
+                  Transform raw product specs into production-ready test suites
+                  using the IronTest multi-agent architecture. Define the
+                  intent, and let intelligence do the rest.
                 </p>
-                
+
                 <div className="w-full max-w-3xl rounded-3xl border border-black/10 dark:border-white/10 bg-white/60 dark:bg-black/40 p-2 shadow-2xl backdrop-blur-3xl transition-all">
                   <div className="flex flex-wrap items-center justify-between gap-3 p-4">
                     <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
                       Target Vector
                     </span>
+                    <div className="flex items-center gap-2 text-[11px] font-semibold">
+                      <button
+                        onClick={() => setUseSample(true)}
+                        className={`rounded-full px-3 py-1 border transition ${useSample ? "border-accent text-accent bg-accent/10" : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400"}`}
+                      >
+                        Presets
+                      </button>
+                      <button
+                        onClick={() => setUseSample(false)}
+                        className={`rounded-full px-3 py-1 border transition ${!useSample ? "border-accent text-accent bg-accent/10" : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400"}`}
+                      >
+                        Manual
+                      </button>
+                    </div>
                     <div className="flex gap-3 shrink-0 overflow-x-auto no-scrollbar py-3 px-1 sm:pb-2">
                       {PRESET_STORIES.map((story) => (
                         <button
@@ -413,25 +543,42 @@ export default function App() {
                       rows={6}
                       placeholder="Paste your raw user story or technical spec here to initiate generation..."
                       value={userStory}
-                      onChange={(e) => setUserStory(e.target.value)}
-                      disabled={useSample}
+                      onChange={(e) => {
+                        setUserStory(e.target.value);
+                        setUseSample(false);
+                      }}
                     />
                   </div>
-                  
+
                   {/* Jira Ingestion Section */}
-                  <div className="mx-2 mb-2 rounded-2xl border border-dashed border-black/10 dark:border-white/10 p-4 bg-gray-50 dark:bg-white/5 flex flex-col sm:flex-row gap-3 items-end">
-                    <div className="flex-1 w-full space-y-1">
-                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">Jira Ticket URL</label>
-                      <input 
+                  <div className="mx-2 mb-2 rounded-2xl border border-dashed border-black/10 dark:border-white/10 p-4 bg-gray-50 dark:bg-white/5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-end">
+                    <div className="w-full space-y-1 sm:col-span-2">
+                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                        Jira Ticket URL
+                      </label>
+                      <input
                         className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
                         placeholder="https://company.atlassian.net/browse/PROJ-123"
                         value={jiraUrl}
                         onChange={(e) => setJiraUrl(e.target.value)}
                       />
                     </div>
-                    <div className="flex-1 w-full space-y-1">
-                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">Access Token / PAT</label>
-                      <input 
+                    <div className="w-full space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                        Jira Email
+                      </label>
+                      <input
+                        className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                        placeholder="name@company.com"
+                        value={jiraEmail}
+                        onChange={(e) => setJiraEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="w-full space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                        Access Token / PAT
+                      </label>
+                      <input
                         type="password"
                         className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
                         placeholder="ATATT3xFf..."
@@ -439,14 +586,31 @@ export default function App() {
                         onChange={(e) => setJiraToken(e.target.value)}
                       />
                     </div>
-                    <button 
+                    <div className="w-full space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                        Issue Key (Optional)
+                      </label>
+                      <input
+                        className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                        placeholder="PROJ-123"
+                        value={jiraIssueKey}
+                        onChange={(e) => setJiraIssueKey(e.target.value)}
+                      />
+                    </div>
+                    <button
                       onClick={handleJiraIngest}
                       disabled={ingesting || !jiraUrl}
-                      className="rounded-lg bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-bold px-4 py-2 hover:opacity-90 disabled:opacity-50 transition"
+                      className="rounded-lg bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-bold px-4 py-2 hover:opacity-90 disabled:opacity-50 transition sm:col-span-2 lg:col-span-4"
                     >
                       {ingesting ? "Ingesting..." : "Import"}
                     </button>
                   </div>
+
+                  {ingestMessage && (
+                    <div className="px-4 pb-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      {ingestMessage}
+                    </div>
+                  )}
 
                   <div className="flex justify-end p-2 border-t border-black/5 dark:border-white/10 mt-2">
                     <button
@@ -462,13 +626,33 @@ export default function App() {
                       ) : (
                         <>
                           <span>Initiate Analysis</span>
-                          <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                          <svg
+                            className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M14 5l7 7m0 0l-7 7m7-7H3"
+                            />
+                          </svg>
                         </>
                       )}
                     </button>
                   </div>
                 </div>
-                {error && <motion.div initial={{ opacity:0 }} animate={{opacity:1}} className="mt-4 text-sm font-medium text-danger">{error}</motion.div>}
+                {error && !pipelineVisible && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mt-4 text-sm font-medium text-danger"
+                  >
+                    {error}
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}
@@ -482,14 +666,28 @@ export default function App() {
               className="w-full"
             >
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Execution Stream</h2>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Real-time trace of the IronTest autonomous agent pipeline.</p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Execution Stream
+                </h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  Real-time trace of the IronTest autonomous agent pipeline.
+                </p>
               </div>
-              <Pipeline agents={agents} />
-              
+              <Pipeline agents={agents} isRunning={isRunning} />
+
+              {pipelineError && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 rounded-xl border border-red-300/50 bg-red-100/60 dark:bg-red-950/30 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300"
+                >
+                  {pipelineError}
+                </motion.div>
+              )}
+
               {!isRunning && dashboardData && (
                 <div className="mt-8 flex justify-center">
-                   <button
+                  <button
                     onClick={() => setActiveTab("score")}
                     className="flex items-center gap-2 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-6 py-2.5 text-sm font-semibold text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition"
                   >
@@ -501,63 +699,77 @@ export default function App() {
           )}
 
           {activeTab === "tests" && dashboardData && (
-             <motion.div
-               key="tests"
-               initial={{ opacity: 0, x: -20 }}
-               animate={{ opacity: 1, x: 0 }}
-               exit={{ opacity: 0, x: 20 }}
-               className="w-full"
-             >
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Generated Test Vectors</h2>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">Comprehensive functional, boundary, and edge test cases mathematically derived from intent.</p>
-                </div>
-                <TestCaseTable 
-                  tests={dashboardData.tests} 
-                  execution={dashboardData.execution.results || []} 
-                  criticalIds={dashboardData.defects.critical_test_ids} 
-                />
-             </motion.div>
+            <motion.div
+              key="tests"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="w-full"
+            >
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Generated Test Vectors
+                </h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  Comprehensive functional, boundary, and edge test cases
+                  mathematically derived from intent.
+                </p>
+              </div>
+              <TestCaseTable
+                tests={dashboardData.tests}
+                execution={dashboardData.execution.results || []}
+                criticalIds={dashboardData.defects.critical_test_ids}
+              />
+            </motion.div>
           )}
 
           {activeTab === "score" && dashboardData && (
-             <motion.div
-               key="score"
-               initial={{ opacity: 0, x: -20 }}
-               animate={{ opacity: 1, x: 0 }}
-               exit={{ opacity: 0, x: 20 }}
-               className="w-full flex flex-col gap-8"
-             >
-                <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Intelligence Dashboard</h2>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">Deployment readiness and structural risk analysis.</p>
-                </div>
-                
-                <div className="grid gap-6 lg:grid-cols-3">
-                  <div className="lg:col-span-1 rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
-                    <ConfidenceGauge
-                      score={dashboardData.defects.overall_confidence_score}
-                      recommendation={dashboardData.defects.deployment_recommendation}
-                    />
-                  </div>
-                  <div className="lg:col-span-2 rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
-                    <RiskHeatmap moduleRisks={dashboardData.defects.module_risks} />
-                  </div>
-                </div>
+            <motion.div
+              key="score"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="w-full flex flex-col gap-8"
+            >
+              <div className="mb-2">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Intelligence Dashboard
+                </h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  Deployment readiness and structural risk analysis.
+                </p>
+              </div>
 
-                <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
-                  <StoryInsights story={dashboardData.story} />
-                </div>
-                
-                <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
-                   <DeploymentVerdict
-                    recommendation={dashboardData.defects.deployment_recommendation}
-                    rationale={dashboardData.defects.recommendation_rationale}
+              <div className="grid gap-6 lg:grid-cols-3">
+                <div className="lg:col-span-1 rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                  <ConfidenceGauge
+                    score={dashboardData.defects.overall_confidence_score}
+                    recommendation={
+                      dashboardData.defects.deployment_recommendation
+                    }
                   />
                 </div>
-             </motion.div>
-          )}
+                <div className="lg:col-span-2 rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                  <RiskHeatmap
+                    moduleRisks={dashboardData.defects.module_risks}
+                  />
+                </div>
+              </div>
 
+              <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                <StoryInsights story={dashboardData.story} />
+              </div>
+
+              <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                <DeploymentVerdict
+                  recommendation={
+                    dashboardData.defects.deployment_recommendation
+                  }
+                  rationale={dashboardData.defects.recommendation_rationale}
+                />
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
     </div>
