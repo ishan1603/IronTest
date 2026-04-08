@@ -32,18 +32,20 @@ cp .env.example .env
 
 Edit .env and set at minimum:
 
-- GEMINI_API_KEY
+- OPENROUTER_API_KEY
 
 Current status on your machine:
 
-- You are currently running with GEMINI_API_KEY only.
+- You are currently running with OPENROUTER_API_KEY.
 - MongoDB and Jira environment variables are not added yet.
 - This is supported: Mongo history automatically falls back to local JSON.
 
 Recommended defaults:
 
-- GEMINI_MODEL_ID=gemini-2.5-flash
-- GEMINI_MODEL_CANDIDATES=gemini-2.5-flash-lite,gemini-1.5-flash-8b
+- OPENROUTER_MODEL_ID=openai/gpt-oss-120b:free
+- OPENROUTER_MODEL_CANDIDATES=openai/gpt-oss-20b:free
+- OPENROUTER_HTTP_REFERER=http://localhost:5173
+- OPENROUTER_APP_NAME=IronTest QA Agent
 - USE_MONGODB=true (when MongoDB is ready)
 - MONGODB_URI=mongodb://localhost:27017 (when MongoDB is ready)
 - MONGODB_DB_NAME=irontest (when MongoDB is ready)
@@ -56,7 +58,7 @@ Optional for Jira import without typing credentials in UI:
 
 ## 3) Start MongoDB
 
-Skip this section for now if you want Gemini-only mode.
+Skip this section for now if you want OpenRouter-only mode.
 
 Choose one option when you are ready.
 
@@ -152,8 +154,8 @@ This starts:
 
 ## 8) Troubleshooting
 
-- Missing GEMINI_API_KEY:
-  - Backend /api/analyze returns 500. Set GEMINI_API_KEY in .env.
+- Missing OPENROUTER_API_KEY:
+  - Backend /api/analyze returns 500. Set OPENROUTER_API_KEY in .env.
 
 - Jira import fails with credentials error:
   - Provide Jira email and token in UI, or set JIRA_EMAIL and JIRA_API_TOKEN in .env.

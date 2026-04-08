@@ -31,6 +31,36 @@ export default function TestCaseTable({
   const [typeFilter, setTypeFilter] = useState("all");
   const [riskFilter, setRiskFilter] = useState("all");
   const [expandedRow, setExpandedRow] = useState(null);
+  const [copiedSnippetId, setCopiedSnippetId] = useState("");
+
+  const executionById = useMemo(() => {
+    const index = new Map();
+    for (const item of execution) {
+      index.set(item.test_id, item);
+    }
+    return index;
+  }, [execution]);
+
+  const handleCopySnippet = async (snippet, testId) => {
+    const content = Array.isArray(snippet)
+      ? snippet.join("\n")
+      : String(snippet || "");
+    if (!content.trim()) return;
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedSnippetId(testId);
+      setTimeout(() => setCopiedSnippetId(""), 1200);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = content;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopiedSnippetId(testId);
+      setTimeout(() => setCopiedSnippetId(""), 1200);
+    }
+  };
 
   const filtered = useMemo(() => {
     return tests.filter((t) => {
@@ -139,7 +169,7 @@ export default function TestCaseTable({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     {(() => {
-                      const res = execution.find((r) => r.test_id === test.id);
+                      const res = executionById.get(test.id);
                       if (!res) return <span className="text-gray-400">-</span>;
                       return (
                         <span
@@ -171,21 +201,37 @@ export default function TestCaseTable({
                         {test.automation_snippet &&
                           test.automation_snippet.length > 0 && (
                             <div>
-                              <div className="text-xs uppercase tracking-widest text-accent mb-3 font-bold flex items-center gap-2">
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
+                              <div className="mb-3 flex items-center justify-between gap-3">
+                                <div className="text-xs uppercase tracking-widest text-accent font-bold flex items-center gap-2">
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                                    />
+                                  </svg>
+                                  Generated Automation Snippet
+                                </div>
+                                <button
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleCopySnippet(
+                                      test.automation_snippet,
+                                      test.id,
+                                    );
+                                  }}
+                                  className="rounded-lg border border-black/10 dark:border-white/10 px-3 py-1 text-[11px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 transition"
                                 >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-                                  />
-                                </svg>
-                                Generated Automation Snippet
+                                  {copiedSnippetId === test.id
+                                    ? "Copied"
+                                    : "Copy"}
+                                </button>
                               </div>
                               <pre className="text-sm text-gray-800 dark:text-emerald-400 overflow-x-auto whitespace-pre-wrap font-mono p-5 bg-white dark:bg-black/80 rounded-xl border border-gray-200 dark:border-white/5 shadow-inner">
                                 {Array.isArray(test.automation_snippet)
@@ -195,19 +241,33 @@ export default function TestCaseTable({
                             </div>
                           )}
 
-                        {/* Execution Failure Evidence */}
+                        {/* Execution Output */}
                         {(() => {
-                          const res = execution.find(
-                            (r) => r.test_id === test.id,
-                          );
-                          if (
-                            res &&
-                            res.status !== "pass" &&
-                            res.error_message
-                          ) {
+                          const res = executionById.get(test.id);
+                          if (res) {
+                            const isPass = res.status === "pass";
+                            const label = isPass
+                              ? "Execution Output / Logs"
+                              : "Execution Failure Evidence / Logs";
+                            const boxClass = isPass
+                              ? "text-sm text-emerald-800 dark:text-emerald-300 overflow-x-auto whitespace-pre-wrap font-mono p-5 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200 dark:border-emerald-900/50 shadow-inner"
+                              : "text-sm text-red-800 dark:text-red-400 overflow-x-auto whitespace-pre-wrap font-mono p-5 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/50 shadow-inner";
+
+                            const output =
+                              res.error_message && res.error_message.trim()
+                                ? res.error_message
+                                : isPass
+                                  ? "Test passed successfully."
+                                  : "No execution output available.";
+
                             return (
                               <div>
-                                <div className="text-xs uppercase tracking-widest text-danger mb-3 font-bold flex items-center gap-2">
+                                <div
+                                  className={clsx(
+                                    "text-xs uppercase tracking-widest mb-3 font-bold flex items-center gap-2",
+                                    isPass ? "text-emerald-500" : "text-danger",
+                                  )}
+                                >
                                   <svg
                                     className="w-4 h-4"
                                     fill="none"
@@ -221,11 +281,9 @@ export default function TestCaseTable({
                                       d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                                     />
                                   </svg>
-                                  Execution Failure Evidence / Logs
+                                  {label}
                                 </div>
-                                <div className="text-sm text-red-800 dark:text-red-400 overflow-x-auto whitespace-pre-wrap font-mono p-5 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/50 shadow-inner">
-                                  {res.error_message}
-                                </div>
+                                <div className={boxClass}>{output}</div>
                               </div>
                             );
                           }

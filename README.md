@@ -1,50 +1,120 @@
-# IronTest Autonomous QA
+> Thank you Team ATOS for this challenging and fun hackathon experience.
 
-Transform Jira tickets and product stories into test vectors, execution evidence, and a deployment confidence score.
+# **IRONTEST**
 
-## What Changed In This Version
+Production-ready autonomous QA intelligence platform that converts Jira tickets and product stories into structured risk analysis, executable tests, and deployment confidence verdicts.
 
-- LLM stack migrated from Groq to Gemini with a shared JSON client.
-- Real Jira ingestion implemented using Jira REST API v3.
-- MongoDB-backed history enabled for long-term trend and regression analysis (with local JSON fallback).
-- Defect scoring improved with blended logic across model output, current execution, and historical pass-rate trends.
-- Frontend stability updates for stream lifecycle, manual story editing, and Jira import UX.
+## Screenshot Placeholder
 
-## Core Pipeline
+![Application Screenshot Placeholder](docs/assets/app-screenshot-placeholder.svg)
 
-1. [Story Agent](docs/story_agent.md): converts story text into structured risk-aware requirements.
-2. [Test Agent](docs/test_agent.md): generates functional, boundary, edge, and regression tests.
-3. [Execution Agent](docs/execution_agent.md): runs generated snippets in an isolated pytest environment.
-4. [Defect Agent](docs/defect_agent.md): computes module risks and a deployment verdict from live + historical signals.
+## Why IRONTEST
 
-System architecture details are in [docs/architecture.md](docs/architecture.md).
+- Multi-agent QA pipeline with clear stage-by-stage telemetry.
+- Fast feedback using streaming orchestration over SSE.
+- Student-friendly cost profile via OpenRouter free-model defaults.
+- Resilient history persistence (MongoDB primary with JSON fallback).
 
-## Local Setup
+## Architecture
 
-Use [setup.md](setup.md) for complete local setup instructions on Windows, macOS, and Linux.
+### System Topology
 
-Quick requirements:
+```mermaid
+graph TD
+	UI[React Frontend] -->|POST /api/analyze| API[FastAPI Backend]
+	UI -->|POST /api/ingest/jira| API
+	UI <-->|SSE /api/stream/{session_id}| API
+
+	API --> ORCH[Pipeline Orchestrator]
+	ORCH --> STORY[Story Agent]
+	STORY --> TEST[Test Agent]
+	TEST --> EXEC[Execution Agent]
+	EXEC --> DEFECT[Defect Agent]
+
+	STORY --> LLM[OpenRouter LLM]
+	TEST --> LLM
+	DEFECT --> LLM
+
+	EXEC --> DB[(MongoDB)]
+	DB -.fallback unavailable.-> JSON[(backend/data/history.json)]
+	DEFECT --> DB
+	DEFECT --> JSON
+```
+
+### Runtime Flow
+
+```mermaid
+sequenceDiagram
+	participant U as User
+	participant F as Frontend
+	participant B as Backend API
+	participant O as Orchestrator
+	participant A as Agents
+	participant D as Data Store
+
+	U->>F: Submit story or Jira URL
+	F->>B: POST /api/analyze
+	B->>O: Create session + queue
+	F->>B: GET /api/stream/{session_id}
+
+	O->>A: Run Story Agent
+	A-->>B: story result
+	B-->>F: SSE agent_complete
+
+	O->>A: Run Test Agent
+	A-->>B: test suite
+	B-->>F: SSE agent_complete
+
+	O->>A: Run Execution Agent
+	A->>D: Persist execution history
+	A-->>B: execution summary
+	B-->>F: SSE agent_complete
+
+	O->>A: Run Defect Agent
+	A-->>B: confidence + recommendation
+	B-->>F: SSE pipeline_complete
+```
+
+## Documentation Map
+
+- Setup guide: [setup.md](setup.md)
+- Full docs folder: [docs](docs)
+- Architecture deep dive: [docs/architecture.md](docs/architecture.md)
+- Story agent: [docs/story_agent.md](docs/story_agent.md)
+- Test agent: [docs/test_agent.md](docs/test_agent.md)
+- Execution agent: [docs/execution_agent.md](docs/execution_agent.md)
+- Defect agent: [docs/defect_agent.md](docs/defect_agent.md)
+- Interface contract: [docs/interface.md](docs/interface.md)
+
+## Quick Start
+
+Follow [setup.md](setup.md) for complete setup.
+
+Minimum requirements:
 
 - Python 3.12+
 - Node.js 20+
-- GEMINI_API_KEY
-- MongoDB (local or Atlas, optional for now)
-- Optional Jira credentials (JIRA_EMAIL, JIRA_API_TOKEN)
+- OPENROUTER_API_KEY
+- Optional MongoDB + Jira credentials for extended integrations
 
-## Current Local Environment Status
+## Production Configuration
 
-This repository is currently being run in a Gemini-only local mode.
+See [.env.example](.env.example) for the full environment matrix.
 
-- Configured now: GEMINI_API_KEY only.
-- Pending user-side setup: MongoDB variables and Jira credentials.
+Core variables:
 
-What this means right now:
+- OPENROUTER_API_KEY
+- OPENROUTER_MODEL_ID (default: openai/gpt-oss-120b:free)
+- OPENROUTER_MODEL_CANDIDATES (default fallback: openai/gpt-oss-20b:free)
+- OPENROUTER_HTTP_REFERER
+- OPENROUTER_APP_NAME
+- MONGODB_URI
+- MONGODB_DB_NAME
+- MONGODB_COLLECTION
+- JIRA_EMAIL
+- JIRA_API_TOKEN
 
-- Pipeline runs with Gemini as expected.
-- Historical persistence falls back to backend/data/history.json when MongoDB is not configured or reachable.
-- Jira ingestion endpoint requires credentials in request body (or env vars once added).
-
-## API Endpoints
+## API Surface
 
 - POST /api/analyze
 - GET /api/stream/{session_id}
@@ -52,23 +122,12 @@ What this means right now:
 - POST /api/webhook/github
 - GET /health
 
-## Environment Variables
+## Team
 
-See [.env.example](.env.example) for all supported settings.
+Team name: 838
 
-Key variables:
-
-- GEMINI_API_KEY
-- GEMINI_MODEL_ID (default: gemini-2.5-flash)
-- GEMINI_MODEL_CANDIDATES (comma-separated failover list)
-- USE_MONGODB (optional for now)
-- MONGODB_URI (optional for now)
-- MONGODB_DB_NAME (optional for now)
-- MONGODB_COLLECTION (optional for now)
-- JIRA_EMAIL (optional for now)
-- JIRA_API_TOKEN (optional for now)
-
-## Notes
-
-- For student-friendly usage, the backend defaults to gemini-2.5-flash and can fail over across GEMINI_MODEL_CANDIDATES (for example gemini-2.5-flash-lite, gemini-1.5-flash-8b) when one model hits quota or parsing issues.
-- If MongoDB is unavailable, execution history falls back to backend/data/history.json so the app remains usable.
+| Member | Responsibility | Scope                                                                |
+| ------ | -------------- | -------------------------------------------------------------------- |
+| Ishan  | Agents         | Story, Test, Execution, Defect agent logic and orchestration quality |
+| Aryan  | Frontend       | UX flow, dashboards, pipeline visualization, interaction polish      |
+| Meet   | Backend        | API reliability, integrations, persistence, deployment wiring        |

@@ -11,8 +11,11 @@ services:
   backend:
     build: ./backend
     environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL_ID=${GEMINI_MODEL_ID:-gemini-2.5-flash}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODEL_ID=${OPENROUTER_MODEL_ID:-openai/gpt-oss-120b:free}
+      - OPENROUTER_MODEL_CANDIDATES=${OPENROUTER_MODEL_CANDIDATES:-openai/gpt-oss-20b:free}
+      - OPENROUTER_HTTP_REFERER=${OPENROUTER_HTTP_REFERER:-http://localhost:5173}
+      - OPENROUTER_APP_NAME=${OPENROUTER_APP_NAME:-IronTest QA Agent}
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017}
       - MONGODB_DB_NAME=${MONGODB_DB_NAME:-irontest}
       - MONGODB_COLLECTION=${MONGODB_COLLECTION:-executions}

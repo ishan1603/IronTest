@@ -32,10 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL_ID = os.getenv("GEMINI_MODEL_ID", "gemini-2.5-flash")
+API_KEY = os.getenv("OPENROUTER_API_KEY")
+MODEL_ID = os.getenv("OPENROUTER_MODEL_ID", "openai/gpt-oss-120b:free")
 if not API_KEY:
-    logger.error("GEMINI_API_KEY is not set. API calls will fail.")
+    logger.error("OPENROUTER_API_KEY is not set. API calls will fail.")
 
 session_manager = SessionManager()
 orchestrator: Orchestrator | None = None
@@ -47,7 +47,7 @@ if API_KEY:
 @app.post("/api/analyze")
 async def analyze(request: AnalyzeRequest):
     if not API_KEY:
-        raise HTTPException(status_code=500, detail="Missing GEMINI_API_KEY environment variable.")
+        raise HTTPException(status_code=500, detail="Missing OPENROUTER_API_KEY environment variable.")
 
     session_id = await session_manager.create_session()
     assert orchestrator is not None
@@ -111,7 +111,7 @@ async def ingest_jira(request: JiraIngestRequest):
 async def github_webhook(payload: dict):
     # Simulates a DevOps integration endpoint (e.g. GitHub Action webhook triggering QA run)
     if not API_KEY:
-        raise HTTPException(status_code=500, detail="Missing GEMINI_API_KEY")
+        raise HTTPException(status_code=500, detail="Missing OPENROUTER_API_KEY")
     
     # We do a quick synchronous run for the CI/CD pipeline
     try:

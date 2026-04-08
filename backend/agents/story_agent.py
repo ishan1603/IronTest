@@ -1,6 +1,6 @@
 import asyncio
 
-from llm_client import gemini_generate_json
+from llm_client import llm_generate_json
 from models import StoryAnalysis
 
 
@@ -17,20 +17,75 @@ Respond ONLY as a JSON object with keys intent, modules, acceptance_criteria, ri
 """
 
 
+def _to_string_list(value: object, *, min_items: int = 0) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    cleaned = [str(item).strip() for item in value if str(item).strip()]
+    return cleaned if len(cleaned) >= min_items else []
+
+
+def _validate_story(data: dict, user_story: str) -> StoryAnalysis:
+    intent = str(data.get("intent", "")).strip()
+    modules = _to_string_list(data.get("modules"), min_items=1)
+    acceptance_criteria = _to_string_list(data.get("acceptance_criteria"), min_items=1)
+    risk_factors = _to_string_list(data.get("risk_factors"), min_items=1)
+    security_vectors = _to_string_list(data.get("security_vectors"), min_items=1)
+    microservices = _to_string_list(data.get("microservices"), min_items=1)
+
+    if len(intent) < 12:
+        raise ValueError("Model returned invalid business intent.")
+    if not modules:
+        raise ValueError("Model returned no affected modules.")
+    if not acceptance_criteria:
+        raise ValueError("Model returned no acceptance criteria.")
+
+    # Keep the output tied to the submitted story by requiring overlap with story vocabulary.
+    story_tokens = {token.lower() for token in user_story.replace("\n", " ").split() if len(token) > 4}
+    intent_tokens = {token.lower().strip(".,:;()[]{}") for token in intent.split() if len(token) > 4}
+    if story_tokens and intent_tokens and not (story_tokens & intent_tokens):
+        raise ValueError("Business intent appears unrelated to the submitted story.")
+
+    return StoryAnalysis(
+        intent=intent,
+        modules=modules[:8],
+        acceptance_criteria=acceptance_criteria[:10],
+        risk_factors=risk_factors[:8],
+        security_vectors=security_vectors[:8],
+        microservices=microservices[:8],
+    )
+
+
 async def analyze_story(token: str, model_id: str, user_story: str) -> StoryAnalysis:
     def _call_model() -> StoryAnalysis:
-        prompt = (
+        base_prompt = (
             "User Story:\n"
-            f"{user_story}\n\nReturn ONLY the JSON object with keys: intent, modules, acceptance_criteria, risk_factors, security_vectors, microservices."
+            f"{user_story}\n\n"
+            "Return ONLY the JSON object with keys: intent, modules, acceptance_criteria, risk_factors, security_vectors, microservices.\n"
+            "Constraints: intent must be exactly one sentence and directly derived from this user story text."
         )
-        data = gemini_generate_json(
-            api_key=token,
-            model_id=model_id,
-            system_prompt=SYSTEM_PROMPT,
-            user_prompt=prompt,
-            max_output_tokens=900,
-            temperature=0.3,
-        )
-        return StoryAnalysis(**data)
+
+        last_error: Exception | None = None
+        for attempt in range(2):
+            prompt = base_prompt
+            if attempt == 1:
+                prompt += (
+                    "\nValidation reminder: provide non-empty arrays for modules, acceptance_criteria, risk_factors,"
+                    " security_vectors, and microservices."
+                )
+
+            data = llm_generate_json(
+                api_key=token,
+                model_id=model_id,
+                system_prompt=SYSTEM_PROMPT,
+                user_prompt=prompt,
+                max_output_tokens=900,
+                temperature=0.3,
+            )
+            try:
+                return _validate_story(data, user_story)
+            except Exception as exc:  # noqa: BLE001
+                last_error = exc
+
+        raise RuntimeError(f"Story intelligence generation failed: {last_error}")
 
     return await asyncio.to_thread(_call_model)

@@ -157,51 +157,64 @@ def extract_json_object(text: str) -> dict[str, Any]:
 def _parse_models(raw: str) -> list[str]:
     if not raw.strip():
         return []
-    return [item.strip() for item in raw.split(",") if item.strip()]
+    parsed = [_normalize_model_id(item) for item in raw.split(",")]
+    return [item for item in parsed if item]
 
 
-def _extract_model_id(name: str) -> str:
-    return name.split("/", 1)[1] if name.startswith("models/") else name
+def _normalize_model_id(value: str) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+
+    model = raw.lower().strip()
+    model = model.replace("openai:", "openai/")
+    model = model.replace("(free)", ":free")
+    model = re.sub(r"\s+", "", model)
+    model = re.sub(r"_{2,}", "_", model)
+
+    if model in {"gpt-oss-120b", "openai/gpt-oss-120b"}:
+        return "openai/gpt-oss-120b:free"
+    if model in {"gpt-oss-20b", "openai/gpt-oss-20b"}:
+        return "openai/gpt-oss-20b:free"
+
+    if "gpt-oss-120b" in model and model.endswith("free") and ":" not in model:
+        return "openai/gpt-oss-120b:free"
+    if "gpt-oss-20b" in model and model.endswith("free") and ":" not in model:
+        return "openai/gpt-oss-20b:free"
+
+    return model
 
 
-def _list_generate_content_models(api_key: str) -> set[str]:
+def _list_openrouter_models(api_key: str) -> set[str]:
     now = time.time()
     cached = _MODELS_CACHE.get(api_key)
     if cached and (now - cached[0]) < _MODELS_CACHE_TTL_SECONDS:
         return cached[1]
 
-    endpoint = "https://generativelanguage.googleapis.com/v1beta/models"
-    page_token = ""
+    endpoint = "https://openrouter.ai/api/v1/models"
     discovered: set[str] = set()
 
-    for _ in range(6):
-        params = {"key": api_key, "pageSize": 1000}
-        if page_token:
-            params["pageToken"] = page_token
+    try:
+        response = requests.get(
+            endpoint,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=25,
+        )
+    except requests.RequestException:
+        return discovered
 
-        try:
-            response = requests.get(endpoint, params=params, timeout=25)
-        except requests.RequestException:
-            break
+    if not response.ok:
+        return discovered
 
-        if not response.ok:
-            break
+    try:
+        payload = response.json()
+    except ValueError:
+        return discovered
 
-        try:
-            payload = response.json()
-        except ValueError:
-            break
-
-        for model in payload.get("models", []):
-            methods = model.get("supportedGenerationMethods", [])
-            if isinstance(methods, list) and "generateContent" in methods:
-                name = model.get("name", "")
-                if isinstance(name, str) and name:
-                    discovered.add(_extract_model_id(name))
-
-        page_token = payload.get("nextPageToken", "")
-        if not page_token:
-            break
+    for model in payload.get("data", []):
+        model_id = model.get("id", "")
+        if isinstance(model_id, str) and model_id:
+            discovered.add(_normalize_model_id(model_id))
 
     if discovered:
         _MODELS_CACHE[api_key] = (now, discovered)
@@ -209,13 +222,13 @@ def _list_generate_content_models(api_key: str) -> set[str]:
 
 
 def _candidate_models(primary_model_id: str, api_key: str) -> list[str]:
-    configured = _parse_models(os.getenv("GEMINI_MODEL_CANDIDATES", ""))
+    # Keep user-configured priority first, then append stable free-tier fallbacks.
+    configured = _parse_models(os.getenv("OPENROUTER_MODEL_CANDIDATES", ""))
     default_priority = [
-        "gemini-2.5-flash",
-        "gemini-2.5-flash-lite",
-        "gemini-1.5-flash-8b",
+        "openai/gpt-oss-120b:free",
+        "openai/gpt-oss-20b:free",
     ]
-    ordered = [primary_model_id, *(configured or default_priority)]
+    ordered = [_normalize_model_id(primary_model_id), *configured, *default_priority]
 
     seen: set[str] = set()
     unique: list[str] = []
@@ -224,37 +237,65 @@ def _candidate_models(primary_model_id: str, api_key: str) -> list[str]:
             unique.append(model)
             seen.add(model)
 
-    available = _list_generate_content_models(api_key)
+    available = _list_openrouter_models(api_key)
     if available:
+        # If model discovery succeeds, only keep models that actually exist in OpenRouter catalog.
         filtered = [model for model in unique if model in available]
         if filtered:
             return filtered
     return unique
 
 
-def _build_payload(system_prompt: str, user_prompt: str, max_output_tokens: int, temperature: float, strict_json: bool = True) -> dict[str, Any]:
-    generation_config: dict[str, Any] = {
-        "temperature": temperature,
-        "maxOutputTokens": max_output_tokens,
-    }
-    if strict_json:
-        generation_config["responseMimeType"] = "application/json"
-
+def _build_payload(system_prompt: str, user_prompt: str, model_id: str, max_output_tokens: int, temperature: float) -> dict[str, Any]:
     return {
-        "systemInstruction": {
-            "parts": [{"text": system_prompt.strip()}],
-        },
-        "contents": [
-            {
-                "role": "user",
-                "parts": [{"text": user_prompt.strip()}],
-            }
+        "model": model_id,
+        "messages": [
+            {"role": "system", "content": system_prompt.strip()},
+            {"role": "user", "content": user_prompt.strip()},
         ],
-        "generationConfig": generation_config,
+        "temperature": temperature,
+        "max_tokens": max_output_tokens,
     }
 
 
-def gemini_generate_json(
+def _extract_choice_text(choice: dict[str, Any]) -> str:
+    message = choice.get("message", {}) if isinstance(choice, dict) else {}
+    content = message.get("content", "") if isinstance(message, dict) else ""
+
+    if isinstance(content, str):
+        return content.strip()
+
+    if isinstance(content, list):
+        chunks: list[str] = []
+        for item in content:
+            if isinstance(item, dict):
+                text = item.get("text") or item.get("content")
+                if isinstance(text, str) and text.strip():
+                    chunks.append(text.strip())
+            elif isinstance(item, str) and item.strip():
+                chunks.append(item.strip())
+        return "\n".join(chunks).strip()
+
+    return ""
+
+
+def _compact_error_text(response: requests.Response) -> str:
+    try:
+        body = response.json()
+    except ValueError:
+        return " ".join(response.text.split())
+
+    if isinstance(body, dict):
+        error = body.get("error", {})
+        if isinstance(error, dict):
+            message = error.get("message")
+            if isinstance(message, str) and message.strip():
+                return " ".join(message.split())
+
+    return " ".join(response.text.split())
+
+
+def llm_generate_json(
     api_key: str,
     model_id: str,
     system_prompt: str,
@@ -263,14 +304,25 @@ def gemini_generate_json(
     max_output_tokens: int = 1024,
     temperature: float = 0.25,
 ) -> dict[str, Any]:
-    endpoint_base = "https://generativelanguage.googleapis.com/v1beta/models"
-    transient_statuses = {429, 500, 502, 503, 504}
+    endpoint = os.getenv("OPENROUTER_API_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/") + "/chat/completions"
+    # Retry transient gateway/quota/network states before failing over to the next model.
+    transient_statuses = {408, 409, 425, 429, 500, 502, 503, 504}
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    referer = os.getenv("OPENROUTER_HTTP_REFERER", "http://localhost")
+    app_name = os.getenv("OPENROUTER_APP_NAME", "IronTest QA Agent")
+    if referer:
+        headers["HTTP-Referer"] = referer
+    if app_name:
+        headers["X-Title"] = app_name
 
     attempt_errors: list[str] = []
     for candidate_model in _candidate_models(model_id, api_key):
+        # Per-model retries: normal prompt, strict JSON reminder, compact JSON recovery.
         for attempt in range(3):
-            endpoint = f"{endpoint_base}/{candidate_model}:generateContent"
-            strict_retry = attempt < 2
             if attempt == 0:
                 repair_suffix = ""
             elif attempt == 1:
@@ -284,15 +336,15 @@ def gemini_generate_json(
             payload = _build_payload(
                 system_prompt=system_prompt,
                 user_prompt=f"{user_prompt.strip()}{repair_suffix}",
+                model_id=candidate_model,
                 max_output_tokens=max_output_tokens,
                 temperature=temperature if attempt == 0 else 0.1,
-                strict_json=strict_retry,
             )
 
             response = None
             for transient_try in range(3):
                 try:
-                    response = requests.post(endpoint, params={"key": api_key}, json=payload, timeout=120)
+                    response = requests.post(endpoint, headers=headers, json=payload, timeout=120)
                 except requests.RequestException as exc:
                     if transient_try < 2:
                         backoff = 1.5 * (transient_try + 1)
@@ -316,7 +368,7 @@ def gemini_generate_json(
                 continue
 
             if not response.ok:
-                compact_text = " ".join(response.text.split())
+                compact_text = _compact_error_text(response)
                 attempt_errors.append(f"{candidate_model}: {response.status_code} {compact_text[:240]}")
                 continue
 
@@ -326,16 +378,17 @@ def gemini_generate_json(
                 attempt_errors.append(f"{candidate_model}: invalid JSON response body")
                 continue
 
-            candidates = body.get("candidates", [])
-            if not candidates:
-                reason = body.get("promptFeedback", {}).get("blockReason")
-                reason_text = f"blockReason={reason}" if reason else "no candidates returned"
+            choices = body.get("choices", [])
+            if not isinstance(choices, list) or not choices:
+                error = body.get("error", {}) if isinstance(body, dict) else {}
+                if isinstance(error, dict) and error.get("message"):
+                    reason_text = str(error.get("message"))
+                else:
+                    reason_text = "no choices returned"
                 attempt_errors.append(f"{candidate_model}: {reason_text}")
                 continue
 
-            parts = candidates[0].get("content", {}).get("parts", [])
-            text_chunks = [p.get("text", "") for p in parts if isinstance(p, dict)]
-            raw_text = "\n".join(chunk for chunk in text_chunks if chunk).strip()
+            raw_text = _extract_choice_text(choices[0])
             if not raw_text:
                 attempt_errors.append(f"{candidate_model}: empty text content")
                 continue
@@ -349,7 +402,10 @@ def gemini_generate_json(
 
     summary = " | ".join(attempt_errors) if attempt_errors else "No model attempts recorded."
     raise LLMRequestError(
-        f"Gemini request failed across model candidates: {summary}",
+        f"OpenRouter request failed across model candidates: {summary}",
         model_id=model_id,
         attempts=attempt_errors,
     )
+
+
+openrouter_generate_json = llm_generate_json

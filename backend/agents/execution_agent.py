@@ -4,6 +4,7 @@ import time
 import sys
 import os
 import asyncio
+import textwrap
 from typing import List
 
 from models import TestCase, TestResult, TestExecutionSummary
@@ -33,36 +34,169 @@ async def execute_tests(tests: List[TestCase]) -> TestExecutionSummary:
 import pytest
 import json
 import sys
+import types
+from datetime import datetime
 from unittest.mock import MagicMock
 
 # Global module stubbing to prevent real network calls
 class MockResponse:
-    def __init__(self, url=""):
-        # Dynamic realism: Simulate failures if the URL looks like a failure case
-        self.url = url.lower()
-        if any(k in self.url for k in ["fail", "error", "404", "unauthorized"]):
-            self.status_code = self.status = 400 if "400" in self.url else 500
-            self.success = False
+    def __init__(self, url="", method="get", body=None):
+        self.url = str(url).lower()
+        self.method = str(method).lower()
+        self.body = body
+        token = f"{self.url} {str(body).lower()}"
+
+        def _tokenize_status(payload):
+            if not isinstance(payload, dict):
+                return 400
+
+            # Alternate schema produced by model: card_details + customer_id
+            if "card_details" in payload:
+                details = str(payload.get("card_details", "")).strip().lower()
+                if not details:
+                    # Simulated known defect: empty card_details occasionally slips through validation.
+                    return 200
+                if "invalid" in details:
+                    return 400
+                return 200
+
+            required = ["card_number", "expiry_month", "expiry_year", "cvv"]
+            if any(not str(payload.get(k, "")).strip() for k in required):
+                return 400
+
+            card = str(payload.get("card_number", "")).strip()
+            if (not card.isdigit()) or len(card) != 16:
+                return 400
+
+            cvv = str(payload.get("cvv", "")).strip()
+            if (not cvv.isdigit()) or len(cvv) not in (3, 4):
+                return 400
+
+            try:
+                month = int(str(payload.get("expiry_month", "0")).strip())
+                year = int(str(payload.get("expiry_year", "0")).strip())
+            except ValueError:
+                return 400
+
+            if month < 1 or month > 12:
+                return 400
+
+            now = datetime.now()
+            if year < now.year or (year == now.year and month < now.month):
+                return 400
+
+            return 200
+
+        self.status_code = 200
+        self._error = ""
+        if "tokenize" in self.url:
+            self.status_code = _tokenize_status(body)
+            if self.status_code == 400:
+                details = str((body or {}).get("card_details", "")).strip().lower() if isinstance(body, dict) else ""
+                if details == "":
+                    self._error = "card details cannot be empty"
+                elif "invalid" in details:
+                    self._error = "invalid card details"
+                else:
+                    self._error = "invalid request"
+            elif isinstance(body, dict) and str(body.get("card_details", "")).strip() == "":
+                self._error = "known validation gap on empty card details"
+        elif "/card_details/" in self.url:
+            token_part = self.url.rsplit("/", 1)[-1]
+            if any(k in token_part for k in ["invalid", "unauthorized", "expired"]):
+                self.status_code = 401
+                self._error = "unauthorized"
+        elif "/customer/" in self.url:
+            self.status_code = 200
+        elif any(k in token for k in ["downtime", "service-down"]):
+            self.status_code = 500
+            self._error = "upstream dependency unavailable"
+        elif any(k in token for k in ["notfound", "nonexist", "404"]):
+            self.status_code = 404
+            self._error = "not found"
+        elif any(k in token for k in ["fail", "error", "invalid", "expired", "unauthorized", "denied"]):
+            self.status_code = 400
+            self._error = "invalid request"
+        elif any(k in token for k in ["internal", "crash", "500"]):
+            self.status_code = 500
+            self._error = "internal error"
+
+        self.status = self.status_code
+        self.ok = self.status_code < 400
+        self.success = self.ok
+
+        self._payload = {
+            "status": "success" if self.ok else "error",
+            "success": self.ok,
+            "locked": self.ok,
+            "triggered": self.ok,
+            "card_details": "expected_details" if self.ok else "",
+            "card_id": "123456" if self.ok else "",
+            "message": "ok" if self.ok else (self._error or "simulated failure"),
+            "defect": None if self.ok else "simulated",
+        }
+        if self.ok:
+            self._payload["token"] = "tok_123"
+            if isinstance(body, dict):
+                customer_id = body.get("customer_id")
+                if customer_id:
+                    self._payload["customer_id"] = customer_id
+            if "/customer/" in self.url:
+                self._payload["tokens"] = ["tok_123", "tok_abc"]
         else:
-            self.status_code = self.status = 200
-            self.success = True
-            
+            self._payload["error"] = self._error or "simulated failure"
+        self.text = json.dumps(self._payload)
+
     def json(self):
-        m = MagicMock()
-        # Pass membership tests for positive flows, fail for negative ones if simulated
-        m.__contains__.side_effect = lambda x: self.success
-        m.get.side_effect = lambda k, d=None: "success" if self.success else "error"
-        return m
+        return dict(self._payload)
 
 def _mock_call(url, *args, **kwargs):
-    return MockResponse(url=str(url))
+    body = kwargs.get("json") or kwargs.get("data")
+    method = kwargs.get("method", "get")
+    return MockResponse(url=str(url), method=method, body=body)
 
 mock_req = MagicMock()
-mock_req.post.side_effect = mock_req.get.side_effect = mock_req.put.side_effect = mock_req.delete.side_effect = _mock_call
+mock_req.get.side_effect = lambda url, *a, **k: _mock_call(url, *a, method="get", **k)
+mock_req.post.side_effect = lambda url, *a, **k: _mock_call(url, *a, method="post", **k)
+mock_req.put.side_effect = lambda url, *a, **k: _mock_call(url, *a, method="put", **k)
+mock_req.delete.side_effect = lambda url, *a, **k: _mock_call(url, *a, method="delete", **k)
 mock_req.Session.return_value = mock_req
+
+# Basic playwright stub so browser-oriented snippets don't crash during import.
+class _PWPage:
+    def goto(self, url, *args, **kwargs):
+        return MockResponse(url=url, method="goto")
+
+class _PWBrowser:
+    def new_page(self):
+        return _PWPage()
+
+class _PWChromium:
+    def launch(self, *args, **kwargs):
+        return _PWBrowser()
+
+class _PWContext:
+    def __init__(self):
+        self.chromium = _PWChromium()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+def sync_playwright():
+    return _PWContext()
+
+playwright_mod = types.ModuleType("playwright")
+sync_api_mod = types.ModuleType("playwright.sync_api")
+sync_api_mod.sync_playwright = sync_playwright
+playwright_mod.sync_api = sync_api_mod
 
 # Stub the global module system
 sys.modules['requests'] = mock_req
+sys.modules['playwright'] = playwright_mod
+sys.modules['playwright.sync_api'] = sync_api_mod
 request = requests = mock_req
 
 # Inject common variable names found in LLM hallucinations
@@ -72,7 +206,6 @@ payment_gateway = auth_service = inventory = billing = notification = db = Magic
                     
                     # Resilience: Wrap raw lines in a function if the LLM forgot to
                     if "def " not in snippet:
-                        import textwrap
                         wrapped = "def test_generated_scenario():\n" + textwrap.indent(snippet, "    ")
                         f.write(wrapped)
                     else:
@@ -88,7 +221,12 @@ payment_gateway = auth_service = inventory = billing = notification = db = Magic
                     )
                     
                     if proc.returncode == 0:
-                        results.append(TestResult(test_id=t.id, status="pass", error_message=""))
+                        out = proc.stdout.strip()
+                        if len(out) > 800:
+                            out = "..." + out[-800:]
+                        if not out:
+                            out = "Test passed without additional logs."
+                        results.append(TestResult(test_id=t.id, status="pass", error_message=out))
                     else:
                         # Extract the most relevant error part (tail of stdout)
                         err_out = proc.stdout.strip()

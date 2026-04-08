@@ -309,21 +309,130 @@ export default function App() {
     };
   }, []);
 
+  const escapeHtml = (value) =>
+    String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
   const handleDownload = () => {
     if (!dashboardData) return;
-    const payload = {
-      generated_at: new Date().toISOString(),
-      story: dashboardData.story,
-      tests: dashboardData.tests,
-      defects: dashboardData.defects,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json",
+    const executionById = new Map(
+      (dashboardData.execution?.results || []).map((item) => [
+        item.test_id,
+        item,
+      ]),
+    );
+
+    const testRows = (dashboardData.tests || [])
+      .map((test) => {
+        const exec = executionById.get(test.id) || {};
+        const snippet = Array.isArray(test.automation_snippet)
+          ? test.automation_snippet.join("\n")
+          : String(test.automation_snippet || "");
+        return `
+          <section class="card">
+            <div class="head">
+              <h3>${escapeHtml(test.id)} - ${escapeHtml(test.module)}</h3>
+              <span class="badge ${escapeHtml(exec.status || "unknown")}">${escapeHtml((exec.status || "unknown").toUpperCase())}</span>
+            </div>
+            <p><strong>Type:</strong> ${escapeHtml(test.type)}</p>
+            <p><strong>Risk:</strong> ${escapeHtml(test.risk_level)}</p>
+            <p><strong>Description:</strong> ${escapeHtml(test.description)}</p>
+            <p><strong>Expected:</strong> ${escapeHtml(test.expected_result)}</p>
+            <p><strong>Steps:</strong></p>
+            <ul>${(test.steps || []).map((step) => `<li>${escapeHtml(step)}</li>`).join("")}</ul>
+            <p><strong>Snippet:</strong></p>
+            <pre>${escapeHtml(snippet || "No snippet")}</pre>
+            <p><strong>Execution Output:</strong></p>
+            <pre>${escapeHtml(exec.error_message || "No output")}</pre>
+          </section>
+        `;
+      })
+      .join("\n");
+
+    const moduleRiskRows = (dashboardData.defects?.module_risks || [])
+      .map(
+        (risk) => `
+          <tr>
+            <td>${escapeHtml(risk.module)}</td>
+            <td>${escapeHtml(risk.regression_risk)}</td>
+            <td>${escapeHtml((risk.defect_probability * 100).toFixed(1))}%</td>
+            <td>${escapeHtml(risk.historical_defect_count)}</td>
+            <td>${escapeHtml((risk.top_defect_types || []).join(", "))}</td>
+          </tr>
+        `,
+      )
+      .join("");
+
+    const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>IronTest Report</title>
+    <style>
+      body { font-family: Segoe UI, Arial, sans-serif; margin: 24px; color: #0f172a; }
+      h1, h2 { margin: 0 0 10px 0; }
+      .meta, .summary { margin-bottom: 18px; }
+      .grid { display: grid; grid-template-columns: repeat(2,minmax(280px,1fr)); gap: 12px; }
+      .card { border: 1px solid #dbe3ee; border-radius: 12px; padding: 14px; margin-bottom: 14px; background: #ffffff; }
+      .head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      .badge { padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+      .badge.pass { background: #dcfce7; color: #166534; }
+      .badge.fail, .badge.error { background: #fee2e2; color: #991b1b; }
+      .badge.skipped { background: #e2e8f0; color: #334155; }
+      pre { white-space: pre-wrap; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; background: #f8fafc; }
+      table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+      th, td { border: 1px solid #dbe3ee; padding: 8px; text-align: left; font-size: 13px; }
+      th { background: #f1f5f9; }
+    </style>
+  </head>
+  <body>
+    <h1>IronTest Structured Report</h1>
+    <div class="meta"><strong>Generated:</strong> ${escapeHtml(new Date().toISOString())}</div>
+    <div class="summary card">
+      <h2>Deployment Summary</h2>
+      <p><strong>Confidence Score:</strong> ${escapeHtml(dashboardData.defects?.overall_confidence_score)}</p>
+      <p><strong>Recommendation:</strong> ${escapeHtml(dashboardData.defects?.deployment_recommendation)}</p>
+      <p><strong>Rationale:</strong> ${escapeHtml(dashboardData.defects?.recommendation_rationale)}</p>
+      <p><strong>Critical Tests:</strong> ${escapeHtml((dashboardData.defects?.critical_test_ids || []).join(", "))}</p>
+    </div>
+
+    <div class="summary card">
+      <h2>Story Intelligence</h2>
+      <p><strong>Intent:</strong> ${escapeHtml(dashboardData.story?.intent)}</p>
+      <p><strong>Modules:</strong> ${escapeHtml((dashboardData.story?.modules || []).join(", "))}</p>
+      <p><strong>Acceptance Criteria:</strong></p>
+      <ul>${(dashboardData.story?.acceptance_criteria || []).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>
+      <p><strong>Risk Factors:</strong> ${escapeHtml((dashboardData.story?.risk_factors || []).join(", "))}</p>
+      <p><strong>Security Vectors:</strong> ${escapeHtml((dashboardData.story?.security_vectors || []).join(", "))}</p>
+      <p><strong>Microservices:</strong> ${escapeHtml((dashboardData.story?.microservices || []).join(", "))}</p>
+    </div>
+
+    <div class="summary card">
+      <h2>Module Risk Matrix</h2>
+      <table>
+        <thead>
+          <tr><th>Module</th><th>Regression Risk</th><th>Defect Probability</th><th>Historical Defects</th><th>Top Defect Types</th></tr>
+        </thead>
+        <tbody>${moduleRiskRows}</tbody>
+      </table>
+    </div>
+
+    <h2>Test Cases and Execution</h2>
+    <div class="grid">${testRows}</div>
+  </body>
+</html>`;
+
+    const blob = new Blob([html], {
+      type: "text/html",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "irontest-analysis-report.json";
+    a.download = "irontest-analysis-report.html";
     a.click();
     URL.revokeObjectURL(url);
   };
