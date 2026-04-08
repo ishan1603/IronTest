@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Pipeline from "./components/Pipeline.jsx";
 import TestCaseTable from "./components/TestCaseTable.jsx";
@@ -6,6 +6,7 @@ import ConfidenceGauge from "./components/ConfidenceGauge.jsx";
 import RiskHeatmap from "./components/RiskHeatmap.jsx";
 import DeploymentVerdict from "./components/DeploymentVerdict.jsx";
 import StoryInsights from "./components/StoryInsights.jsx";
+import VantaGlobeBackground from "./components/VantaGlobeBackground.jsx";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
@@ -93,6 +94,93 @@ export default function App() {
 
   const eventSourceRef = useRef(null);
   const streamClosedRef = useRef(false);
+  const targetVectorRef = useRef(null);
+
+  const agentOutputCards = useMemo(() => {
+    const base = [
+      {
+        key: "story",
+        icon: "🧠",
+        title: "Story Agent",
+        primary: "Story extraction in progress...",
+        secondary: "Waiting for parsed intent output.",
+      },
+      {
+        key: "test",
+        icon: "⚙️",
+        title: "Test Generation Agent",
+        primary: "Test vectors are being generated...",
+        secondary: "Coverage distribution will appear here.",
+      },
+      {
+        key: "execution",
+        icon: "🚀",
+        title: "Execution Agent",
+        primary: "Execution run is pending...",
+        secondary: "Pass/fail/error split will appear here.",
+      },
+      {
+        key: "defect",
+        icon: "🔍",
+        title: "Defect Agent",
+        primary: "Risk synthesis is pending...",
+        secondary: "Recommendation and confidence will appear here.",
+      },
+    ];
+
+    if (!dashboardData) {
+      return base.map((item) => {
+        const agent = agents[item.key];
+        return {
+          ...item,
+          primary: agent?.summary || item.primary,
+          secondary: agent?.message || item.secondary,
+        };
+      });
+    }
+
+    const typeCounts = (dashboardData.tests || []).reduce((acc, test) => {
+      const key = test.type || "other";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const results = dashboardData.execution?.results || [];
+    const passed = results.filter((r) => r.status === "pass").length;
+    const failed = results.filter((r) => r.status === "fail").length;
+    const errors = results.filter((r) => r.status === "error").length;
+
+    return [
+      {
+        key: "story",
+        icon: "🧠",
+        title: "Story Agent",
+        primary: "Story extracted successfully from user input.",
+        secondary: `${dashboardData.story?.modules?.length || 0} modules and ${dashboardData.story?.acceptance_criteria?.length || 0} acceptance criteria identified.`,
+      },
+      {
+        key: "test",
+        icon: "⚙️",
+        title: "Test Generation Agent",
+        primary: "Generated test cases by coverage profile.",
+        secondary: `${typeCounts.functional || 0} functional, ${typeCounts.boundary || 0} boundary, ${typeCounts.edge_case || 0} edge, ${typeCounts.regression || 0} regression.`,
+      },
+      {
+        key: "execution",
+        icon: "🚀",
+        title: "Execution Agent",
+        primary: "Execution run completed and validated.",
+        secondary: `${passed} passed, ${failed} failed, ${errors} errors across ${results.length} tests.`,
+      },
+      {
+        key: "defect",
+        icon: "🔍",
+        title: "Defect Agent",
+        primary: `Recommendation: ${dashboardData.defects?.deployment_recommendation || "PENDING"}.`,
+        secondary: `Confidence score: ${dashboardData.defects?.overall_confidence_score ?? 0} with prioritized critical vectors.`,
+      },
+    ];
+  }, [agents, dashboardData]);
 
   useEffect(() => {
     if (theme === "dark") {
@@ -105,6 +193,15 @@ export default function App() {
 
   const toggleTheme = () =>
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+
+  const handleManualMode = () => {
+    setUseSample(false);
+    setUserStory("");
+    requestAnimationFrame(() => {
+      targetVectorRef.current?.focus();
+      targetVectorRef.current?.setSelectionRange(0, 0);
+    });
+  };
 
   const resetAgents = () => setAgents(initialAgents);
 
@@ -439,17 +536,21 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen font-inter overflow-x-hidden transition-colors duration-300">
-      {/* Background Grid - Awwwards Style */}
-      <div className="fixed inset-0 pointer-events-none z-[-1]">
-        <div className="absolute inset-0 bg-grid opacity-80" />
-        <div className="absolute -left-[20%] top-[-10%] h-[600px] w-[600px] rounded-full bg-indigo-500/10 blur-[120px] dark:bg-indigo-500/20" />
-        <div className="absolute right-[-10%] bottom-[-10%] h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[140px] dark:bg-cyan-500/20" />
+      <div className="fixed inset-0 z-[-1] overflow-hidden">
+        <VantaGlobeBackground theme={theme} />
+        <div className="pointer-events-none absolute inset-0 bg-transparent dark:bg-gradient-to-b dark:from-[#030c07]/85 dark:via-[#030c07]/55 dark:to-[#030c07]/25" />
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-black/5 dark:border-white/10 bg-white/70 dark:bg-[#05070d]/70 backdrop-blur-xl transition-colors duration-300">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div
-            className="flex items-center gap-3 cursor-pointer group"
+      <header className="sticky top-3 z-50 px-3 transition-colors duration-300">
+        <motion.div
+          initial={{ opacity: 0.95, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-auto flex w-full max-w-7xl items-center justify-between rounded-full border border-black/10 dark:border-white/15 bg-white/55 dark:bg-[#07130e]/55 px-4 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.16)] dark:shadow-[0_8px_30px_rgba(34,197,94,0.2)] backdrop-blur-2xl"
+        >
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex cursor-pointer items-center gap-3 group"
             onClick={() => setActiveTab("hero")}
           >
             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-black dark:bg-white overflow-hidden shadow-lg transition-transform hover:scale-105 active:scale-95">
@@ -481,9 +582,17 @@ export default function App() {
                 Autonomous QA
               </div>
             </div>
-          </div>
+          </motion.div>
 
           <div className="flex items-center gap-4">
+            {(pipelineVisible || dashboardData) && (
+              <button
+                onClick={() => setActiveTab(isRunning ? "pipeline" : "score")}
+                className="flex items-center gap-2 rounded-full border border-emerald-300/50 dark:border-emerald-400/30 bg-emerald-500/15 dark:bg-emerald-500/20 px-4 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-200 shadow-[0_0_18px_rgba(34,197,94,0.24)] hover:bg-emerald-500/25 transition"
+              >
+                Resume Last Run
+              </button>
+            )}
             {dashboardData && (
               <button
                 onClick={handleDownload}
@@ -509,7 +618,7 @@ export default function App() {
             )}
             <button
               onClick={toggleTheme}
-              className="group flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-black/50 text-gray-600 dark:text-gray-300 shadow-sm transition-all hover:bg-gray-50 dark:hover:bg-white/10 hover:rotate-12 active:scale-90"
+              className="group flex h-9 w-9 items-center justify-center rounded-full border border-gray-200/80 dark:border-white/20 bg-white/75 dark:bg-white/10 text-gray-600 dark:text-gray-200 shadow-[0_0_14px_rgba(255,255,255,0.1)] transition-all hover:bg-white dark:hover:bg-white/15 hover:rotate-12 active:scale-90"
               aria-label="Toggle Theme"
             >
               {theme === "dark" ? (
@@ -551,7 +660,7 @@ export default function App() {
               )}
             </button>
           </div>
-        </div>
+        </motion.div>
       </header>
 
       {/* Tabs Navigation (Visible when pipeline active or dashboard exists) */}
@@ -598,7 +707,7 @@ export default function App() {
                 </div>
                 <h1 className="text-5xl lg:text-7xl font-black tracking-tight text-gray-900 dark:text-white mb-6">
                   <TypingEffect text="Intelligent" />{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-500">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-emerald-400">
                     QA Engine
                   </span>
                 </h1>
@@ -608,26 +717,21 @@ export default function App() {
                   intent, and let intelligence do the rest.
                 </p>
 
-                <div className="w-full max-w-3xl rounded-3xl border border-black/10 dark:border-white/10 bg-white/60 dark:bg-black/40 p-2 shadow-2xl backdrop-blur-3xl transition-all">
+                <div className="w-full max-w-5xl rounded-3xl border border-black/10 dark:border-emerald-400/20 bg-white/60 dark:bg-white/5 p-2 shadow-2xl dark:shadow-[0_0_30px_rgba(34,197,94,0.2)] backdrop-blur-3xl transition-all">
                   <div className="flex flex-wrap items-center justify-between gap-3 p-4">
-                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
-                      Target Vector
-                    </span>
-                    <div className="flex items-center gap-2 text-[11px] font-semibold">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
+                        Target Vector
+                      </span>
                       <button
-                        onClick={() => setUseSample(true)}
-                        className={`rounded-full px-3 py-1 border transition ${useSample ? "border-accent text-accent bg-accent/10" : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400"}`}
+                        onClick={handleManualMode}
+                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 border text-[11px] font-semibold transition ${!useSample ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-emerald-300/30 hover:text-emerald-600 dark:hover:text-emerald-300"}`}
                       >
-                        Presets
-                      </button>
-                      <button
-                        onClick={() => setUseSample(false)}
-                        className={`rounded-full px-3 py-1 border transition ${!useSample ? "border-accent text-accent bg-accent/10" : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400"}`}
-                      >
-                        Manual
+                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
+                        Manual Mode
                       </button>
                     </div>
-                    <div className="flex gap-3 shrink-0 overflow-x-auto no-scrollbar py-3 px-1 sm:pb-2">
+                    <div className="flex flex-wrap items-center gap-2 py-3 px-1 sm:pb-2">
                       {PRESET_STORIES.map((story) => (
                         <button
                           key={story.name}
@@ -635,9 +739,9 @@ export default function App() {
                             setUserStory(story.text);
                             setUseSample(true);
                           }}
-                          className={`rounded-full border px-5 py-2 text-xs font-bold transition-all whitespace-nowrap shadow-sm ${
+                          className={`rounded-full border px-4 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap shadow-sm ${
                             userStory === story.text && useSample
-                              ? "bg-purple-500/10 border-purple-500/50 text-purple-600 dark:text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.25)] scale-105"
+                              ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-600 dark:text-emerald-400 shadow-[0_0_20px_rgba(34,197,94,0.25)]"
                               : "bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/20"
                           }`}
                         >
@@ -648,7 +752,8 @@ export default function App() {
                   </div>
                   <div className="px-2 pb-2">
                     <textarea
-                      className="w-full rounded-2xl border-none bg-black/5 dark:bg-black/60 p-5 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-accent resize-none transition-all"
+                      ref={targetVectorRef}
+                      className="w-full rounded-2xl border border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/5 p-5 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-accent resize-none transition-all"
                       rows={6}
                       placeholder="Paste your raw user story or technical spec here to initiate generation..."
                       value={userStory}
@@ -660,47 +765,47 @@ export default function App() {
                   </div>
 
                   {/* Jira Ingestion Section */}
-                  <div className="mx-2 mb-2 rounded-2xl border border-dashed border-black/10 dark:border-white/10 p-4 bg-gray-50 dark:bg-white/5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-end">
-                    <div className="w-full space-y-1 sm:col-span-2">
+                  <div className="mx-2 mb-2 rounded-2xl border border-dashed border-black/10 dark:border-emerald-400/20 p-4 bg-gray-50/90 dark:!bg-white/5 grid gap-3 sm:grid-cols-2 lg:grid-cols-12 items-end backdrop-blur-xl">
+                    <div className="w-full space-y-1 sm:col-span-2 lg:col-span-5">
                       <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
                         Jira Ticket URL
                       </label>
                       <input
-                        className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                        className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
                         placeholder="https://company.atlassian.net/browse/PROJ-123"
                         value={jiraUrl}
                         onChange={(e) => setJiraUrl(e.target.value)}
                       />
                     </div>
-                    <div className="w-full space-y-1">
+                    <div className="w-full space-y-1 lg:col-span-2">
                       <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
                         Jira Email
                       </label>
                       <input
-                        className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                        className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
                         placeholder="name@company.com"
                         value={jiraEmail}
                         onChange={(e) => setJiraEmail(e.target.value)}
                       />
                     </div>
-                    <div className="w-full space-y-1">
+                    <div className="w-full space-y-1 lg:col-span-3">
                       <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
                         Access Token / PAT
                       </label>
                       <input
                         type="password"
-                        className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                        className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
                         placeholder="ATATT3xFf..."
                         value={jiraToken}
                         onChange={(e) => setJiraToken(e.target.value)}
                       />
                     </div>
-                    <div className="w-full space-y-1">
+                    <div className="w-full space-y-1 lg:col-span-2">
                       <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
                         Issue Key (Optional)
                       </label>
                       <input
-                        className="w-full bg-white dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                        className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
                         placeholder="PROJ-123"
                         value={jiraIssueKey}
                         onChange={(e) => setJiraIssueKey(e.target.value)}
@@ -709,7 +814,7 @@ export default function App() {
                     <button
                       onClick={handleJiraIngest}
                       disabled={ingesting || !jiraUrl}
-                      className="rounded-lg bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-bold px-4 py-2 hover:opacity-90 disabled:opacity-50 transition sm:col-span-2 lg:col-span-4"
+                      className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 text-white text-xs font-bold px-4 py-2 shadow-[0_0_22px_rgba(34,197,94,0.35)] hover:brightness-110 disabled:opacity-50 transition sm:col-span-2 lg:col-span-12"
                     >
                       {ingesting ? "Ingesting..." : "Import"}
                     </button>
@@ -725,7 +830,7 @@ export default function App() {
                     <button
                       onClick={handleRun}
                       disabled={isRunning}
-                      className="group flex items-center justify-center gap-2 rounded-xl bg-black dark:bg-white px-8 py-3.5 text-sm font-bold text-white dark:text-black shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-8 py-3.5 text-sm font-bold text-white shadow-[0_0_24px_rgba(34,197,94,0.35)] hover:brightness-110 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isRunning ? (
                         <>
@@ -783,6 +888,29 @@ export default function App() {
                 </p>
               </div>
               <Pipeline agents={agents} isRunning={isRunning} />
+
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                {agentOutputCards.map((card, index) => (
+                  <motion.div
+                    key={card.key}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.08 * index, duration: 0.28 }}
+                    className="rounded-2xl border border-black/10 dark:border-emerald-400/25 bg-white/55 dark:bg-[#11172a]/70 p-4 shadow-lg dark:shadow-[0_0_20px_rgba(34,197,94,0.2)] backdrop-blur-xl"
+                  >
+                    <div className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
+                      <span>{card.icon}</span>
+                      <span>{card.title}</span>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                      {card.primary}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      {card.secondary}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
 
               {pipelineError && (
                 <motion.div
@@ -850,7 +978,7 @@ export default function App() {
               </div>
 
               <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-1 rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                <div className="lg:col-span-1 rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
                   <ConfidenceGauge
                     score={dashboardData.defects.overall_confidence_score}
                     recommendation={
@@ -858,18 +986,18 @@ export default function App() {
                     }
                   />
                 </div>
-                <div className="lg:col-span-2 rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+                <div className="lg:col-span-2 rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
                   <RiskHeatmap
                     moduleRisks={dashboardData.defects.module_risks}
                   />
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+              <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
                 <StoryInsights story={dashboardData.story} />
               </div>
 
-              <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+              <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
                 <DeploymentVerdict
                   recommendation={
                     dashboardData.defects.deployment_recommendation

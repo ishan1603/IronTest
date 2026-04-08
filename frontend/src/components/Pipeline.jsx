@@ -13,7 +13,7 @@ function Arrow({ active }) {
       <div
         className={clsx(
           "h-0.5 w-4 lg:w-8 bg-gradient-to-r from-accent to-transparent rounded-full",
-          active && "shadow-[0_0_20px_rgba(99,102,241,0.9)] bg-accent",
+          active && "shadow-[0_0_20px_rgba(34,197,94,0.9)] bg-accent",
         )}
       />
     </motion.div>
@@ -22,7 +22,7 @@ function Arrow({ active }) {
 
 export default function Pipeline({ agents, isRunning = false }) {
   return (
-    <div className="flex w-full flex-col gap-4 rounded-3xl border border-black/5 dark:border-white/10 bg-white/40 dark:bg-white/5 p-4 lg:p-6 shadow-2xl backdrop-blur-3xl transition-colors duration-300 overflow-hidden">
+    <div className="flex w-full flex-col gap-4 rounded-3xl border border-black/5 dark:border-emerald-400/20 bg-white/40 dark:bg-white/5 p-4 lg:p-6 shadow-2xl dark:shadow-[0_0_24px_rgba(34,197,94,0.22)] backdrop-blur-3xl transition-colors duration-300 overflow-hidden">
       <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
         <span>Live Autonomous Orchestration</span>
         <span

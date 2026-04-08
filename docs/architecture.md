@@ -53,7 +53,7 @@ graph TD
     MONGO -. unavailable .-> JSON
     DEFECT --> MONGO
     DEFECT --> JSON
-    API -->|SSE /api/stream/{session_id}| STREAM
+    API -->|SSE /api/stream/:session_id| STREAM
     API --> JIRA
 ```
 
@@ -71,7 +71,7 @@ sequenceDiagram
     U->>FE: Submit story
     FE->>BE: POST /api/analyze
     BE->>OR: Create async session
-    FE->>BE: GET /api/stream/{session_id}
+    FE->>BE: GET /api/stream/:session_id
 
     OR->>AG: Story Agent
     AG-->>BE: Structured story

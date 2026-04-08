@@ -22,15 +22,16 @@
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: "Inter", system-ui, sans-serif;
-    transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-                --grid-color 0.5s ease;
+    transition:
+      background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      --grid-color 0.5s ease;
   }
 
   /* Awwwards style modern grid background */
   .bg-grid {
     background-size: 40px 40px;
-    background-image: 
+    background-image:
       linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
       linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
     mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
@@ -40,7 +41,7 @@
   button:focus-visible,
   textarea:focus-visible,
   input:focus-visible {
-    outline: 2px solid #6366f1;
+    outline: 2px solid #22c55e;
     outline-offset: 2px;
   }
 }
