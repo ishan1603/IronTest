@@ -10,10 +10,10 @@
 
 <p align="center"><strong>Thank you Team ATOS for this challenging and fun hackathon experience.</strong></p>
 
-## Screenshot Placeholder
+## Screenshot
 
 <p align="center">
-	<img src="../image.png" alt="IRONTEST application screenshot placeholder" />
+	<img src="docs/assets/Untitled design.png" alt="IRONTEST application screenshot in macOS frame" width="960" />
 </p>
 
 ## Why IRONTEST
