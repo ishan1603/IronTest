@@ -669,7 +669,7 @@ export default function App() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="sticky top-[73px] z-40 border-b border-black/5 dark:border-white/10 bg-white/50 dark:bg-[#05070d]/50 backdrop-blur-md"
+            className="sticky top-[73px] z-40 border-b border-black/5 dark:border-white/10 bg-transparent dark:bg-transparent"
           >
             <div className="mx-auto flex max-w-7xl gap-6 px-6 overflow-x-auto no-scrollbar">
               {["pipeline", "tests", "score"].map((tab) => (
