@@ -29,16 +29,16 @@ Output schema:
 
 ## Technical Notes
 
-- Uses Gemini through backend/llm_client.py.
-- Requests JSON-only output (responseMimeType application/json).
+- Uses OpenRouter through backend/llm_client.py.
+- Requests JSON-only output and validates schema shape before model parsing.
 - Parsed into the StoryAnalysis Pydantic model for strict downstream consistency.
-- Current local environment uses GEMINI_API_KEY only; this agent is fully functional in that mode.
+- Requires OPENROUTER_API_KEY for model execution.
 
 ## Flow
 
 ```mermaid
 graph LR
-    A[Story or Jira Text] --> B[Gemini Prompted Extraction]
+    A[Story or Jira Text] --> B[OpenRouter Prompted Extraction]
     B --> C[JSON Validation]
     C --> D[StoryAnalysis Model]
     D --> E[Test Agent]

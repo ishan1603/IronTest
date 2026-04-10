@@ -27,11 +27,11 @@ The agent returns a JSON object with test_cases[] where each item includes:
 
 ## Technical Notes
 
-- Uses Gemini through backend/llm_client.py.
+- Uses OpenRouter through backend/llm_client.py.
 - Prompt enforces JSON-only output.
 - Output is validated with the TestCase Pydantic model.
 - Snippets are later executed by the Execution Agent in an isolated temp environment.
-- Current local environment uses GEMINI_API_KEY only; this agent is fully functional in that mode.
+- Requires OPENROUTER_API_KEY for model execution.
 
 ## Flow
 

@@ -14,7 +14,7 @@ The frontend is designed for live, presentation-friendly observability of the mu
    - optional issue key override
 3. Streaming pipeline cards show real-time agent status transitions.
 4. Tabs separate pipeline telemetry, generated tests, and final score dashboard.
-5. Export action downloads the final analysis payload as JSON.
+5. Export action downloads a structured HTML report containing story, tests, execution evidence, and risk summary.
 
 ## Reliability Improvements
 
@@ -24,9 +24,9 @@ The frontend is designed for live, presentation-friendly observability of the mu
 
 ## Current Setup Note
 
-- Current environment has GEMINI_API_KEY configured.
-- MongoDB and Jira env credentials are still pending configuration.
-- UI impact: Jira import works when credentials are provided in the form; history trends run from fallback JSON when MongoDB is not available.
+- Runtime requires OPENROUTER_API_KEY for analysis requests.
+- Jira credentials can be provided per request in the UI or via JIRA_EMAIL and JIRA_API_TOKEN.
+- When MongoDB is unavailable, history automatically falls back to backend/data/history.json.
 
 ## Visual System
 

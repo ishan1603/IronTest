@@ -8,8 +8,8 @@ The Defect Agent is the final risk layer. It combines current execution outcomes
 
 1. Pull module and global history stats from database.py.
 2. Evaluate execution outcomes from TestExecutionSummary.
-3. Ask Gemini for risk interpretation and critical test prioritization.
-4. Compute blended confidence score and final recommendation.
+3. Ask OpenRouter for risk interpretation and critical test prioritization.
+4. Validate score/recommendation output and return final recommendation payload.
 
 ## Data Inputs
 
@@ -21,13 +21,8 @@ The Defect Agent is the final risk layer. It combines current execution outcomes
 
 ## Confidence Logic
 
-The final score blends:
-
-- LLM confidence proposal
-- current pass-rate
-- historical average pass-rate
-- recent trend delta
-- explicit fail/error penalties
+The final score currently uses the validated LLM-provided confidence score (0-100).
+Historical and execution data are provided to the model as context for this prediction.
 
 Recommendation is then mapped to GO, CONDITIONAL GO, or NO-GO with conservative behavior when execution errors are present.
 
@@ -35,7 +30,6 @@ Recommendation is then mapped to GO, CONDITIONAL GO, or NO-GO with conservative 
 
 - Primary source: MongoDB collection configured by MONGODB_URI, MONGODB_DB_NAME, MONGODB_COLLECTION.
 - Fallback source: backend/data/history.json when MongoDB is not reachable.
-- Current local setup note: MongoDB env setup is pending, so fallback JSON history is expected during local runs.
 
 ## Flow
 

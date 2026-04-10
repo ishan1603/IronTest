@@ -182,6 +182,76 @@ export default function App() {
     ];
   }, [agents, dashboardData]);
 
+  const scoreImprovementSuggestions = useMemo(() => {
+    if (!dashboardData) return [];
+
+    const tests = dashboardData.tests || [];
+    const results = dashboardData.execution?.results || [];
+    const moduleRisks = dashboardData.defects?.module_risks || [];
+    const criticalIds = new Set(dashboardData.defects?.critical_test_ids || []);
+    const score = dashboardData.defects?.overall_confidence_score ?? 0;
+
+    const testById = new Map(tests.map((t) => [t.id, t]));
+    const failing = results.filter(
+      (r) => r.status === "fail" || r.status === "error",
+    );
+    const infrastructureErrors = results.filter(
+      (r) => r.status === "error",
+    ).length;
+
+    const suggestions = [];
+
+    const failedCritical = failing
+      .filter((r) => criticalIds.has(r.test_id))
+      .slice(0, 3)
+      .map((r) => {
+        const test = testById.get(r.test_id);
+        return test ? `${r.test_id} (${test.module})` : r.test_id;
+      });
+
+    if (failedCritical.length > 0) {
+      suggestions.push(
+        `Resolve critical failing tests first: ${failedCritical.join(", ")}. These have the highest impact on deployment confidence.`,
+      );
+    }
+
+    if (infrastructureErrors > 0) {
+      suggestions.push(
+        "Stabilize execution infrastructure errors (service connectivity, auth, environment setup) before functional tuning to quickly lift confidence score.",
+      );
+    }
+
+    const highRiskModules = moduleRisks
+      .filter(
+        (m) =>
+          m.regression_risk === "critical" ||
+          m.regression_risk === "high" ||
+          (m.defect_probability ?? 0) >= 0.6,
+      )
+      .slice(0, 3)
+      .map((m) => m.module);
+
+    if (highRiskModules.length > 0) {
+      suggestions.push(
+        `Increase regression and boundary coverage for high-risk modules: ${highRiskModules.join(", ")}.`,
+      );
+    }
+
+    if (score < 80) {
+      suggestions.push(
+        "Align failing test assertions directly with acceptance criteria and add targeted negative-path checks for each risky module.",
+      );
+    }
+
+    if (suggestions.length === 0) {
+      suggestions.push(
+        "Current quality signal is healthy. Keep the score stable by adding one regression test for every future bug fix and monitoring pass-rate drift.",
+      );
+    }
+
+    return suggestions;
+  }, [dashboardData]);
+
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -995,6 +1065,18 @@ export default function App() {
 
               <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
                 <StoryInsights story={dashboardData.story} />
+              </div>
+
+              <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
+                <div className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-3">
+                  <span>📈</span>
+                  <span>Suggestions To Improve Score</span>
+                </div>
+                <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  {scoreImprovementSuggestions.map((suggestion, idx) => (
+                    <li key={`improve-score-${idx}`}>{suggestion}</li>
+                  ))}
+                </ul>
               </div>
 
               <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
