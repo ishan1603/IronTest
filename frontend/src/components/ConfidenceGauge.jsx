@@ -19,13 +19,13 @@ export default function ConfidenceGauge({ score = 0, recommendation = "" }) {
       </h3>
       <div className="relative flex items-center justify-center mt-2">
         <RadialBarChart
-          width={240}
-          height={200}
-          cx={120}
-          cy={100}
-          innerRadius={75}
-          outerRadius={100}
-          barSize={12}
+          width={180}
+          height={150}
+          cx={90}
+          cy={76}
+          innerRadius={52}
+          outerRadius={72}
+          barSize={10}
           data={[{ name: "score", value: animatedScore, fill: color }]}
           startAngle={180}
           endAngle={0}
@@ -41,18 +41,23 @@ export default function ConfidenceGauge({ score = 0, recommendation = "" }) {
             background={{ fill: "rgba(0,0,0,0.05)" }}
           />
         </RadialBarChart>
-        <div className="absolute flex flex-col items-center justify-center top-14">
-          <div className="text-5xl font-black tracking-tighter" style={{ color }}>
+        <div className="absolute flex flex-col items-center justify-center top-10">
+          <div
+            className="text-4xl font-black tracking-tighter"
+            style={{ color }}
+          >
             {animatedScore}
           </div>
         </div>
       </div>
-      <div className="text-center -mt-6">
+      <div className="text-center -mt-4">
         <div
           className={clsx(
             "rounded-xl px-4 py-2 text-xs font-black uppercase tracking-widest shadow-sm",
-            recommendation === "GO" && "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
-            recommendation === "NO-GO" && "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30",
+            recommendation === "GO" &&
+              "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+            recommendation === "NO-GO" &&
+              "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30",
             recommendation === "CONDITIONAL GO" &&
               "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400",
           )}

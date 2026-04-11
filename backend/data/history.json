@@ -141,5 +141,301 @@
         "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_009.py::test_refund_idempotent FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_refund_idempotent ____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_009.py:3: in test_refund_idempotent\n    RefundEngine.initiate_refund(order_id)\nE   NameError: name 'RefundEngine' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_009.py::test_refund_idempotent\n============================== 1 failed in 0.10s =============================="
       }
     ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "800113857d5644eb90096a8b391d9061",
+    "created_at": "2026-04-11T13:34:29.968037+00:00",
+    "source": "pipeline",
+    "session_id": "1f1188346d524f0e9de5b9910ff48cfe",
+    "story_key": "64f9fc8a5445186747cc534c",
+    "story_label": "Azure DevOps Work Item: IronTest#1 Organization: IronTest Project: IronTest Work Item Type: Task State: To Do Summary: Mock Ingestion Priority: 2 Area Path: Iro",
+    "modules": [
+      "SearchEngine",
+      "RelevanceRanking",
+      "FilterService",
+      "Autosuggest",
+      "LoadBalancer"
+    ],
+    "duration": 3.23,
+    "total_tests": 9,
+    "executed_tests": 9,
+    "passed": 9,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 1.0,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkvn9wbl7\\TC_001.py::test_tc_001_searchengine PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkvn9wbl7\\TC_002.py::test_tc_002_filterservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkvn9wbl7\\TC_003.py::test_tc_003_autosuggest PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkvn9wbl7\\TC_004.py::test_tc_004_relevanceranking PASSED [100%]\n\n============================== 1 passed in 0.06s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkvn9wbl7\\TC_005.py::test_tc_005_loadbalancer PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkvn9wbl7\\TC_006.py::test_tc_006_searchengine PASSED [100%]\n\n============================== 1 passed in 0.06s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkvn9wbl7\\TC_007.py::test_tc_007_filterservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkvn9wbl7\\TC_008.py::test_tc_008_relevanceranking PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkvn9wbl7\\TC_009.py::test_tc_009_loadbalancer PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "318d60f86f4d4382b03f4103cf8842df",
+    "created_at": "2026-04-11T13:52:53.811523+00:00",
+    "source": "pipeline",
+    "session_id": "567618a5684d4d05943fd966255a324d",
+    "story_key": "64f9fc8a5445186747cc534c",
+    "story_label": "Azure DevOps Work Item: IronTest#1 Organization: IronTest Project: IronTest Work Item Type: Task State: To Do Summary: Mock Ingestion Priority: 2 Area Path: Iro",
+    "modules": [
+      "SearchEngine",
+      "RelevanceRanking",
+      "FilterService",
+      "Autosuggest",
+      "LoadBalancer"
+    ],
+    "duration": 4.12,
+    "total_tests": 9,
+    "executed_tests": 9,
+    "passed": 9,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 1.0,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpnnxnzn_m\\TC_001.py::test_tc_001_searchengine PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpnnxnzn_m\\TC_002.py::test_tc_002_filterservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpnnxnzn_m\\TC_003.py::test_tc_003_autosuggest PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpnnxnzn_m\\TC_004.py::test_tc_004_relevanceranking PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpnnxnzn_m\\TC_005.py::test_tc_005_loadbalancer PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpnnxnzn_m\\TC_006.py::test_tc_006_searchengine PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpnnxnzn_m\\TC_007.py::test_tc_007_filterservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpnnxnzn_m\\TC_008.py::test_tc_008_relevanceranking PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpnnxnzn_m\\TC_009.py::test_tc_009_autosuggest PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "1bcc548e82c84214b7609eba6d6a790b",
+    "created_at": "2026-04-11T13:58:00.154718+00:00",
+    "source": "pipeline",
+    "session_id": "29c36320980c4b18983b98a11f40b0ff",
+    "story_key": "64f9fc8a5445186747cc534c",
+    "story_label": "Azure DevOps Work Item: IronTest#1 Organization: IronTest Project: IronTest Work Item Type: Task State: To Do Summary: Mock Ingestion Priority: 2 Area Path: Iro",
+    "modules": [
+      "SearchEngine",
+      "RankingService",
+      "FilterService",
+      "Autosuggest",
+      "LoadBalancer"
+    ],
+    "duration": 5.01,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 10,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 1.0,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_001.py::test_tc_001_searchengine PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_002.py::test_tc_002_rankingservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_003.py::test_tc_003_filterservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_004.py::test_tc_004_autosuggest PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_005.py::test_tc_005_loadbalancer PASSED [100%]\n\n============================== 1 passed in 0.13s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_006.py::test_tc_006_searchengine PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_007.py::test_tc_007_rankingservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_008.py::test_tc_008_filterservice PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_009.py::test_tc_009_autosuggest PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-010",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpinqkqvaw\\TC_010.py::test_tc_010_loadbalancer PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "8c9e3f2c914f4f83b68e4f7c25d7a64b",
+    "created_at": "2026-04-11T14:25:09.974075+00:00",
+    "source": "pipeline",
+    "session_id": "a3adfd236d5e4aaea3b5eaa22d4c0ae7",
+    "story_key": "2eb414afc2b032ebf3f01733",
+    "story_label": "As a customer, I require a frictionless checkout experience using my tokenized credit card across the ecosystem. Acceptance Criteria: - Vault API must securely ",
+    "modules": [
+      "Checkout",
+      "PaymentGateway",
+      "CardVault",
+      "InventoryService",
+      "FraudDetection",
+      "RefundEngine"
+    ],
+    "duration": 4.8,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 7,
+    "failed": 3,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 0.7,
+    "confidence_score": 47,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkb1z811y\\TC_001.py::test_tc_001_vault_api PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkb1z811y\\TC_002.py::test_tc_002_paymentgateway PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkb1z811y\\TC_003.py::test_tc_003_paymentgateway PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkb1z811y\\TC_004.py::test_tc_004_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkb1z811y\\TC_005.py::test_tc_005_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkb1z811y\\TC_006.py::test_tc_006_refundengine PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "fail",
+        "error_message": "Hybrid simulation evidence: assertion drift detected between expected contract and observed behavior. Module=FraudDetection; type=functional; expected='FraudDetection marks transaction as high risk and PaymentGateway requires 3DS.'. Likely causes: incomplete edge-condition handling or regression in business rule interpretation."
+      },
+      {
+        "test_id": "TC-008",
+        "status": "fail",
+        "error_message": "Hybrid simulation evidence: assertion drift detected between expected contract and observed behavior. Module=CardVault; type=regression; expected='Token matches expected pattern and latency remains <100 ms.'. Likely causes: incomplete edge-condition handling or regression in business rule interpretation."
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkb1z811y\\TC_009.py::test_tc_009_vault_api PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-010",
+        "status": "fail",
+        "error_message": "Hybrid simulation evidence: assertion drift detected between expected contract and observed behavior. Module=InventoryService; type=regression; expected='Contract assertions pass deterministically.'. Likely causes: incomplete edge-condition handling or regression in business rule interpretation."
+      }
+    ]
   }
 ]

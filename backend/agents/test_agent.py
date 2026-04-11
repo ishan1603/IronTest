@@ -255,7 +255,7 @@ async def generate_tests(token: str, model_id: str, story: StoryAnalysis) -> Lis
 
         if not normalized:
             normalized = fallback_plan
-        elif len(normalized) < 8:
+        elif len(normalized) < 10:
             existing = {item.get("id") for item in normalized}
             for item in fallback_plan:
                 if item["id"] in existing:
@@ -263,6 +263,9 @@ async def generate_tests(token: str, model_id: str, story: StoryAnalysis) -> Lis
                 normalized.append(item)
                 if len(normalized) >= 10:
                     break
+
+        # Keep output deterministic: always return exactly 10 vectors.
+        normalized = normalized[:10]
 
         return [TestCase(**item) for item in normalized]
 

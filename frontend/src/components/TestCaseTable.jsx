@@ -23,6 +23,47 @@ const statusColors = {
   skipped: "text-gray-400 bg-gray-400/10",
 };
 
+function deterministicIndex(seed, size) {
+  if (!size) return 0;
+  let hash = 0;
+  const text = String(seed || "");
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+  }
+  return hash % size;
+}
+
+function extractSignal(message) {
+  const text = String(message || "");
+  if (!text.trim()) return "No concrete assertion signal captured.";
+
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const preferred = lines.find(
+    (line) =>
+      line.startsWith("E   ") ||
+      line.includes("AssertionError") ||
+      line.includes("NameError") ||
+      line.includes("TypeError") ||
+      line.includes("Timeout") ||
+      line.includes("FAILED"),
+  );
+
+  if (preferred) return preferred.replace(/^E\s+/, "");
+
+  const tail = lines.slice(-4).join(" | ");
+  return tail || "No concrete assertion signal captured.";
+}
+
+function extractDurationFromPytestLog(message) {
+  const text = String(message || "");
+  const match = text.match(/in\s+([0-9]+\.[0-9]+)s/);
+  return match ? Number(match[1]) : null;
+}
+
 function buildFailureGuidance(test, result) {
   if (!result || (result.status !== "fail" && result.status !== "error")) {
     return null;
@@ -30,33 +71,33 @@ function buildFailureGuidance(test, result) {
 
   const message = String(result.error_message || "");
   const normalized = message.toLowerCase();
+  const expected = String(test.expected_result || "expected contract");
+  const signal = extractSignal(message);
 
-  let reason =
-    "The test did not behave as expected, which means the current implementation and the expected behavior are out of sync.";
+  let reason = `Execution for ${test.id} in ${test.module} diverged from the expected contract.`;
   let suggestions = [
-    "Re-run this test with verbose logs and compare expected vs actual output step by step.",
-    "Validate the test data setup and environment assumptions before execution starts.",
+    `Compare actual output against expected contract: ${expected}.`,
+    `Add a focused precondition assertion for ${test.module} before final validation to isolate drift earlier.`,
+    `Use ${test.id} as a targeted regression gate once the fix lands.`,
   ];
 
   if (normalized.includes("timeout") || normalized.includes("timed out")) {
-    reason =
-      "The test likely failed because the system response took too long, so the assertion window expired before completion.";
+    reason = `The ${test.type.replace("_", " ")} path for ${test.module} exceeded timing assumptions, so assertions executed after the SLA window.`;
     suggestions = [
-      "Check slow API/database calls in this flow and optimize the bottleneck.",
-      "Increase timeout only after confirming performance is acceptable under normal load.",
-      "Add retries for unstable downstream dependencies where appropriate.",
+      `Profile slow calls used by ${test.id} and optimize the worst dependency first.`,
+      `Keep timeout strict and fix latency root cause before relaxing thresholds for ${test.module}.`,
+      `Add retry/backoff only for transient dependencies, not deterministic logic failures.`,
     ];
   } else if (
     normalized.includes("assert") ||
     normalized.includes("expected") ||
     normalized.includes("actual")
   ) {
-    reason =
-      "The test reached validation, but the actual result did not match the expected business behavior.";
+    reason = `The assertion phase completed, but the observed output for ${test.module} did not satisfy expected behavior.`;
     suggestions = [
-      "Compare expected_result with the real payload and update logic or assertion accordingly.",
-      "Verify edge-case handling for this module before final assertion is executed.",
-      "Add explicit intermediate assertions to pinpoint where divergence starts.",
+      `Reconcile payload fields against expected_result for ${test.id}: ${expected}.`,
+      `Add intermediate assertions around ${test.module} transformation points to localize divergence.`,
+      `Review boundary and edge handling paths linked to ${test.type.replace("_", " ")} behavior.`,
     ];
   } else if (
     normalized.includes("401") ||
@@ -64,32 +105,29 @@ function buildFailureGuidance(test, result) {
     normalized.includes("unauthorized") ||
     normalized.includes("forbidden")
   ) {
-    reason =
-      "The request was blocked by authentication or authorization checks, so the test could not complete the intended path.";
+    reason = `Auth controls blocked ${test.id}, so the intended execution path in ${test.module} never reached business assertions.`;
     suggestions = [
-      "Validate token/session generation and ensure credentials are valid for this scenario.",
-      "Check role/permission mapping for the user used by this test.",
-      "Confirm protected endpoints are called with the required auth headers.",
+      `Validate token/session scope used by ${test.id} and confirm it matches endpoint permissions.`,
+      `Check role mapping for the principal used in ${test.module} tests.`,
+      "Ensure auth headers and claim sets are present before request dispatch.",
     ];
   } else if (normalized.includes("404") || normalized.includes("not found")) {
-    reason =
-      "The test could not find a required resource or endpoint, which interrupted the expected flow.";
+    reason = `A required route/entity was missing during ${test.id}, interrupting ${test.module} flow.`;
     suggestions = [
-      "Verify route names and service URLs for this environment.",
-      "Ensure prerequisite records are created before this test executes.",
-      "Add setup checks that fail early when required entities are missing.",
+      "Verify endpoint and route mapping for this environment before execution.",
+      `Create prerequisite records used by ${test.id} during setup stage.`,
+      "Add explicit setup validation so missing entities fail fast with clear diagnostics.",
     ];
   } else if (
     normalized.includes("500") ||
     normalized.includes("internal server") ||
     normalized.includes("exception")
   ) {
-    reason =
-      "The backend threw an internal error during execution, so the test failed before reaching expected output.";
+    reason = `Internal exception interrupted ${test.module} before ${test.id} reached its final assertion.`;
     suggestions = [
-      "Inspect server logs for stack traces tied to this module and test id.",
-      "Add defensive validation around null/invalid inputs in this code path.",
-      "Cover this scenario with a focused unit test to prevent recurrence.",
+      `Inspect stack trace paths that touch ${test.module} and correlate with ${test.id}.`,
+      "Harden null/invalid input guards in this execution path.",
+      "Add a focused unit test for the specific failing branch to prevent recurrence.",
     ];
   } else if (
     normalized.includes("connect") ||
@@ -98,12 +136,11 @@ function buildFailureGuidance(test, result) {
     normalized.includes("dns") ||
     normalized.includes("socket")
   ) {
-    reason =
-      "The test failed due to a connectivity issue, so dependent services were not reachable at runtime.";
+    reason = `Connectivity instability prevented ${test.id} from reaching required dependencies at runtime.`;
     suggestions = [
-      "Validate service availability and host/port configuration for this environment.",
-      "Check firewall/network rules and container-to-container routing.",
-      "Introduce health checks before running dependent integration tests.",
+      `Confirm host/port targets used by ${test.module} are reachable in this environment.`,
+      "Validate network routing and firewall rules for dependent services.",
+      "Gate execution with dependency health checks before integration tests begin.",
     ];
   } else if (
     normalized.includes("json") ||
@@ -111,19 +148,74 @@ function buildFailureGuidance(test, result) {
     normalized.includes("validation") ||
     normalized.includes("type")
   ) {
-    reason =
-      "The response or request format did not match the expected schema, causing validation to fail.";
+    reason = `Contract/schema mismatch was detected for ${test.module}, causing validation failure in ${test.id}.`;
     suggestions = [
-      "Compare the contract/schema with the payload produced during test execution.",
-      "Normalize field types and required keys before assertion.",
-      "Add schema validation in pre-checks so format errors fail earlier and clearly.",
+      "Compare runtime payload against contract and required keys before assertions.",
+      "Normalize field types at boundary adapters before schema validation.",
+      "Add pre-check schema validation to fail early with actionable diagnostics.",
     ];
   }
 
   return {
-    reason,
+    reason: `${reason} Signal: ${signal}`,
     suggestions,
     context: `${test.id} (${test.module})`,
+  };
+}
+
+function buildTestNarrative(test, result) {
+  if (!result) {
+    return {
+      doing: `This vector validates ${test.type.replace("_", " ")} behavior for ${test.module}: ${test.description}`,
+      why: "Execution not available yet for this test case.",
+      suggestions: [
+        "Run the pipeline to capture real execution evidence and risk signals.",
+      ],
+    };
+  }
+
+  const status = String(result.status || "").toLowerCase();
+  const expected = String(
+    test.expected_result || "Expected outcome not provided.",
+  );
+  const stepCount = Array.isArray(test.steps) ? test.steps.length : 0;
+  const runtime = extractDurationFromPytestLog(result.error_message);
+  const signal = extractSignal(result.error_message);
+
+  const doing = `This test validates ${test.type.replace("_", " ")} behavior in ${test.module}. Hypothesis: ${test.description}. Expected: ${expected}`;
+
+  if (status === "pass") {
+    const passVariants = [
+      `Execution matched the expected contract for ${test.module}, and assertions closed cleanly without runtime defects.`,
+      `The ${test.type.replace("_", " ")} checks remained stable in ${test.module}, and observed output aligned with expected behavior.`,
+      `${test.id} passed because observed state transitions and final output stayed consistent with the acceptance expectation.`,
+    ];
+    const variant =
+      passVariants[
+        deterministicIndex(
+          `${test.id}|pass|${test.module}`,
+          passVariants.length,
+        )
+      ];
+    const runtimeNote =
+      runtime !== null ? ` Runtime: ${runtime.toFixed(2)}s.` : "";
+    return {
+      doing,
+      why: `${variant} Scope: ${stepCount} verification steps.${runtimeNote}`,
+      suggestions: [],
+    };
+  }
+
+  const guidance = buildFailureGuidance(test, result);
+  return {
+    doing,
+    why:
+      guidance?.reason ||
+      `Execution diverged from expected behavior for this scenario. Signal: ${signal}`,
+    suggestions: guidance?.suggestions || [
+      `Compare expected_result with observed evidence for ${test.id}.`,
+      `Re-run ${test.module} checks with focused debug tracing around failing assertions.`,
+    ],
   };
 }
 
@@ -268,7 +360,7 @@ export default function TestCaseTable({
                   <td className="px-6 py-4 capitalize text-gray-500 dark:text-gray-400">
                     {test.type.replace("_", " ")}
                   </td>
-                  <td className="px-6 py-4 text-gray-700 dark:text-gray-300 max-w-md truncate">
+                  <td className="px-6 py-4 text-gray-700 dark:text-gray-300 max-w-3xl whitespace-normal leading-relaxed">
                     {test.description}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -353,7 +445,6 @@ export default function TestCaseTable({
                           }
 
                           const isPass = res.status === "pass";
-                          const guidance = buildFailureGuidance(test, res);
                           const label = isPass
                             ? "Execution Output / Logs"
                             : "Execution Failure Evidence / Logs";
@@ -393,29 +484,46 @@ export default function TestCaseTable({
                               </div>
                               <div className={boxClass}>{output}</div>
 
-                              {guidance && (
-                                <div className="mt-4 rounded-xl border border-amber-200/80 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 p-4">
-                                  <div className="text-xs uppercase tracking-widest font-bold text-amber-700 dark:text-amber-300 mb-2">
-                                    Why It Failed (Plain English)
-                                  </div>
-                                  <p className="text-sm text-amber-900 dark:text-amber-100 leading-relaxed">
-                                    {guidance.reason}
-                                  </p>
+                              {(() => {
+                                const narrative = buildTestNarrative(test, res);
+                                return (
+                                  <div className="mt-4 rounded-xl border border-cyan-200/80 dark:border-cyan-500/30 bg-cyan-50/70 dark:bg-cyan-500/10 p-4">
+                                    <div className="text-xs uppercase tracking-widest font-bold text-cyan-700 dark:text-cyan-300 mb-2">
+                                      What this test case is doing
+                                    </div>
+                                    <p className="text-sm text-cyan-900 dark:text-cyan-100 leading-relaxed">
+                                      {narrative.doing}
+                                    </p>
 
-                                  <div className="mt-3 text-xs uppercase tracking-widest font-bold text-emerald-700 dark:text-emerald-300 mb-2">
-                                    Suggested Fixes
+                                    <div className="mt-3 text-xs uppercase tracking-widest font-bold text-indigo-700 dark:text-indigo-300 mb-2">
+                                      Why this test case{" "}
+                                      {isPass ? "passes" : "fails"}
+                                    </div>
+                                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                                      {narrative.why}
+                                    </p>
+
+                                    {!isPass && (
+                                      <>
+                                        <div className="mt-3 text-xs uppercase tracking-widest font-bold text-emerald-700 dark:text-emerald-300 mb-2">
+                                          Smart suggestions to make it pass
+                                        </div>
+                                        <ul className="list-disc pl-5 space-y-1 text-sm text-gray-800 dark:text-gray-200">
+                                          {narrative.suggestions.map(
+                                            (item, idx) => (
+                                              <li
+                                                key={`${test.id}-narrative-${idx}`}
+                                              >
+                                                {item}
+                                              </li>
+                                            ),
+                                          )}
+                                        </ul>
+                                      </>
+                                    )}
                                   </div>
-                                  <ul className="list-disc pl-5 space-y-1 text-sm text-gray-800 dark:text-gray-200">
-                                    {guidance.suggestions.map((item, idx) => (
-                                      <li
-                                        key={`${guidance.context}-fix-${idx}`}
-                                      >
-                                        {item}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
+                                );
+                              })()}
                             </div>
                           );
                         })()}

@@ -161,6 +161,7 @@ async def github_webhook(payload: dict):
             story_text=story_text,
             story_intent=story.intent,
             source="github_webhook",
+            confidence_score=defects.overall_confidence_score,
         )
 
         return {

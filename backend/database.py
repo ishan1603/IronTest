@@ -128,6 +128,7 @@ def save_execution(
     story_intent: str | None = None,
     source: str = "pipeline",
     session_id: str | None = None,
+    confidence_score: int | None = None,
 ):
     total_tests = len(execution.results)
     passed = sum(1 for r in execution.results if r.status == "pass")
@@ -154,6 +155,7 @@ def save_execution(
         "errors": errors,
         "skipped": skipped,
         "pass_rate": passed / max(1, executed_tests),
+        "confidence_score": int(confidence_score) if confidence_score is not None else None,
         "results": [r.model_dump() for r in execution.results],
     }
 
@@ -190,9 +192,29 @@ def _normalize_run_record(run: dict[str, Any]) -> dict[str, Any]:
         run["story_key"] = story_key
         run["story_label"] = story_label
 
+    def _legacy_confidence_estimate(item: dict[str, Any]) -> int:
+        executed = int(item.get("executed_tests", item.get("total_tests", 0)) or 0)
+        if executed <= 0:
+            return 50
+        passed = int(item.get("passed", 0) or 0)
+        failed = int(item.get("failed", 0) or 0)
+        errors = int(item.get("errors", 0) or 0)
+        skipped = int(item.get("skipped", 0) or 0)
+        pass_rate = passed / max(1, executed)
+
+        # Legacy runs may not have defect-agent confidence; estimate conservatively.
+        score = 42 + (pass_rate * 46)
+        score -= failed * 2.5
+        score -= errors * 4.0
+        score -= skipped * 1.5
+        score -= 5
+        return max(15, min(95, round(score)))
+
     if "pass_rate" in run and "total_tests" in run:
         if "executed_tests" not in run:
             run["executed_tests"] = int(run.get("passed", 0)) + int(run.get("failed", 0)) + int(run.get("errors", 0))
+        if "confidence_score" not in run or run.get("confidence_score") is None:
+            run["confidence_score"] = _legacy_confidence_estimate(run)
         return run
 
     results = run.get("results", [])
@@ -208,6 +230,8 @@ def _normalize_run_record(run: dict[str, Any]) -> dict[str, Any]:
     run["skipped"] = skipped
     run["executed_tests"] = passed + failed + errors
     run["pass_rate"] = passed / max(1, run["executed_tests"])
+    if "confidence_score" not in run or run.get("confidence_score") is None:
+        run["confidence_score"] = _legacy_confidence_estimate(run)
     return run
 
 

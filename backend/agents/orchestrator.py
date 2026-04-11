@@ -74,6 +74,7 @@ class Orchestrator:
                 story_intent=story_result.intent,
                 source="pipeline",
                 session_id=session_id,
+                confidence_score=defect_result.overall_confidence_score,
             )
 
             dashboard = PipelineDashboard(

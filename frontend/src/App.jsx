@@ -5,6 +5,7 @@ import TestCaseTable from "./components/TestCaseTable.jsx";
 import ConfidenceGauge from "./components/ConfidenceGauge.jsx";
 import RiskHeatmap from "./components/RiskHeatmap.jsx";
 import DeploymentVerdict from "./components/DeploymentVerdict.jsx";
+import ScoreHistoryBars from "./components/ScoreHistoryBars.jsx";
 import StoryInsights from "./components/StoryInsights.jsx";
 import VantaGlobeBackground from "./components/VantaGlobeBackground.jsx";
 
@@ -75,17 +76,13 @@ export default function App() {
   const [pipelineError, setPipelineError] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [jiraUrl, setJiraUrl] = useState("");
-  const [jiraEmail, setJiraEmail] = useState("");
   const [jiraToken, setJiraToken] = useState("");
-  const [jiraIssueKey, setJiraIssueKey] = useState("");
   const [ingestSource, setIngestSource] = useState("jira");
   const [adoUrl, setAdoUrl] = useState("");
   const [adoPat, setAdoPat] = useState("");
-  const [adoOrganization, setAdoOrganization] = useState("");
-  const [adoProject, setAdoProject] = useState("");
-  const [adoWorkItemId, setAdoWorkItemId] = useState("");
   const [ingestMessage, setIngestMessage] = useState("");
   const [ingesting, setIngesting] = useState(false);
+  const [storyScoreHistory, setStoryScoreHistory] = useState([]);
 
   // Tabs: 'hero', 'pipeline', 'tests', 'score'
   const [activeTab, setActiveTab] = useState("hero");
@@ -141,6 +138,7 @@ export default function App() {
           ...item,
           primary: agent?.summary || item.primary,
           secondary: agent?.message || item.secondary,
+          details: [],
         };
       });
     }
@@ -163,6 +161,10 @@ export default function App() {
         title: "Story Agent",
         primary: "Story extracted successfully from user input.",
         secondary: `${dashboardData.story?.modules?.length || 0} modules and ${dashboardData.story?.acceptance_criteria?.length || 0} acceptance criteria identified.`,
+        details: [
+          `Intent: ${dashboardData.story?.intent || "N/A"}`,
+          `Risk factors mapped: ${(dashboardData.story?.risk_factors || []).slice(0, 3).join(", ") || "None"}`,
+        ],
       },
       {
         key: "test",
@@ -170,6 +172,10 @@ export default function App() {
         title: "Test Generation Agent",
         primary: "Generated test cases by coverage profile.",
         secondary: `${typeCounts.functional || 0} functional, ${typeCounts.boundary || 0} boundary, ${typeCounts.edge_case || 0} edge, ${typeCounts.regression || 0} regression.`,
+        details: [
+          `Total vectors executed: ${dashboardData.tests?.length || 0}`,
+          `High-risk vectors: ${(dashboardData.tests || []).filter((x) => x.risk_level === "high").length}`,
+        ],
       },
       {
         key: "execution",
@@ -177,6 +183,10 @@ export default function App() {
         title: "Execution Agent",
         primary: "Execution run completed and validated.",
         secondary: `${passed} passed, ${failed} failed, ${errors} errors across ${results.length} tests.`,
+        details: [
+          `Pass rate: ${((passed / Math.max(1, passed + failed + errors)) * 100).toFixed(1)}% (excluding skipped)`,
+          `Duration: ${dashboardData.execution?.duration_seconds || 0}s`,
+        ],
       },
       {
         key: "defect",
@@ -184,9 +194,51 @@ export default function App() {
         title: "Defect Agent",
         primary: `Recommendation: ${dashboardData.defects?.deployment_recommendation || "PENDING"}.`,
         secondary: `Confidence score: ${dashboardData.defects?.overall_confidence_score ?? 0} with prioritized critical vectors.`,
+        details: [
+          `Trend: ${dashboardData.defects?.historical_comparison?.trend || "stable"}`,
+          `Critical tests: ${(dashboardData.defects?.critical_test_ids || []).slice(0, 3).join(", ") || "None"}`,
+        ],
       },
     ];
   }, [agents, dashboardData]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!dashboardData) {
+        setStoryScoreHistory([]);
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/history/story`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            story_text: userStory,
+            story_intent: dashboardData.story?.intent || "",
+            modules: dashboardData.story?.modules || [],
+            limit: 8,
+          }),
+        });
+        if (!res.ok) {
+          setStoryScoreHistory([]);
+          return;
+        }
+        const payload = await res.json();
+        const normalized = (payload.runs || []).map((run, idx) => ({
+          label: `Run ${idx + 1}`,
+          score: Number.isFinite(Number(run.confidence_score))
+            ? Number(run.confidence_score)
+            : Math.round(Number(run.pass_rate || 0) * 100),
+          created_at: run.created_at,
+        }));
+        setStoryScoreHistory(normalized.reverse());
+      } catch {
+        setStoryScoreHistory([]);
+      }
+    };
+
+    fetchHistory();
+  }, [dashboardData, userStory]);
 
   const scoreImprovementSuggestions = useMemo(() => {
     if (!dashboardData) return [];
@@ -283,6 +335,7 @@ export default function App() {
 
   const handleRun = async () => {
     if (!userStory.trim() || isRunning) return;
+
     setError("");
     setPipelineError("");
     setIngestMessage("");
@@ -331,9 +384,7 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           url: jiraUrl,
-          email: jiraEmail || undefined,
           token: jiraToken || undefined,
-          issue_key: jiraIssueKey || undefined,
         }),
       });
       const payload = await res.json().catch(() => ({}));
@@ -368,9 +419,6 @@ export default function App() {
         body: JSON.stringify({
           url: adoUrl,
           pat: adoPat || undefined,
-          organization: adoOrganization || undefined,
-          project: adoProject || undefined,
-          work_item_id: adoWorkItemId || undefined,
         }),
       });
       const payload = await res.json().catch(() => ({}));
@@ -994,18 +1042,7 @@ export default function App() {
                             onChange={(e) => setJiraUrl(e.target.value)}
                           />
                         </div>
-                        <div className="w-full space-y-1 lg:col-span-2">
-                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                            Jira Email
-                          </label>
-                          <input
-                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-                            placeholder="name@company.com"
-                            value={jiraEmail}
-                            onChange={(e) => setJiraEmail(e.target.value)}
-                          />
-                        </div>
-                        <div className="w-full space-y-1 lg:col-span-3">
+                        <div className="w-full space-y-1 lg:col-span-7">
                           <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
                             Access Token / PAT
                           </label>
@@ -1015,17 +1052,6 @@ export default function App() {
                             placeholder="ATATT3xFf..."
                             value={jiraToken}
                             onChange={(e) => setJiraToken(e.target.value)}
-                          />
-                        </div>
-                        <div className="w-full space-y-1 lg:col-span-2">
-                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                            Issue Key (Optional)
-                          </label>
-                          <input
-                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-                            placeholder="PROJ-123"
-                            value={jiraIssueKey}
-                            onChange={(e) => setJiraIssueKey(e.target.value)}
                           />
                         </div>
                         <button
@@ -1038,7 +1064,7 @@ export default function App() {
                       </>
                     ) : (
                       <>
-                        <div className="w-full space-y-1 sm:col-span-2 lg:col-span-6">
+                        <div className="w-full space-y-1 sm:col-span-2 lg:col-span-8">
                           <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
                             Azure DevOps Work Item URL
                           </label>
@@ -1049,7 +1075,7 @@ export default function App() {
                             onChange={(e) => setAdoUrl(e.target.value)}
                           />
                         </div>
-                        <div className="w-full space-y-1 lg:col-span-3">
+                        <div className="w-full space-y-1 lg:col-span-4">
                           <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
                             Azure DevOps PAT
                           </label>
@@ -1059,39 +1085,6 @@ export default function App() {
                             placeholder="azdpat..."
                             value={adoPat}
                             onChange={(e) => setAdoPat(e.target.value)}
-                          />
-                        </div>
-                        <div className="w-full space-y-1 lg:col-span-1">
-                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                            Org (Opt)
-                          </label>
-                          <input
-                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-                            placeholder="org"
-                            value={adoOrganization}
-                            onChange={(e) => setAdoOrganization(e.target.value)}
-                          />
-                        </div>
-                        <div className="w-full space-y-1 lg:col-span-1">
-                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                            Project (Opt)
-                          </label>
-                          <input
-                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-                            placeholder="project"
-                            value={adoProject}
-                            onChange={(e) => setAdoProject(e.target.value)}
-                          />
-                        </div>
-                        <div className="w-full space-y-1 lg:col-span-1">
-                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                            Work Item (Opt)
-                          </label>
-                          <input
-                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-                            placeholder="123"
-                            value={adoWorkItemId}
-                            onChange={(e) => setAdoWorkItemId(e.target.value)}
                           />
                         </div>
                         <button
@@ -1193,6 +1186,13 @@ export default function App() {
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       {card.secondary}
                     </p>
+                    {Array.isArray(card.details) && card.details.length > 0 && (
+                      <ul className="mt-2 list-disc pl-5 space-y-1 text-[11px] text-gray-600 dark:text-gray-300">
+                        {card.details.map((detail) => (
+                          <li key={`${card.key}-${detail}`}>{detail}</li>
+                        ))}
+                      </ul>
+                    )}
                   </motion.div>
                 ))}
               </div>
@@ -1262,8 +1262,12 @@ export default function App() {
                 </p>
               </div>
 
+              <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
+                <RiskHeatmap moduleRisks={dashboardData.defects.module_risks} />
+              </div>
+
               <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-1 rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
+                <div className="lg:col-span-1 rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-4 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
                   <ConfidenceGauge
                     score={dashboardData.defects.overall_confidence_score}
                     recommendation={
@@ -1272,10 +1276,20 @@ export default function App() {
                   />
                 </div>
                 <div className="lg:col-span-2 rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
-                  <RiskHeatmap
-                    moduleRisks={dashboardData.defects.module_risks}
+                  <DeploymentVerdict
+                    recommendation={
+                      dashboardData.defects.deployment_recommendation
+                    }
+                    rationale={dashboardData.defects.recommendation_rationale}
                   />
                 </div>
+              </div>
+
+              <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
+                <ScoreHistoryBars
+                  currentScore={dashboardData.defects.overall_confidence_score}
+                  runs={storyScoreHistory}
+                />
               </div>
 
               <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
@@ -1292,15 +1306,6 @@ export default function App() {
                     <li key={`improve-score-${idx}`}>{suggestion}</li>
                   ))}
                 </ul>
-              </div>
-
-              <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
-                <DeploymentVerdict
-                  recommendation={
-                    dashboardData.defects.deployment_recommendation
-                  }
-                  rationale={dashboardData.defects.recommendation_rationale}
-                />
               </div>
             </motion.div>
           )}
