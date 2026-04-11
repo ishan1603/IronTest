@@ -67,7 +67,14 @@ class Orchestrator:
             await emit({"event": "agent_complete", "agent": "defect", "result": defect_result.model_dump()})
             
             # Save the execution run to our history file so the defect agent can learn from it next time
-            save_execution(story_result.modules, execution_result)
+            save_execution(
+                story_result.modules,
+                execution_result,
+                story_text=user_story,
+                story_intent=story_result.intent,
+                source="pipeline",
+                session_id=session_id,
+            )
 
             dashboard = PipelineDashboard(
                 story=story_result,

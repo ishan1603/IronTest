@@ -1,672 +1,94 @@
 [
   {
-    "created_at": "2026-04-08T16:43:58.033318+00:00",
+    "schema_version": 2,
+    "run_id": "bae22f5f7a914a1abd5c29cb3cf6cd95",
+    "created_at": "2026-04-11T13:01:40.074351+00:00",
+    "source": "pipeline",
+    "session_id": "1b7825d0de1940349d8ac313301caf16",
+    "story_key": "64f9fc8a5445186747cc534c",
+    "story_label": "Azure DevOps Work Item: IronTest#1 Organization: IronTest Project: IronTest Work Item Type: Task State: To Do Summary: Mock Ingestion Priority: 2 Area Path: Iro",
     "modules": [
-      "VaultService"
+      "SearchEngine",
+      "RelevanceRanking",
+      "FilterService",
+      "Autosuggest",
+      "LoadBalancer"
     ],
-    "duration": 4.09,
-    "total_tests": 10,
-    "passed": 8,
-    "failed": 2,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.8,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_001.py::test_successful_tokenization PASSED [100%]\n\n============================== 1 passed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_002.py::test_boundary_card_details PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_003.py::test_invalid_card_details_rejected PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "...===========================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_004.py::test_empty_card_details_rejected FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_empty_card_details_rejected _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_004.py:177: in test_empty_card_details_rejected\n    assert response.status_code == 400\nE   assert 200 == 400\nE    +  where 200 = <TC_004.MockResponse object at 0x000001A0580A7140>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_004.py::test_empty_card_details_rejected\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_005.py::test_customer_token_association PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_006.py::test_invalid_token_blocked PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_007.py::test_tokenization_latency_budget PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "... =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_008.py::test_dependency_downtime_signal FAILED [100%]\n\n================================== FAILURES ===================================\n_______________________ test_dependency_downtime_signal _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_008.py:177: in test_dependency_downtime_signal\n    assert response.status_code == 503\nE   assert 400 == 503\nE    +  where 400 = <TC_008.MockResponse object at 0x000002236AA57320>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_008.py::test_dependency_downtime_signal\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_009.py::test_tc_009_vaultservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
-      },
-      {
-        "test_id": "TC-010",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpl3bq23r0\\TC_010.py::test_regression_happy_path_tokenization PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-08T16:48:13.952175+00:00",
-    "modules": [
-      "CoreService",
-      "AuthService",
-      "APIGateway"
-    ],
-    "duration": 4.7,
-    "total_tests": 10,
-    "passed": 8,
-    "failed": 2,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.8,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_001.py::test_successful_tokenization PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_002.py::test_boundary_card_details PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_003.py::test_invalid_card_details_rejected PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "...===========================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_004.py::test_empty_card_details_rejected FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_empty_card_details_rejected _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_004.py:177: in test_empty_card_details_rejected\n    assert response.status_code == 400\nE   assert 200 == 400\nE    +  where 200 = <TC_004.MockResponse object at 0x00000170A5F7AED0>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_004.py::test_empty_card_details_rejected\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_005.py::test_customer_token_association PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_006.py::test_invalid_token_blocked PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_007.py::test_tokenization_latency_budget PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "... =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_008.py::test_dependency_downtime_signal FAILED [100%]\n\n================================== FAILURES ===================================\n_______________________ test_dependency_downtime_signal _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_008.py:177: in test_dependency_downtime_signal\n    assert response.status_code == 503\nE   assert 400 == 503\nE    +  where 400 = <TC_008.MockResponse object at 0x0000020B8BEE27E0>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_008.py::test_dependency_downtime_signal\n============================== 1 failed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_009.py::test_tc_009_apigateway PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-010",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpmyugf5js\\TC_010.py::test_regression_happy_path_tokenization PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-08T16:58:42.508355+00:00",
-    "modules": [
-      "VaultService"
-    ],
-    "duration": 3.98,
-    "total_tests": 10,
-    "passed": 8,
-    "failed": 2,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.8,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_001.py::test_successful_tokenization PASSED [100%]\n\n============================== 1 passed in 0.06s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_002.py::test_boundary_card_details PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_003.py::test_invalid_card_details_rejected PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "...===========================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_004.py::test_empty_card_details_rejected FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_empty_card_details_rejected _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_004.py:177: in test_empty_card_details_rejected\n    assert response.status_code == 400\nE   assert 200 == 400\nE    +  where 200 = <TC_004.MockResponse object at 0x00000153D52FB2C0>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_004.py::test_empty_card_details_rejected\n============================== 1 failed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_005.py::test_customer_token_association PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_006.py::test_invalid_token_blocked PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_007.py::test_tokenization_latency_budget PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "... =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_008.py::test_dependency_downtime_signal FAILED [100%]\n\n================================== FAILURES ===================================\n_______________________ test_dependency_downtime_signal _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_008.py:177: in test_dependency_downtime_signal\n    assert response.status_code == 503\nE   assert 400 == 503\nE    +  where 400 = <TC_008.MockResponse object at 0x000001CF7BF872F0>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_008.py::test_dependency_downtime_signal\n============================== 1 failed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_009.py::test_tc_009_vaultservice PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-010",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp96f93orm\\TC_010.py::test_regression_happy_path_tokenization PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-08T18:00:34.357699+00:00",
-    "modules": [
-      "CheckoutEngine",
-      "VaultService",
-      "ThreeDSecure",
-      "InventoryManagement",
-      "RefundProcessor"
-    ],
-    "duration": 4.33,
+    "duration": 5.62,
     "total_tests": 9,
-    "passed": 3,
-    "failed": 6,
+    "executed_tests": 9,
+    "passed": 9,
+    "failed": 0,
     "errors": 0,
     "skipped": 0,
-    "pass_rate": 0.3333333333333333,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "fail",
-        "error_message": "...===========\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_001.py::test_vault_token_latency FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_vault_token_latency ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_001.py:179: in test_vault_token_latency\n    assert r.status_code == 200 and r.json().get('token') and elapsed <= 100\nE   assert (400 == 200)\nE    +  where 400 = <TC_001.MockResponse object at 0x0000020B21DB7350>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_001.py::test_vault_token_latency\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_002.py::test_3ds_at_threshold FAILED [100%]\n\n================================== FAILURES ===================================\n____________________________ test_3ds_at_threshold ____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_002.py:178: in test_3ds_at_threshold\n    assert data.get('threeDS') == 'required'\nE   AssertionError: assert None == 'required'\nE    +  where None = <built-in method get of dict object at 0x000001D1387BF600>('threeDS')\nE    +    where <built-in method get of dict object at 0x000001D1387BF600> = {'card_details': '', 'card_id': '', 'defect': 'simulated', 'error': 'internal error', ...}.get\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_002.py::test_3ds_at_threshold\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_003.py::test_no_3ds_below_threshold PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "...=======================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_004.py::test_inventory_release_on_failure FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_inventory_release_on_failure ______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_004.py:177: in test_inventory_release_on_failure\n    pay = requests.post('https://api.example.com/payment', json={'checkout_id':start.json()['id'],'card':'4000000000000002'})\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_004.py::test_inventory_release_on_failure\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_005.py::test_tc_005_inventorymanagement PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_006.py::test_refund_sla FAILED [100%]\n\n================================== FAILURES ===================================\n_______________________________ test_refund_sla _______________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_006.py:177: in test_refund_sla\n    assert r.json()['status'] == 'queued'\nE   AssertionError: assert 'success' == 'queued'\nE     \nE     - queued\nE     + success\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_006.py::test_refund_sla\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "...atform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_007.py::test_prevent_duplicate_refund FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_prevent_duplicate_refund ________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_007.py:178: in test_prevent_duplicate_refund\n    assert second.status_code == 409 and 'duplicate' in second.text.lower()\nE   assert (200 == 409)\nE    +  where 200 = <TC_007.MockResponse object at 0x0000018374887140>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_007.py::test_prevent_duplicate_refund\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "...======== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_008.py::test_full_checkout_flow FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_full_checkout_flow ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_008.py:176: in test_full_checkout_flow\n    token = requests.post('https://api.example.com/vault/tokenize', json={'card':'4111111111111111'}).json()['token']\nE   KeyError: 'token'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_008.py::test_full_checkout_flow\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3ax_bwuc\\TC_009.py::test_tc_009_vaultservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-08T18:30:41.405559+00:00",
-    "modules": [
-      "PaymentGateway",
-      "CardVault",
-      "ThreeDSecure",
-      "InventoryService",
-      "RefundEngine",
-      "OrderOrchestration"
-    ],
-    "duration": 5.33,
-    "total_tests": 10,
-    "passed": 3,
-    "failed": 7,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.3,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "fail",
-        "error_message": "...=============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_001.py::test_payment_without_3ds FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_payment_without_3ds ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_001.py:179: in test_payment_without_3ds\n    assert data['status'] == 'approved' and not data.get('3ds_required')\nE   AssertionError: assert ('success' == 'approved'\nE     \nE     - approved\nE     + success)\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_001.py::test_payment_without_3ds\n============================== 1 failed in 0.20s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...ession starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_002.py::test_high_value_triggers_3ds FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_high_value_triggers_3ds _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_002.py:177: in test_high_value_triggers_3ds\n    assert resp.status_code == 202\nE   assert 200 == 202\nE    +  where 200 = <TC_002.MockResponse object at 0x000001891BA23710>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_002.py::test_high_value_triggers_3ds\n============================== 1 failed in 0.14s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_003.py::test_vault_latency_under_100ms PASSED [100%]\n\n============================== 1 passed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_004.py::test_tc_004_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "fail",
-        "error_message": "...==========================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_005.py::test_inventory_release_on_success FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_inventory_release_on_success ______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_005.py:178: in test_inventory_release_on_success\n    assert pay_resp.json()['status'] == 'approved'\nE   AssertionError: assert 'success' == 'approved'\nE     \nE     - approved\nE     + success\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_005.py::test_inventory_release_on_success\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "fail",
-        "error_message": "...======================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_006.py::test_inventory_rollback_on_failure FAILED [100%]\n\n================================== FAILURES ===================================\n_____________________ test_inventory_rollback_on_failure ______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_006.py:177: in test_inventory_rollback_on_failure\n    assert fail_resp.json()['status'] == 'declined'\nE   AssertionError: assert 'success' == 'declined'\nE     \nE     - declined\nE     + success\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_006.py::test_inventory_rollback_on_failure\n============================== 1 failed in 0.14s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_007.py::test_tc_007_refundengine PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "...t session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_008.py::test_duplicate_refund_error FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_duplicate_refund_error _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_008.py:176: in test_duplicate_refund_error\n    assert resp.status_code == 409\nE   assert 200 == 409\nE    +  where 200 = <TC_008.MockResponse object at 0x000001C1AF117410>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_008.py::test_duplicate_refund_error\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "fail",
-        "error_message": "...rs\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_009.py::test_full_checkout_regression FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_full_checkout_regression ________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_009.py:180: in test_full_checkout_regression\n    assert (expect=='approved' and not status) or (expect=='declined' and not status)\nE   AssertionError: assert (('approved' == 'approved'\nE     \nE       approved and not True) or ('approved' == 'declined'\nE     \nE     - declined\nE     + approved))\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_009.py::test_full_checkout_regression\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-010",
-        "status": "fail",
-        "error_message": "...t session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_010.py::test_boundary_amount_no_3ds FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_boundary_amount_no_3ds _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_010.py:177: in test_boundary_amount_no_3ds\n    assert resp.status_code == 200\nE   assert 500 == 200\nE    +  where 500 = <TC_010.MockResponse object at 0x000001E019297560>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp9nvl97kn\\TC_010.py::test_boundary_amount_no_3ds\n============================== 1 failed in 0.14s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-08T18:49:33.648598+00:00",
-    "modules": [
-      "CheckoutEngine",
-      "TokenVault",
-      "ThreeDSecure",
-      "InventoryService",
-      "RefundProcessor",
-      "PaymentGateway"
-    ],
-    "duration": 4.56,
-    "total_tests": 9,
-    "passed": 2,
-    "failed": 7,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.2222222222222222,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "fail",
-        "error_message": "...=============\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_001.py::test_token_vault_latency FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_token_vault_latency ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_001.py:180: in test_token_vault_latency\n    assert r.status_code == 200 and 'token' in r.json() and elapsed <= 100\nE   assert (400 == 200)\nE    +  where 400 = <TC_001.MockResponse object at 0x000002C14CB87500>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_001.py::test_token_vault_latency\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...______\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_002.py:178: in test_3ds_trigger_high_amount\n    assert r.status_code == 200 and '3ds_url' in r.json()\nE   AssertionError: assert (200 == 200 and '3ds_url' in {'card_details': 'expected_details', 'card_id': '123456', 'defect': None, 'locked': True, ...})\nE    +  where 200 = <TC_002.MockResponse object at 0x00000215BB2A1AC0>.status_code\nE    +  and   {'card_details': 'expected_details', 'card_id': '123456', 'defect': None, 'locked': True, ...} = <bound method MockResponse.json of <TC_002.MockResponse object at 0x00000215BB2A1AC0>>()\nE    +    where <bound method MockResponse.json of <TC_002.MockResponse object at 0x00000215BB2A1AC0>> = <TC_002.MockResponse object at 0x00000215BB2A1AC0>.json\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_002.py::test_3ds_trigger_high_amount\n============================== 1 failed in 0.14s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "fail",
-        "error_message": "...rts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_003.py::test_no_3ds_at_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_no_3ds_at_boundary ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_003.py:178: in test_no_3ds_at_boundary\n    assert r.status_code == 200 and '3ds_url' not in resp\nE   assert (500 == 200)\nE    +  where 500 = <TC_003.MockResponse object at 0x000002A66B1D7410>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_003.py::test_no_3ds_at_boundary\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "...==================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_004.py::test_checkout_no_stock FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_checkout_no_stock ____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_004.py:178: in test_checkout_no_stock\n    assert r.status_code == 400 and r.json().get('error') == 'out_of_stock'\nE   assert (200 == 400)\nE    +  where 200 = <TC_004.MockResponse object at 0x0000028D56752300>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_004.py::test_checkout_no_stock\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_005.py::test_tc_005_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_006.py::test_refund_sla_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_refund_sla_boundary ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_006.py:178: in test_refund_sla_boundary\n    r = requests.post(f'https://example.com/refund/{order[\"id\"]}')\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_006.py::test_refund_sla_boundary\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_007.py::test_refund_outside_sla FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_refund_outside_sla ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_007.py:178: in test_refund_outside_sla\n    r = requests.post(f'https://example.com/refund/{order[\"id\"]}')\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_007.py::test_refund_outside_sla\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "...===========================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_008.py::test_checkout_with_token_latency FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_checkout_with_token_latency _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_008.py:176: in test_checkout_with_token_latency\n    token = requests.post('https://example.com/api/v1/tokenize', json={\"card_number\":\"4111111111111111\"}).json()['token']\nE   KeyError: 'token'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_008.py::test_checkout_with_token_latency\n============================== 1 failed in 0.14s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpe2m12pfq\\TC_009.py::test_tc_009_paymentgateway PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-08T18:53:53.612822+00:00",
-    "modules": [
-      "CheckoutEngine",
-      "TokenVault",
-      "ThreeDSecure",
-      "InventoryService",
-      "RefundProcessor",
-      "PaymentGateway"
-    ],
-    "duration": 4.01,
-    "total_tests": 9,
-    "passed": 2,
-    "failed": 7,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.2222222222222222,
+    "pass_rate": 1.0,
     "results": [
       {
         "test_id": "TC-001",
         "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_001.py::test_vault_token_latency PASSED [100%]\n\n============================== 1 passed in 0.11s =============================="
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpk1_p3fzg\\TC_001.py::test_basic_search_latency PASSED [100%]\n\n============================== 1 passed in 0.12s =============================="
       },
       {
         "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...==========\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_002.py::test_3ds_trigger_at_threshold FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_3ds_trigger_at_threshold ________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_002.py:178: in test_3ds_trigger_at_threshold\n    assert r.status_code == 202 and 'challengeUrl' in r.json()\nE   assert (500 == 202)\nE    +  where 500 = <TC_002.MockResponse object at 0x00000207EDA571A0>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_002.py::test_3ds_trigger_at_threshold\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "fail",
-        "error_message": "... starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_003.py::test_no_3ds_low_risk FAILED [100%]\n\n================================== FAILURES ===================================\n____________________________ test_no_3ds_low_risk _____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_003.py:178: in test_no_3ds_low_risk\n    assert r.status_code == 200 and 'challengeUrl' not in data\nE   assert (500 == 200)\nE    +  where 500 = <TC_003.MockResponse object at 0x0000017EFF457560>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_003.py::test_no_3ds_low_risk\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "...============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_004.py::test_inventory_lock_release_on_success FAILED [100%]\n\n================================== FAILURES ===================================\n___________________ test_inventory_lock_release_on_success ____________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_004.py:177: in test_inventory_lock_release_on_success\n    pay = requests.post('https://api.example.com/payment', json={'orderId':start.json()['orderId']})\nE   KeyError: 'orderId'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_004.py::test_inventory_lock_release_on_success\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "fail",
-        "error_message": "...latform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_005.py::test_inventory_rollback_on_payment_failure FAILED [100%]\n\n================================== FAILURES ===================================\n_________________ test_inventory_rollback_on_payment_failure __________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_005.py:177: in test_inventory_rollback_on_payment_failure\n    fail = requests.post('https://api.example.com/payment', json={'orderId':start.json()['orderId'],'forceFail':True})\nE   KeyError: 'orderId'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_005.py::test_inventory_rollback_on_payment_failure\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-006",
         "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_006.py::test_tc_006_refundprocessor PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "...ins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_007.py::test_token_format FAILED [100%]\n\n================================== FAILURES ===================================\n______________________________ test_token_format ______________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_007.py:178: in test_token_format\n    assert re.fullmatch(r'tok_[A-Za-z0-9]{24}', token) is not None\nE   AssertionError: assert None is not None\nE    +  where None = <function fullmatch at 0x000001C5F7DE5120>('tok_[A-Za-z0-9]{24}', 'tok_123')\nE    +    where <function fullmatch at 0x000001C5F7DE5120> = <module 're' from 'C:\\\\Users\\\\ishan\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\re\\\\__init__.py'>.fullmatch\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_007.py::test_token_format\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "...====\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_008.py::test_3ds_not_skipped_high_value FAILED [100%]\n\n================================== FAILURES ===================================\n_______________________ test_3ds_not_skipped_high_value _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_008.py:177: in test_3ds_not_skipped_high_value\n    assert r.status_code == 202 and 'challengeUrl' in r.json()\nE   assert (200 == 202)\nE    +  where 200 = <TC_008.MockResponse object at 0x000001F3C29C7D40>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_008.py::test_3ds_not_skipped_high_value\n============================== 1 failed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "fail",
-        "error_message": "...m win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_009.py::test_gateway_decline_latency FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_gateway_decline_latency _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_009.py:179: in test_gateway_decline_latency\n    assert r.status_code == 402 and r.json()['code']=='DECLINED' and elapsed <= 200\nE   assert (200 == 402)\nE    +  where 200 = <TC_009.MockResponse object at 0x000001D3FE607410>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp7weutdo9\\TC_009.py::test_gateway_decline_latency\n============================== 1 failed in 0.11s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-08T19:08:53.553888+00:00",
-    "modules": [
-      "PaymentGateway",
-      "CardVault",
-      "ThreeDSecure",
-      "InventoryService",
-      "RefundEngine",
-      "OrderOrchestration"
-    ],
-    "duration": 6.9,
-    "total_tests": 9,
-    "passed": 1,
-    "failed": 8,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.1111111111111111,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "fail",
-        "error_message": "...= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_001.py::test_payment_without_3ds FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_payment_without_3ds ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_001.py:178: in test_payment_without_3ds\n    assert resp.json()['status'] == 'authorized'\nE   AssertionError: assert 'success' == 'authorized'\nE     \nE     - authorized\nE     + success\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_001.py::test_payment_without_3ds\n============================== 1 failed in 0.24s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_002.py::test_high_risk_3ds_trigger FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_high_risk_3ds_trigger __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_002.py:177: in test_high_risk_3ds_trigger\n    assert data['3ds_required'] is True\nE   KeyError: '3ds_required'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_002.py::test_high_risk_3ds_trigger\n============================== 1 failed in 0.21s =============================="
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpk1_p3fzg\\TC_002.py::test_relevance_score_boundary PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
       },
       {
         "test_id": "TC-003",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_003.py::test_vault_latency FAILED [100%]\n\n================================== FAILURES ===================================\n_____________________________ test_vault_latency ______________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_003.py:175: in test_vault_latency\n    start = time.time()\nE   NameError: name 'time' is not defined. Did you forget to import 'time'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_003.py::test_vault_latency\n============================== 1 failed in 0.21s =============================="
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpk1_p3fzg\\TC_003.py::test_max_filters_latency PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
       },
       {
         "test_id": "TC-004",
         "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_004.py::test_tc_004_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.17s =============================="
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpk1_p3fzg\\TC_004.py::test_autosuggest_latency PASSED [100%]\n\n============================== 1 passed in 0.11s =============================="
       },
       {
         "test_id": "TC-005",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_005.py::test_refund_sla FAILED [100%]\n\n================================== FAILURES ===================================\n_______________________________ test_refund_sla _______________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_005.py:176: in test_refund_sla\n    assert resp.status_code == 202\nE   assert 200 == 202\nE    +  where 200 = <TC_005.MockResponse object at 0x000001C881D1AF30>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_005.py::test_refund_sla\n============================== 1 failed in 0.18s =============================="
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpk1_p3fzg\\TC_005.py::test_load_balancer_concurrency PASSED [100%]\n\n============================== 1 passed in 1.25s =============================="
       },
       {
         "test_id": "TC-006",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_006.py::test_boundary_amount_no_3ds FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_boundary_amount_no_3ds _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_006.py:177: in test_boundary_amount_no_3ds\n    assert data['3ds_required'] is False\nE   KeyError: '3ds_required'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_006.py::test_boundary_amount_no_3ds\n============================== 1 failed in 0.15s =============================="
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpk1_p3fzg\\TC_006.py::test_empty_query_handling PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
       },
       {
         "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "...==========\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_007.py::test_payment_failure_inventory_rollback FAILED [100%]\n\n================================== FAILURES ===================================\n___________________ test_payment_failure_inventory_rollback ___________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_007.py:177: in test_payment_failure_inventory_rollback\n    assert resp.status_code == 402\nE   assert 400 == 402\nE    +  where 400 = <TC_007.MockResponse object at 0x000001D6AD83B470>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_007.py::test_payment_failure_inventory_rollback\n============================== 1 failed in 0.17s =============================="
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpk1_p3fzg\\TC_007.py::test_ranking_bug_regression PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
       },
       {
         "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "...=================== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_008.py::test_vault_encryption_and_latency FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_vault_encryption_and_latency ______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_008.py:175: in test_vault_encryption_and_latency\n    start = time.time()\nE   NameError: name 'time' is not defined. Did you forget to import 'time'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_008.py::test_vault_encryption_and_latency\n============================== 1 failed in 0.15s =============================="
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpk1_p3fzg\\TC_008.py::test_invalid_filter_handling PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
       },
       {
         "test_id": "TC-009",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_009.py::test_refund_invalid_order FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_refund_invalid_order __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_009.py:178: in test_refund_invalid_order\n    assert sla['missed'] == 0\nE   KeyError: 'missed'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmprlbfwlul\\TC_009.py::test_refund_invalid_order\n============================== 1 failed in 0.15s =============================="
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpk1_p3fzg\\TC_009.py::test_autosuggest_no_match PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
       }
     ]
   },
   {
-    "created_at": "2026-04-08T19:23:53.209547+00:00",
+    "schema_version": 2,
+    "run_id": "f1fa2633594346feb91858ff07c659bd",
+    "created_at": "2026-04-11T13:04:01.766706+00:00",
+    "source": "pipeline",
+    "session_id": "796dfe815d2547d4a70f57b42272e058",
+    "story_key": "2eb414afc2b032ebf3f01733",
+    "story_label": "As a customer, I require a frictionless checkout experience using my tokenized credit card across the ecosystem. Acceptance Criteria: - Vault API must securely ",
     "modules": [
       "Checkout",
       "PaymentGateway",
-      "CardVault",
-      "FraudDetection",
+      "VaultService",
       "InventoryService",
+      "FraudDetection",
       "RefundEngine"
     ],
-    "duration": 6.48,
+    "duration": 3.49,
     "total_tests": 9,
-    "passed": 1,
-    "failed": 8,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.1111111111111111,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_001.py::test_vault_api_latency PASSED [100%]\n\n============================== 1 passed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...============\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_002.py::test_3ds_trigger_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_3ds_trigger_boundary __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_002.py:178: in test_3ds_trigger_boundary\n    assert r.status_code == 202 and r.json().get('3ds_required') is True\nE   assert (500 == 202)\nE    +  where 500 = <TC_002.MockResponse object at 0x000001C944873860>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_002.py::test_3ds_trigger_boundary\n============================== 1 failed in 0.20s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_003.py::test_inventory_release_on_timeout FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_inventory_release_on_timeout ______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_003.py:180: in test_inventory_release_on_timeout\n    assert inv.json()['locked'] == 0\nE   assert True == 0\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_003.py::test_inventory_release_on_timeout\n============================== 1 failed in 0.18s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_004.py::test_refund_sla_trigger FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_refund_sla_trigger ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_004.py:178: in test_refund_sla_trigger\n    start = datetime.datetime.fromisoformat(workflow.json()['started_at'])\nE   KeyError: 'started_at'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_004.py::test_refund_sla_trigger\n============================== 1 failed in 0.17s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "fail",
-        "error_message": "...======== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_005.py::test_vault_expired_token FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_vault_expired_token ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_005.py:177: in test_vault_expired_token\n    assert r.status_code == 401\nE   assert 200 == 401\nE    +  where 200 = <TC_005.MockResponse object at 0x0000029D95986570>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_005.py::test_vault_expired_token\n============================== 1 failed in 0.17s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "fail",
-        "error_message": "...======================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_006.py::test_no_3ds_at_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_no_3ds_at_boundary ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_006.py:178: in test_no_3ds_at_boundary\n    assert r.status_code == 200 and not r.json().get('3ds_required')\nE   assert (500 == 200)\nE    +  where 500 = <TC_006.MockResponse object at 0x000001D144CBE540>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_006.py::test_no_3ds_at_boundary\n============================== 1 failed in 0.18s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "...=========================== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_007.py::test_inventory_release_on_failure_regression FAILED [100%]\n\n================================== FAILURES ===================================\n________________ test_inventory_release_on_failure_regression _________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_007.py:179: in test_inventory_release_on_failure_regression\n    assert inv.json()['locked'] == 0\nE   assert True == 0\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_007.py::test_inventory_release_on_failure_regression\n============================== 1 failed in 0.17s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "...============\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_008.py::test_fraud_flag_high_amount FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_fraud_flag_high_amount _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_008.py:178: in test_fraud_flag_high_amount\n    assert resp['status'] == 'under_review' and not resp.get('captured')\nE   AssertionError: assert ('success' == 'under_review'\nE     \nE     - under_review\nE     + success)\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_008.py::test_fraud_flag_high_amount\n============================== 1 failed in 0.17s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "fail",
-        "error_message": "...lq_0g8fc\\TC_009.py:179: in test_refund_sla_breach\n    assert sla.json()['status'] == 'breached'\nE   AssertionError: assert 'success' == 'breached'\nE     \nE     - breached\nE     + success\n============================== warnings summary ===============================\nAppData/Local/Temp/tmplq_0g8fc/TC_009.py::test_refund_sla_breach\n  C:\\Users\\ishan\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_009.py:176: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    past_date = (datetime.datetime.utcnow() - datetime.timedelta(days=8)).isoformat()\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmplq_0g8fc\\TC_009.py::test_refund_sla_breach\n======================== 1 failed, 1 warning in 0.18s ========================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-08T19:41:19.893870+00:00",
-    "modules": [
-      "PaymentGateway",
-      "CardVault",
-      "ThreeDSecure",
-      "InventoryService",
-      "RefundEngine",
-      "OrderManagement"
-    ],
-    "duration": 5.2,
-    "total_tests": 9,
-    "passed": 1,
-    "failed": 8,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.1111111111111111,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "fail",
-        "error_message": "...== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_001.py::test_no_3ds_for_low_amount FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_no_3ds_for_low_amount __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_001.py:178: in test_no_3ds_for_low_amount\n    assert data['status'] == 'authorized'\nE   AssertionError: assert 'success' == 'authorized'\nE     \nE     - authorized\nE     + success\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_001.py::test_no_3ds_for_low_amount\n============================== 1 failed in 0.17s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...s =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_002.py::test_3ds_trigger_for_high_amount FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_3ds_trigger_for_high_amount _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_002.py:178: in test_3ds_trigger_for_high_amount\n    assert data['status'] == 'pending_3ds'\nE   AssertionError: assert 'success' == 'pending_3ds'\nE     \nE     - pending_3ds\nE     + success\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_002.py::test_3ds_trigger_for_high_amount\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "fail",
-        "error_message": "...=========================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_003.py::test_vault_latency_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_vault_latency_boundary _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_003.py:179: in test_vault_latency_boundary\n    assert resp.status_code == 200 and elapsed <= 100\nE   assert (400 == 200)\nE    +  where 400 = <TC_003.MockResponse object at 0x0000022DB0B7CDD0>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_003.py::test_vault_latency_boundary\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_004.py::test_tc_004_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "fail",
-        "error_message": "...test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_005.py::test_refund_sla_initiation FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_refund_sla_initiation __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_005.py:176: in test_refund_sla_initiation\n    assert resp.status_code == 202\nE   assert 200 == 202\nE    +  where 200 = <TC_005.MockResponse object at 0x000001DDDED8B4D0>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_005.py::test_refund_sla_initiation\n============================== 1 failed in 0.14s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "fail",
-        "error_message": "...=== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_006.py::test_boundary_amount_no_3ds FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_boundary_amount_no_3ds _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_006.py:177: in test_boundary_amount_no_3ds\n    assert data['status'] == 'authorized'\nE   AssertionError: assert 'error' == 'authorized'\nE     \nE     - authorized\nE     + error\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_006.py::test_boundary_amount_no_3ds\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "...in32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_007.py::test_vault_malformed_input FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_vault_malformed_input __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_007.py:177: in test_vault_malformed_input\n    assert resp.json()['error'] == 'invalid_payload'\nE   AssertionError: assert 'card details cannot be empty' == 'invalid_payload'\nE     \nE     - invalid_payload\nE     + card details cannot be empty\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_007.py::test_vault_malformed_input\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_008.py::test_inventory_release_on_failure FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_inventory_release_on_failure ______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_008.py:178: in test_inventory_release_on_failure\n    assert status['available_qty'] >= 1\nE   KeyError: 'available_qty'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_008.py::test_inventory_release_on_failure\n============================== 1 failed in 0.14s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_009.py::test_refund_no_duplicate_workflow FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_refund_no_duplicate_workflow ______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_009.py:178: in test_refund_no_duplicate_workflow\n    assert wf['count'] == 1\nE   KeyError: 'count'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp87vike6q\\TC_009.py::test_refund_no_duplicate_workflow\n============================== 1 failed in 0.15s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-09T15:10:24.023483+00:00",
-    "modules": [
-      "NotificationEngine",
-      "PushService",
-      "EmailService",
-      "SMSGateway",
-      "PreferenceService",
-      "AuditLog"
-    ],
-    "duration": 4.91,
-    "total_tests": 9,
+    "executed_tests": 9,
     "passed": 0,
     "failed": 9,
     "errors": 0,
@@ -676,368 +98,47 @@
       {
         "test_id": "TC-001",
         "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_001.py::test_push_sla FAILED [100%]\n\n================================== FAILURES ===================================\n________________________________ test_push_sla ________________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_001.py:175: in test_push_sla\n    start = time.time()\nE   NameError: name 'time' is not defined. Did you forget to import 'time'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_001.py::test_push_sla - ...\n============================== 1 failed in 0.19s =============================="
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_001.py::test_vault_latency FAILED [100%]\n\n================================== FAILURES ===================================\n_____________________________ test_vault_latency ______________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_001.py:5: in test_vault_latency\n    result = VaultService.get_tokenized_card({'card_id': '1234'})\nE   NameError: name 'VaultService' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_001.py::test_vault_latency\n============================== 1 failed in 0.10s =============================="
       },
       {
         "test_id": "TC-002",
         "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_002.py::test_email_fallback FAILED [100%]\n\n================================== FAILURES ===================================\n_____________________________ test_email_fallback _____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_002.py:175: in test_email_fallback\n    mock_push_fail(times=3)\nE   NameError: name 'mock_push_fail' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_002.py::test_email_fallback\n============================== 1 failed in 0.14s =============================="
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_002.py::test_3ds_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n______________________________ test_3ds_boundary ______________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_002.py:2: in test_3ds_boundary\n    low = PaymentGateway.authorize({'amount': 500.00, 'card': 'tok'})\nE   NameError: name 'PaymentGateway' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_002.py::test_3ds_boundary\n============================== 1 failed in 0.11s =============================="
       },
       {
         "test_id": "TC-003",
         "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_003.py::test_sms_severity_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_sms_severity_boundary __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_003.py:175: in test_sms_severity_boundary\n    requests.post(url+'/alerts', json={'severity':'info'})\nE   NameError: name 'url' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_003.py::test_sms_severity_boundary\n============================== 1 failed in 0.14s =============================="
+        "error_message": "...ion.py:77: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-1 (tx1)\n  \n  Traceback (most recent call last):\n    File \"C:\\Users\\ishan\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\threading.py\", line 1073, in _bootstrap_inner\n      self.run()\n    File \"C:\\Users\\ishan\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\threading.py\", line 1010, in run\n      self._target(*self._args, **self._kwargs)\n    File \"C:\\Users\\ishan\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_003.py\", line 4, in tx1\n      InventoryService.lock_sku('ABC')\n      ^^^^^^^^^^^^^^^^\n  NameError: name 'InventoryService' is not defined\n  \n    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_003.py::test_inventory_lock_contention\n======================== 1 failed, 1 warning in 0.11s ========================="
       },
       {
         "test_id": "TC-004",
         "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_004.py::test_user_pref_override FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_user_pref_override ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_004.py:175: in test_user_pref_override\n    set_user_pref(user='u1', push=False, email=True, sms=False)\nE   NameError: name 'set_user_pref' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_004.py::test_user_pref_override\n============================== 1 failed in 0.13s =============================="
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_004.py::test_refund_sla FAILED [100%]\n\n================================== FAILURES ===================================\n_______________________________ test_refund_sla _______________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_004.py:2: in test_refund_sla\n    refund = RefundEngine.initiate_refund(order_id=1001)\nE   NameError: name 'RefundEngine' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_004.py::test_refund_sla\n============================== 1 failed in 0.10s =============================="
       },
       {
         "test_id": "TC-005",
         "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_005.py::test_pref_conflict_user_wins FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_pref_conflict_user_wins _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_005.py:175: in test_pref_conflict_user_wins\n    set_global_pref(sms=False)\nE   NameError: name 'set_global_pref' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_005.py::test_pref_conflict_user_wins\n============================== 1 failed in 0.12s =============================="
+        "error_message": "...============================ test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_005.py::test_checkout_release_lock FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_checkout_release_lock __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_005.py:2: in test_checkout_release_lock\n    Checkout.start_transaction(order={'sku': 'XYZ', 'amount': 10})\nE   NameError: name 'Checkout' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_005.py::test_checkout_release_lock\n============================== 1 failed in 0.10s =============================="
       },
       {
         "test_id": "TC-006",
         "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_006.py::test_no_infinite_retry FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_no_infinite_retry ____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_006.py:175: in test_no_infinite_retry\n    mock_push_error(sequence=[500]*5 + [200])\nE   NameError: name 'mock_push_error' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_006.py::test_no_infinite_retry\n============================== 1 failed in 0.12s =============================="
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_006.py::test_vault_missing_fields FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_vault_missing_fields __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_006.py:2: in test_vault_missing_fields\n    with pytest.raises(ValueError) as exc:\nE   NameError: name 'pytest' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_006.py::test_vault_missing_fields\n============================== 1 failed in 0.10s =============================="
       },
       {
         "test_id": "TC-007",
         "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_007.py::test_audit_handshake FAILED [100%]\n\n================================== FAILURES ===================================\n____________________________ test_audit_handshake _____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_007.py:175: in test_audit_handshake\n    resp = requests.post(url+'/alerts', json={'msg':'audit'})\nE   NameError: name 'url' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_007.py::test_audit_handshake\n============================== 1 failed in 0.12s =============================="
+        "error_message": "...======== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_007.py::test_fraud_whitelist_no_3ds FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_fraud_whitelist_no_3ds _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_007.py:2: in test_fraud_whitelist_no_3ds\n    risk = FraudDetection.evaluate({'amount': 600, 'merchant_id': 'trusted'})\nE   NameError: name 'FraudDetection' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_007.py::test_fraud_whitelist_no_3ds\n============================== 1 failed in 0.10s =============================="
       },
       {
         "test_id": "TC-008",
         "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_008.py::test_audit_log_performance FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_audit_log_performance __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_008.py:175: in test_audit_log_performance\n    bulk_insert_audit(10000)\nE   NameError: name 'bulk_insert_audit' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_008.py::test_audit_log_performance\n============================== 1 failed in 0.13s =============================="
+        "error_message": "... =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_008.py::test_inventory_rollback_on_payment_failure FAILED [100%]\n\n================================== FAILURES ===================================\n_________________ test_inventory_rollback_on_payment_failure __________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_008.py:2: in test_inventory_rollback_on_payment_failure\n    Checkout.start_transaction(order={'sku': 'LMN', 'amount': 20})\nE   NameError: name 'Checkout' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_008.py::test_inventory_rollback_on_payment_failure\n============================== 1 failed in 0.10s =============================="
       },
       {
         "test_id": "TC-009",
         "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_009.py::test_push_max_payload FAILED [100%]\n\n================================== FAILURES ===================================\n____________________________ test_push_max_payload ____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_009.py:176: in test_push_max_payload\n    resp = requests.post(url+'/push', json={'payload':payload})\nE   NameError: name 'url' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpkrnz_lrc\\TC_009.py::test_push_max_payload\n============================== 1 failed in 0.13s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-09T16:13:34.777053+00:00",
-    "modules": [
-      "OrderTracking",
-      "NotificationEngine",
-      "GPSService",
-      "DeliveryManagement",
-      "APIGateway"
-    ],
-    "duration": 3.66,
-    "total_tests": 9,
-    "passed": 4,
-    "failed": 5,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.4444444444444444,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "fail",
-        "error_message": "...==== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_001.py::test_status_push_latency FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_status_push_latency ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_001.py:177: in test_status_push_latency\n    start = time.time(); requests.post(f'http://delivery.mgmt/orders/{order[\"id\"]}/status', json={'status':'Dispatched'})\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_001.py::test_status_push_latency\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_002.py::test_gps_accuracy_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_gps_accuracy_boundary __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_002.py:178: in test_gps_accuracy_boundary\n    lat, lon = resp.json()['lat'], resp.json()['lon']\nE   KeyError: 'lat'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_002.py::test_gps_accuracy_boundary\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "fail",
-        "error_message": "...est session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_003.py::test_no_duplicate_notifications FAILED [100%]\n\n================================== FAILURES ===================================\n_______________________ test_no_duplicate_notifications _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_003.py:178: in test_no_duplicate_notifications\n    requests.post(f'http://delivery.mgmt/orders/{order[\"id\"]}/status', json={'status':s}); time.sleep(0.3)\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_003.py::test_no_duplicate_notifications\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_004.py::test_tracking_api_latency PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "fail",
-        "error_message": "...uggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_005.py::test_auto_reattempt_timing FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_auto_reattempt_timing __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_005.py:181: in test_auto_reattempt_timing\n    if any(e['type']=='re_attempt' for e in ev): break\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_005.py:181: in <genexpr>\n    if any(e['type']=='re_attempt' for e in ev): break\nE   TypeError: string indices must be integers, not 'str'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_005.py::test_auto_reattempt_timing\n============================== 1 failed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_006.py::test_tc_006_gpsservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "...=========================== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_007.py::test_alert_count_regression FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_alert_count_regression _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_007.py:178: in test_alert_count_regression\n    requests.post(f'http://delivery.mgmt/orders/{order[\"id\"]}/status', json={'status':s})\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_007.py::test_alert_count_regression\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_008.py::test_api_payload_boundary PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpwjbpv7d6\\TC_009.py::test_tc_009_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-09T16:17:48.655074+00:00",
-    "modules": [
-      "PaymentGateway",
-      "CardVault",
-      "RiskEngine",
-      "InventoryService",
-      "RefundProcessor"
-    ],
-    "duration": 3.82,
-    "total_tests": 9,
-    "passed": 3,
-    "failed": 6,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.3333333333333333,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "fail",
-        "error_message": "...========\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_001.py::test_successful_payment_without_3ds FAILED [100%]\n\n================================== FAILURES ===================================\n_____________________ test_successful_payment_without_3ds _____________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_001.py:179: in test_successful_payment_without_3ds\n    assert data['status'] == 'PAID' and not data.get('3ds_required')\nE   AssertionError: assert ('success' == 'PAID'\nE     \nE     - PAID\nE     + success)\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_001.py::test_successful_payment_without_3ds\n============================== 1 failed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_002.py::test_3ds_at_threshold FAILED [100%]\n\n================================== FAILURES ===================================\n____________________________ test_3ds_at_threshold ____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_002.py:177: in test_3ds_at_threshold\n    assert r.status_code == 200\nE   assert 500 == 200\nE    +  where 500 = <TC_002.MockResponse object at 0x00000258511AF0B0>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_002.py::test_3ds_at_threshold\n============================== 1 failed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_003.py::test_vault_latency_under_load PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "...===========================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_004.py::test_inventory_lock_release_on_failure FAILED [100%]\n\n================================== FAILURES ===================================\n___________________ test_inventory_lock_release_on_failure ____________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_004.py:178: in test_inventory_lock_release_on_failure\n    assert r2.json()['status'] == 'FAILED'\nE   AssertionError: assert 'error' == 'FAILED'\nE     \nE     - FAILED\nE     + error\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_004.py::test_inventory_lock_release_on_failure\n============================== 1 failed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_005.py::test_tc_005_riskengine PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_006.py::test_refund_sla FAILED [100%]\n\n================================== FAILURES ===================================\n_______________________________ test_refund_sla _______________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_006.py:176: in test_refund_sla\n    r = requests.post('https://api.example.com/refund/create', json={\"order_id\": order['id']})\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_006.py::test_refund_sla\n============================== 1 failed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "...=== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_007.py::test_refund_exceeds_purchase FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_refund_exceeds_purchase _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_007.py:176: in test_refund_exceeds_purchase\n    r = requests.post('https://api.example.com/refund/create', json={\"order_id\": order['id'], \"amount\":35000})\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_007.py::test_refund_exceeds_purchase\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_008.py::test_tc_008_riskengine PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "fail",
-        "error_message": "...ytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_009.py::test_concurrent_inventory_lock_deadlock FAILED [100%]\n\n================================== FAILURES ===================================\n___________________ test_concurrent_inventory_lock_deadlock ___________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_009.py:182: in test_concurrent_inventory_lock_deadlock\n    assert sorted(results) == [200, 409]\nE   AssertionError: assert [200, 200] == [200, 409]\nE     \nE     At index 1 diff: 200 != 409\nE     \nE     Full diff:\nE       [\nE           200,\nE     -     409,...\nE     \nE     ...Full output truncated (4 lines hidden), use '-vv' to show\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfvp6kjxv\\TC_009.py::test_concurrent_inventory_lock_deadlock\n============================== 1 failed in 0.14s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-09T16:18:09.509194+00:00",
-    "modules": [
-      "PaymentGateway",
-      "CardVault",
-      "ThreeDSecure",
-      "InventoryService",
-      "RefundEngine",
-      "OrderManagement"
-    ],
-    "duration": 3.81,
-    "total_tests": 9,
-    "passed": 2,
-    "failed": 7,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.2222222222222222,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "fail",
-        "error_message": "...===========================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_001.py::test_payment_below_3ds_threshold FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_payment_below_3ds_threshold _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_001.py:176: in test_payment_below_3ds_threshold\n    resp = requests.post('https://api.example.com/payments', json={'order_id':order['id'],'card_token':'test-token'}).json()\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_001.py::test_payment_below_3ds_threshold\n============================== 1 failed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...===========================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_002.py::test_3ds_trigger_above_threshold FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_3ds_trigger_above_threshold _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_002.py:176: in test_3ds_trigger_above_threshold\n    resp = requests.post('https://api.example.com/payments', json={'order_id':order['id'],'card_token':'test-token'}).json()\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_002.py::test_3ds_trigger_above_threshold\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_003.py::test_vault_api_latency FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_vault_api_latency ____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_003.py:175: in test_vault_api_latency\n    start = time.time()\nE   NameError: name 'time' is not defined. Did you forget to import 'time'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_003.py::test_vault_api_latency\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_004.py::test_tc_004_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "fail",
-        "error_message": "...========== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_005.py::test_full_refund_sla FAILED [100%]\n\n================================== FAILURES ===================================\n____________________________ test_full_refund_sla _____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_005.py:176: in test_full_refund_sla\n    payment = requests.post('https://api.example.com/payments', json={'order_id':order['id'],'card_token':'test-token'}).json()\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_005.py::test_full_refund_sla\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "fail",
-        "error_message": "...on starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_006.py::test_refund_exceeds_payment FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_refund_exceeds_payment _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_006.py:176: in test_refund_exceeds_payment\n    payment = requests.post('https://api.example.com/payments', json={'order_id':order['id'],'card_token':'test-token'}).json()\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_006.py::test_refund_exceeds_payment\n============================== 1 failed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "...===== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_007.py::test_inventory_release_on_success FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_inventory_release_on_success ______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_007.py:176: in test_inventory_release_on_success\n    pre = requests.get(f'https://api.example.com/inventory/{sku}').json()['available']\nE   KeyError: 'available'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_007.py::test_inventory_release_on_success\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_008.py::test_tc_008_threedsecure PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_009.py::test_vault_retry_handling FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_vault_retry_handling __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_009.py:176: in test_vault_retry_handling\n    start = time.time()\nE   NameError: name 'time' is not defined. Did you forget to import 'time'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp6s_66vbw\\TC_009.py::test_vault_retry_handling\n============================== 1 failed in 0.11s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-09T16:23:00.269246+00:00",
-    "modules": [
-      "PaymentGateway",
-      "CardVault",
-      "FraudDetection",
-      "InventoryService",
-      "RefundEngine"
-    ],
-    "duration": 4.3,
-    "total_tests": 9,
-    "passed": 1,
-    "failed": 8,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.1111111111111111,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "fail",
-        "error_message": "...s =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_001.py::test_successful_payment_without_3ds FAILED [100%]\n\n================================== FAILURES ===================================\n_____________________ test_successful_payment_without_3ds _____________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_001.py:179: in test_successful_payment_without_3ds\n    assert data['status'] == 'approved'\nE   AssertionError: assert 'success' == 'approved'\nE     \nE     - approved\nE     + success\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_001.py::test_successful_payment_without_3ds\n============================== 1 failed in 0.14s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...t session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_002.py::test_3ds_trigger_at_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_3ds_trigger_at_boundary _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_002.py:177: in test_3ds_trigger_at_boundary\n    assert r.status_code == 200\nE   assert 500 == 200\nE    +  where 500 = <TC_002.MockResponse object at 0x000001DDF88FF050>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_002.py::test_3ds_trigger_at_boundary\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_003.py::test_vault_api_latency_under_load PASSED [100%]\n\n============================== 1 passed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "...=======================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_004.py::test_inventory_lock_release_on_success FAILED [100%]\n\n================================== FAILURES ===================================\n___________________ test_inventory_lock_release_on_success ____________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_004.py:178: in test_inventory_lock_release_on_success\n    assert pay['status'] == 'approved'\nE   AssertionError: assert 'success' == 'approved'\nE     \nE     - approved\nE     + success\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_004.py::test_inventory_lock_release_on_success\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "fail",
-        "error_message": "...===\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_005.py::test_inventory_rollback_on_payment_failure FAILED [100%]\n\n================================== FAILURES ===================================\n_________________ test_inventory_rollback_on_payment_failure __________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_005.py:177: in test_inventory_rollback_on_payment_failure\n    assert resp.json()['status'] == 'declined'\nE   AssertionError: assert 'success' == 'declined'\nE     \nE     - declined\nE     + success\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_005.py::test_inventory_rollback_on_payment_failure\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "fail",
-        "error_message": "...rts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_006.py::test_refund_completes_within_sla FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_refund_completes_within_sla _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_006.py:175: in test_refund_completes_within_sla\n    txn = requests.post('https://api.example.com/payments', json={'amount':80,'card_token':'test-token'}).json()['id']\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_006.py::test_refund_completes_within_sla\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "fail",
-        "error_message": "...====================== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_007.py::test_checkout_latency_regression FAILED [100%]\n\n================================== FAILURES ===================================\n______________________ test_checkout_latency_regression _______________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_007.py:175: in test_checkout_latency_regression\n    start = time.time()\nE   NameError: name 'time' is not defined. Did you forget to import 'time'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_007.py::test_checkout_latency_regression\n============================== 1 failed in 0.11s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "....\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_008.py::test_fraud_detection_ignores_fake_risk_score FAILED [100%]\n\n================================== FAILURES ===================================\n________________ test_fraud_detection_ignores_fake_risk_score _________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_008.py:179: in test_fraud_detection_ignores_fake_risk_score\n    assert data.get('requires_3ds') is True\nE   AssertionError: assert None is True\nE    +  where None = <built-in method get of dict object at 0x00000232F02D5EC0>('requires_3ds')\nE    +    where <built-in method get of dict object at 0x00000232F02D5EC0> = {'card_details': 'expected_details', 'card_id': '123456', 'defect': None, 'locked': True, ...}.get\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_008.py::test_fraud_detection_ignores_fake_risk_score\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "fail",
-        "error_message": "...== test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_009.py::test_vault_token_not_found FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_vault_token_not_found __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_009.py:176: in test_vault_token_not_found\n    assert r.status_code == 404\nE   assert 400 == 404\nE    +  where 400 = <TC_009.MockResponse object at 0x00000272BB7EF080>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp3l_67l1f\\TC_009.py::test_vault_token_not_found\n============================== 1 failed in 0.11s =============================="
-      }
-    ]
-  },
-  {
-    "created_at": "2026-04-09T17:06:18.809219+00:00",
-    "modules": [
-      "CheckoutEngine",
-      "VaultAPI",
-      "ThreeDSecureService",
-      "InventoryService",
-      "RefundProcessor"
-    ],
-    "duration": 4.57,
-    "total_tests": 9,
-    "passed": 3,
-    "failed": 6,
-    "errors": 0,
-    "skipped": 0,
-    "pass_rate": 0.3333333333333333,
-    "results": [
-      {
-        "test_id": "TC-001",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_001.py::test_vault_token_latency PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-002",
-        "status": "fail",
-        "error_message": "...s =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_002.py::test_3ds_trigger_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_3ds_trigger_boundary __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_002.py:179: in test_3ds_trigger_boundary\n    assert r.status_code == 200 and '3ds_url' in data\nE   assert (500 == 200)\nE    +  where 500 = <TC_002.MockResponse object at 0x000002921D62F2F0>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_002.py::test_3ds_trigger_boundary\n============================== 1 failed in 0.12s =============================="
-      },
-      {
-        "test_id": "TC-003",
-        "status": "fail",
-        "error_message": "...=========\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_003.py::test_inventory_zero_edge FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_inventory_zero_edge ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_003.py:178: in test_inventory_zero_edge\n    assert r.status_code == 409 and 'out_of_stock' in r.json().get('error','')\nE   assert (200 == 409)\nE    +  where 200 = <TC_003.MockResponse object at 0x000001A273F8F380>.status_code\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_003.py::test_inventory_zero_edge\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-004",
-        "status": "fail",
-        "error_message": "...ession starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_004.py::test_inventory_lock_rollback FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_inventory_lock_rollback _________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_004.py:177: in test_inventory_lock_rollback\n    payment = requests.post('https://api.example.com/payment', json={'checkout_id':init.json()['id'],'simulate':'fail'})\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_004.py::test_inventory_lock_rollback\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-005",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_005.py::test_refund_sla_boundary FAILED [100%]\n\n================================== FAILURES ===================================\n__________________________ test_refund_sla_boundary ___________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_005.py:177: in test_refund_sla_boundary\n    r = requests.post(f'https://api.example.com/refund/{order.json()[\"id\"]}')\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_005.py::test_refund_sla_boundary\n============================== 1 failed in 0.15s =============================="
-      },
-      {
-        "test_id": "TC-006",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_006.py::test_3ds_not_triggered PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-007",
-        "status": "pass",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_007.py::test_vault_concurrent_latency PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
-      },
-      {
-        "test_id": "TC-008",
-        "status": "fail",
-        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_008.py::test_refund_failed_payment FAILED [100%]\n\n================================== FAILURES ===================================\n_________________________ test_refund_failed_payment __________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_008.py:177: in test_refund_failed_payment\n    r = requests.post(f'https://api.example.com/refund/{order.json()[\"id\"]}')\nE   KeyError: 'id'\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_008.py::test_refund_failed_payment\n============================== 1 failed in 0.13s =============================="
-      },
-      {
-        "test_id": "TC-009",
-        "status": "fail",
-        "error_message": "...cripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_009.py::test_inventory_race_condition FAILED [100%]\n\n================================== FAILURES ===================================\n________________________ test_inventory_race_condition ________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_009.py:182: in test_inventory_race_condition\n    assert sorted(results) == [200, 409]\nE   AssertionError: assert [200, 200] == [200, 409]\nE     \nE     At index 1 diff: 200 != 409\nE     \nE     Full diff:\nE       [\nE           200,\nE     -     409,...\nE     \nE     ...Full output truncated (4 lines hidden), use '-vv' to show\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmpeiqi9r6k\\TC_009.py::test_inventory_race_condition\n============================== 1 failed in 0.14s =============================="
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_009.py::test_refund_idempotent FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_refund_idempotent ____________________________\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_009.py:3: in test_refund_idempotent\n    RefundEngine.initiate_refund(order_id)\nE   NameError: name 'RefundEngine' is not defined\n=========================== short test summary info ===========================\nFAILED ..\\..\\..\\..\\AppData\\Local\\Temp\\tmp54x6lan3\\TC_009.py::test_refund_idempotent\n============================== 1 failed in 0.10s =============================="
       }
     ]
   }

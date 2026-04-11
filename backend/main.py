@@ -10,13 +10,15 @@ load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from models import AnalyzeRequest, JiraIngestRequest, PipelineDashboard
+from models import AnalyzeRequest, AzureDevOpsIngestRequest, JiraIngestRequest, PipelineDashboard, StoryHistoryRequest
 from agents.orchestrator import Orchestrator, SessionManager
 from agents.story_agent import analyze_story
 from agents.test_agent import generate_tests
 from agents.execution_agent import execute_tests
 from agents.defect_agent import analyze_defects
 from jira_client import fetch_jira_issue
+from azure_devops_client import fetch_azure_devops_work_item
+from database import get_story_history_by_context
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -107,6 +109,36 @@ async def ingest_jira(request: JiraIngestRequest):
         raise HTTPException(status_code=500, detail=f"Jira ingestion failed: {exc}") from exc
 
 
+@app.post("/api/ingest/azure-devops")
+async def ingest_azure_devops(request: AzureDevOpsIngestRequest):
+    pat = request.pat or os.getenv("AZURE_DEVOPS_PAT") or os.getenv("AZURE_API_TOKEN")
+    if not pat:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Azure DevOps PAT missing. Provide pat in request or set "
+                "AZURE_DEVOPS_PAT (or AZURE_API_TOKEN) in environment."
+            ),
+        )
+
+    try:
+        issue_payload = fetch_azure_devops_work_item(
+            url=request.url,
+            pat=pat,
+            organization=request.organization,
+            project=request.project,
+            work_item_id=request.work_item_id,
+        )
+        return issue_payload
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except requests.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Azure DevOps ingestion failed")
+        raise HTTPException(status_code=500, detail=f"Azure DevOps ingestion failed: {exc}") from exc
+
+
 @app.post("/api/webhook/github")
 async def github_webhook(payload: dict):
     # Simulates a DevOps integration endpoint (e.g. GitHub Action webhook triggering QA run)
@@ -123,7 +155,13 @@ async def github_webhook(payload: dict):
         
         # Save history just like orchestrator
         from database import save_execution
-        save_execution(story.modules, execution)
+        save_execution(
+            story.modules,
+            execution,
+            story_text=story_text,
+            story_intent=story.intent,
+            source="github_webhook",
+        )
 
         return {
             "status": "success",
@@ -134,6 +172,21 @@ async def github_webhook(payload: dict):
     except Exception as e:
         logger.exception("Webhook pipeline failed")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/history/story")
+async def story_history(request: StoryHistoryRequest):
+    try:
+        payload = get_story_history_by_context(
+            story_text=request.story_text,
+            story_intent=request.story_intent,
+            modules=request.modules,
+            limit=request.limit,
+        )
+        return payload
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Story history lookup failed")
+        raise HTTPException(status_code=500, detail=f"Story history lookup failed: {exc}") from exc
 
 
 @app.get("/health")

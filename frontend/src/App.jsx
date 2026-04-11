@@ -78,6 +78,12 @@ export default function App() {
   const [jiraEmail, setJiraEmail] = useState("");
   const [jiraToken, setJiraToken] = useState("");
   const [jiraIssueKey, setJiraIssueKey] = useState("");
+  const [ingestSource, setIngestSource] = useState("jira");
+  const [adoUrl, setAdoUrl] = useState("");
+  const [adoPat, setAdoPat] = useState("");
+  const [adoOrganization, setAdoOrganization] = useState("");
+  const [adoProject, setAdoProject] = useState("");
+  const [adoWorkItemId, setAdoWorkItemId] = useState("");
   const [ingestMessage, setIngestMessage] = useState("");
   const [ingesting, setIngesting] = useState(false);
 
@@ -339,11 +345,48 @@ export default function App() {
       setUseSample(false);
       setIngestMessage(
         issue_key
-          ? `Imported ${issue_key} successfully.`
+          ? `Imported ${issue_key} from Jira successfully.`
           : "Jira issue imported successfully.",
       );
     } catch (err) {
       console.error("[Jira] Ingestion failed", err);
+      setError(err.message);
+    } finally {
+      setIngesting(false);
+    }
+  };
+
+  const handleAzureDevOpsIngest = async () => {
+    if (!adoUrl.trim()) return;
+    setIngesting(true);
+    setError("");
+    setIngestMessage("");
+    try {
+      const res = await fetch(`${API_BASE}/api/ingest/azure-devops`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: adoUrl,
+          pat: adoPat || undefined,
+          organization: adoOrganization || undefined,
+          project: adoProject || undefined,
+          work_item_id: adoWorkItemId || undefined,
+        }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload.detail || "Azure DevOps ingestion failed");
+      }
+      const { user_story, issue_key } = payload;
+      setUserStory(user_story);
+      setUseSample(false);
+      setIngestMessage(
+        issue_key
+          ? `Imported ${issue_key} from Azure DevOps successfully.`
+          : "Azure DevOps work item imported successfully.",
+      );
+    } catch (err) {
+      console.error("[Azure DevOps] Ingestion failed", err);
       setError(err.message);
     } finally {
       setIngesting(false);
@@ -484,14 +527,43 @@ export default function App() {
       .replace(/\"/g, "&quot;")
       .replace(/'/g, "&#39;");
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!dashboardData) return;
+
+    let storyHistory = null;
+    try {
+      const historyResponse = await fetch(`${API_BASE}/api/history/story`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          story_text: userStory,
+          story_intent: dashboardData.story?.intent || "",
+          modules: dashboardData.story?.modules || [],
+          limit: 120,
+        }),
+      });
+      if (historyResponse.ok) {
+        storyHistory = await historyResponse.json();
+      }
+    } catch (historyErr) {
+      console.error("History lookup failed during export", historyErr);
+    }
+
     const executionById = new Map(
       (dashboardData.execution?.results || []).map((item) => [
         item.test_id,
         item,
       ]),
     );
+
+    const toPercent = (value) => `${(Number(value || 0) * 100).toFixed(1)}%`;
+    const formatDateTime = (value) => {
+      try {
+        return new Date(value).toLocaleString();
+      } catch {
+        return String(value || "-");
+      }
+    };
 
     const testRows = (dashboardData.tests || [])
       .map((test) => {
@@ -534,6 +606,31 @@ export default function App() {
       )
       .join("");
 
+    const historyRuns = storyHistory?.runs || [];
+    const historyRows = historyRuns
+      .map(
+        (run) => `
+          <tr>
+            <td>${escapeHtml(formatDateTime(run.created_at))}</td>
+            <td>${escapeHtml(run.source || "pipeline")}</td>
+            <td>${escapeHtml(toPercent(run.pass_rate))}</td>
+            <td>${escapeHtml(run.passed || 0)}/${escapeHtml(run.total_tests || 0)}</td>
+            <td>${escapeHtml((Number(run.failed || 0) + Number(run.errors || 0)).toString())}</td>
+            <td>${escapeHtml(Number(run.duration || 0).toFixed(2))}s</td>
+          </tr>
+        `,
+      )
+      .join("");
+
+    const trendClass =
+      storyHistory?.trend === "improving"
+        ? "trend improving"
+        : storyHistory?.trend === "declining"
+          ? "trend declining"
+          : "trend stable";
+
+    const historicalComparison = dashboardData.defects?.historical_comparison;
+
     const html = `<!doctype html>
 <html>
   <head>
@@ -554,6 +651,10 @@ export default function App() {
       table { width: 100%; border-collapse: collapse; margin-top: 8px; }
       th, td { border: 1px solid #dbe3ee; padding: 8px; text-align: left; font-size: 13px; }
       th { background: #f1f5f9; }
+      .trend { display: inline-block; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+      .trend.improving { background: #dcfce7; color: #166534; }
+      .trend.declining { background: #fee2e2; color: #991b1b; }
+      .trend.stable { background: #e2e8f0; color: #334155; }
     </style>
   </head>
   <body>
@@ -565,6 +666,15 @@ export default function App() {
       <p><strong>Recommendation:</strong> ${escapeHtml(dashboardData.defects?.deployment_recommendation)}</p>
       <p><strong>Rationale:</strong> ${escapeHtml(dashboardData.defects?.recommendation_rationale)}</p>
       <p><strong>Critical Tests:</strong> ${escapeHtml((dashboardData.defects?.critical_test_ids || []).join(", "))}</p>
+    </div>
+
+    <div class="summary card">
+      <h2>Historical Comparison</h2>
+      <p><strong>Total Historical Runs:</strong> ${escapeHtml(historicalComparison?.total_runs ?? storyHistory?.total_runs ?? 0)}</p>
+      <p><strong>Current Pass Rate:</strong> ${escapeHtml(toPercent(historicalComparison?.current_pass_rate ?? dashboardData.execution?.results?.filter((x) => x.status === "pass").length / Math.max(1, dashboardData.execution?.results?.length || 1)))}</p>
+      <p><strong>Historical Average Pass Rate:</strong> ${escapeHtml(toPercent(historicalComparison?.historical_average_pass_rate ?? storyHistory?.average_pass_rate ?? 0))}</p>
+      <p><strong>Recent Pass Rate:</strong> ${escapeHtml(toPercent(historicalComparison?.recent_pass_rate ?? storyHistory?.recent_pass_rate ?? 0))}</p>
+      <p><strong>Trend:</strong> <span class="${escapeHtml(trendClass)}">${escapeHtml((historicalComparison?.trend || storyHistory?.trend || "stable").toUpperCase())}</span></p>
     </div>
 
     <div class="summary card">
@@ -585,6 +695,18 @@ export default function App() {
           <tr><th>Module</th><th>Regression Risk</th><th>Defect Probability</th><th>Historical Defects</th><th>Top Defect Types</th></tr>
         </thead>
         <tbody>${moduleRiskRows}</tbody>
+      </table>
+    </div>
+
+    <div class="summary card">
+      <h2>Per-Story Run Timeline</h2>
+      <p><strong>Story Key:</strong> ${escapeHtml(storyHistory?.story_key || "Unavailable")}</p>
+      <p><strong>Story Label:</strong> ${escapeHtml(storyHistory?.story_label || dashboardData.story?.intent || "Unavailable")}</p>
+      <table>
+        <thead>
+          <tr><th>Run Time</th><th>Source</th><th>Pass Rate</th><th>Pass/Total</th><th>Failures+Errors</th><th>Duration</th></tr>
+        </thead>
+        <tbody>${historyRows || "<tr><td colspan='6'>No historical runs found for this story.</td></tr>"}</tbody>
       </table>
     </div>
 
@@ -834,60 +956,153 @@ export default function App() {
                     />
                   </div>
 
-                  {/* Jira Ingestion Section */}
+                  {/* Work Item Ingestion Section */}
                   <div className="mx-2 mb-2 rounded-2xl border border-dashed border-black/10 dark:border-emerald-400/20 p-4 bg-gray-50/90 dark:!bg-white/5 grid gap-3 sm:grid-cols-2 lg:grid-cols-12 items-end backdrop-blur-xl">
-                    <div className="w-full space-y-1 sm:col-span-2 lg:col-span-5">
-                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                        Jira Ticket URL
-                      </label>
-                      <input
-                        className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-                        placeholder="https://company.atlassian.net/browse/PROJ-123"
-                        value={jiraUrl}
-                        onChange={(e) => setJiraUrl(e.target.value)}
-                      />
+                    <div className="sm:col-span-2 lg:col-span-12 flex items-center gap-2 rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/5 p-1">
+                      <button
+                        onClick={() => setIngestSource("jira")}
+                        className={`rounded-lg px-3 py-1.5 text-[11px] font-bold transition ${
+                          ingestSource === "jira"
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-400/40"
+                            : "text-gray-600 dark:text-gray-300"
+                        }`}
+                      >
+                        Jira
+                      </button>
+                      <button
+                        onClick={() => setIngestSource("azure_devops")}
+                        className={`rounded-lg px-3 py-1.5 text-[11px] font-bold transition ${
+                          ingestSource === "azure_devops"
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-400/40"
+                            : "text-gray-600 dark:text-gray-300"
+                        }`}
+                      >
+                        Azure DevOps
+                      </button>
                     </div>
-                    <div className="w-full space-y-1 lg:col-span-2">
-                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                        Jira Email
-                      </label>
-                      <input
-                        className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-                        placeholder="name@company.com"
-                        value={jiraEmail}
-                        onChange={(e) => setJiraEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="w-full space-y-1 lg:col-span-3">
-                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                        Access Token / PAT
-                      </label>
-                      <input
-                        type="password"
-                        className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-                        placeholder="ATATT3xFf..."
-                        value={jiraToken}
-                        onChange={(e) => setJiraToken(e.target.value)}
-                      />
-                    </div>
-                    <div className="w-full space-y-1 lg:col-span-2">
-                      <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                        Issue Key (Optional)
-                      </label>
-                      <input
-                        className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
-                        placeholder="PROJ-123"
-                        value={jiraIssueKey}
-                        onChange={(e) => setJiraIssueKey(e.target.value)}
-                      />
-                    </div>
-                    <button
-                      onClick={handleJiraIngest}
-                      disabled={ingesting || !jiraUrl}
-                      className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 text-white text-xs font-bold px-4 py-2 shadow-[0_0_22px_rgba(34,197,94,0.35)] hover:brightness-110 disabled:opacity-50 transition sm:col-span-2 lg:col-span-12"
-                    >
-                      {ingesting ? "Ingesting..." : "Import"}
-                    </button>
+
+                    {ingestSource === "jira" ? (
+                      <>
+                        <div className="w-full space-y-1 sm:col-span-2 lg:col-span-5">
+                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                            Jira Ticket URL
+                          </label>
+                          <input
+                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                            placeholder="https://company.atlassian.net/browse/PROJ-123"
+                            value={jiraUrl}
+                            onChange={(e) => setJiraUrl(e.target.value)}
+                          />
+                        </div>
+                        <div className="w-full space-y-1 lg:col-span-2">
+                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                            Jira Email
+                          </label>
+                          <input
+                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                            placeholder="name@company.com"
+                            value={jiraEmail}
+                            onChange={(e) => setJiraEmail(e.target.value)}
+                          />
+                        </div>
+                        <div className="w-full space-y-1 lg:col-span-3">
+                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                            Access Token / PAT
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                            placeholder="ATATT3xFf..."
+                            value={jiraToken}
+                            onChange={(e) => setJiraToken(e.target.value)}
+                          />
+                        </div>
+                        <div className="w-full space-y-1 lg:col-span-2">
+                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                            Issue Key (Optional)
+                          </label>
+                          <input
+                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                            placeholder="PROJ-123"
+                            value={jiraIssueKey}
+                            onChange={(e) => setJiraIssueKey(e.target.value)}
+                          />
+                        </div>
+                        <button
+                          onClick={handleJiraIngest}
+                          disabled={ingesting || !jiraUrl}
+                          className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 text-white text-xs font-bold px-4 py-2 shadow-[0_0_22px_rgba(34,197,94,0.35)] hover:brightness-110 disabled:opacity-50 transition sm:col-span-2 lg:col-span-12"
+                        >
+                          {ingesting ? "Ingesting..." : "Import Jira"}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-full space-y-1 sm:col-span-2 lg:col-span-6">
+                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                            Azure DevOps Work Item URL
+                          </label>
+                          <input
+                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                            placeholder="https://dev.azure.com/org/project/_workitems/edit/123"
+                            value={adoUrl}
+                            onChange={(e) => setAdoUrl(e.target.value)}
+                          />
+                        </div>
+                        <div className="w-full space-y-1 lg:col-span-3">
+                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                            Azure DevOps PAT
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                            placeholder="azdpat..."
+                            value={adoPat}
+                            onChange={(e) => setAdoPat(e.target.value)}
+                          />
+                        </div>
+                        <div className="w-full space-y-1 lg:col-span-1">
+                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                            Org (Opt)
+                          </label>
+                          <input
+                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                            placeholder="org"
+                            value={adoOrganization}
+                            onChange={(e) => setAdoOrganization(e.target.value)}
+                          />
+                        </div>
+                        <div className="w-full space-y-1 lg:col-span-1">
+                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                            Project (Opt)
+                          </label>
+                          <input
+                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                            placeholder="project"
+                            value={adoProject}
+                            onChange={(e) => setAdoProject(e.target.value)}
+                          />
+                        </div>
+                        <div className="w-full space-y-1 lg:col-span-1">
+                          <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                            Work Item (Opt)
+                          </label>
+                          <input
+                            className="w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                            placeholder="123"
+                            value={adoWorkItemId}
+                            onChange={(e) => setAdoWorkItemId(e.target.value)}
+                          />
+                        </div>
+                        <button
+                          onClick={handleAzureDevOpsIngest}
+                          disabled={ingesting || !adoUrl}
+                          className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 text-white text-xs font-bold px-4 py-2 shadow-[0_0_22px_rgba(34,197,94,0.35)] hover:brightness-110 disabled:opacity-50 transition sm:col-span-2 lg:col-span-12"
+                        >
+                          {ingesting ? "Ingesting..." : "Import Azure DevOps"}
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   {ingestMessage && (
