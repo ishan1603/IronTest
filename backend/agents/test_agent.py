@@ -27,6 +27,8 @@ Respond strictly as a JSON object with a single key "test_cases" whose value is 
     IMPORTANT: You MUST wrap the code in a function like 'def test_scenario():' and indent the body.
     Keep snippet length concise (max 10 lines) and executable.
     Snippet MUST be self-contained and deterministic using local in-memory data only.
+    Snippet MUST be behavior-driven: input payload -> expected system response -> assertions.
+    Snippet MUST NOT recreate internal validation logic such as any()/all() over payload fields.
     DO NOT make network calls and DO NOT depend on external services/endpoints.
     DO NOT import requests/httpx/playwright/selenium/cypress.
     Prefer pure assertions on contract rules and acceptance criteria invariants.
@@ -85,43 +87,66 @@ def _slug(value: str) -> str:
     return clean or "scenario"
 
 
-def _fallback_snippet(test_id: str, module_name: str, test_type: str = "functional") -> list[str]:
+def _fallback_snippet(
+    test_id: str,
+    module_name: str,
+    test_type: str = "functional",
+    behavior_hint: str | None = None,
+) -> list[str]:
     fn_name = f"test_{_slug(test_id)}_{_slug(module_name)}"[:56]
+    module_value = module_name or "CoreService"
+    hint = (behavior_hint or "Contract expectations are satisfied.").strip()
+
     if test_type == "boundary":
         return [
             f"def {fn_name}():",
-            "    max_len = 64",
-            "    payload = {'id': 'A' * max_len, 'enabled': True}",
-            "    assert len(payload['id']) == max_len",
-            "    assert payload['enabled'] is True",
+            f"    # Expected behavior: {hint}",
+            f"    payload = {{'module': '{module_value}', 'id': 'X' * 64, 'enabled': True}}",
+            "    response = {'status': 'success', 'boundary_checked': True, 'id_length': 64}",
+            "    assert response['status'] == 'success'",
+            "    assert response['boundary_checked'] is True",
+            "    assert response['id_length'] == 64",
         ]
     if test_type == "edge_case":
         return [
             f"def {fn_name}():",
-            "    payload = {'id': '', 'enabled': True}",
-            "    required = ['id', 'enabled']",
-            "    invalid = any(payload.get(k) in ('', None) for k in required)",
-            "    assert invalid is True",
+            f"    # Expected behavior: {hint}",
+            f"    payload = {{'module': '{module_value}', 'id': '', 'enabled': True}}",
+            "    response = {'status': 'error', 'error_code': 'VALIDATION_ERROR', 'message': 'id is required'}",
+            "    assert response['status'] == 'error'",
+            "    assert response['error_code'] == 'VALIDATION_ERROR'",
+            "    assert 'id is required' in response['message']",
         ]
     if test_type == "regression":
         return [
             f"def {fn_name}():",
-            "    baseline = {'status': 'ok', 'version': 1}",
-            "    current = {'status': 'ok', 'version': 1}",
-            "    assert current['status'] == baseline['status']",
-            "    assert current['version'] == baseline['version']",
+            f"    # Expected behavior: {hint}",
+            f"    payload = {{'module': '{module_value}', 'scenario': 'known-regression-path', 'version': 2}}",
+            "    response = {'status': 'success', 'regression_guard': 'passed', 'version': 2}",
+            "    assert response['status'] == 'success'",
+            "    assert response['regression_guard'] == 'passed'",
+            "    assert response['version'] == payload['version']",
         ]
     return [
         f"def {fn_name}():",
-        "    payload = {'status': 'ok', 'module': 'active'}",
-        "    required = ['status', 'module']",
-        "    assert all(k in payload for k in required)",
-        "    assert payload['status'] == 'ok'",
+        f"    # Expected behavior: {hint}",
+        f"    payload = {{'module': '{module_value}', 'action': 'primary_path', 'input_id': 'A123'}}",
+        f"    response = {{'status': 'success', 'module': '{module_value}', 'decision': 'accepted'}}",
+        "    assert response['status'] == 'success'",
+        "    assert response['module'] == payload['module']",
+        "    assert response['decision'] == 'accepted'",
     ]
 
 
-def _fallback_test_plan(modules: list[str]) -> list[dict]:
+def _fallback_test_plan(
+    modules: list[str],
+    *,
+    acceptance_criteria: list[str] | None = None,
+    risk_factors: list[str] | None = None,
+) -> list[dict]:
     module_pool = modules[:] if modules else ["CoreService", "AuthService", "DataService"]
+    criteria_pool = [str(item).strip() for item in (acceptance_criteria or []) if str(item).strip()]
+    risk_pool = [str(item).strip() for item in (risk_factors or []) if str(item).strip()]
     type_cycle = [
         "functional",
         "boundary",
@@ -145,23 +170,36 @@ def _fallback_test_plan(modules: list[str]) -> list[dict]:
     for idx, test_type in enumerate(type_cycle, start=1):
         tc_id = f"TC-{idx:03d}"
         module_name = module_pool[(idx - 1) % len(module_pool)]
+        criterion_hint = criteria_pool[(idx - 1) % len(criteria_pool)] if criteria_pool else f"module contract for {module_name}"
+        risk_hint = risk_pool[(idx - 1) % len(risk_pool)] if risk_pool else "stability and correctness"
         fallback.append(
             {
                 "id": tc_id,
                 "type": test_type,
                 "module": module_name,
-                "description": f"Validate {test_type} contract behavior for {module_name}.",
-                "steps": ["Prepare local payload", "Validate contract assertions"],
-                "expected_result": "Contract assertions pass deterministically.",
+                "description": f"Validate {test_type} behavior for {module_name} with scenario focus: {criterion_hint}.",
+                "steps": [
+                    "Prepare story-derived payload",
+                    "Simulate expected system response",
+                    "Assert response contract",
+                ],
+                "expected_result": f"Assertions satisfy acceptance intent and control risk: {risk_hint}.",
                 "risk_level": risk_map[test_type],
                 "automated": True,
-                "automation_snippet": _fallback_snippet(tc_id, module_name, test_type),
+                "automation_snippet": _fallback_snippet(tc_id, module_name, test_type, criterion_hint),
             }
         )
     return fallback
 
 
-def _normalize_snippet(test_id: str, module_name: str, test_type: str, raw_snippet: object) -> list[str]:
+def _normalize_snippet(
+    test_id: str,
+    module_name: str,
+    test_type: str,
+    raw_snippet: object,
+    *,
+    behavior_hint: str | None = None,
+) -> list[str]:
     if isinstance(raw_snippet, list):
         lines = [str(line).rstrip() for line in raw_snippet if str(line).strip()]
     elif isinstance(raw_snippet, str):
@@ -171,7 +209,7 @@ def _normalize_snippet(test_id: str, module_name: str, test_type: str, raw_snipp
 
     text = "\n".join(lines).lower()
     if not lines or any(marker in text for marker in _DISALLOWED_RUNTIME_MARKERS):
-        return _fallback_snippet(test_id, module_name, test_type)
+        return _fallback_snippet(test_id, module_name, test_type, behavior_hint)
 
     if not any(line.lstrip().startswith("def ") for line in lines):
         fn_name = f"test_{_slug(test_id)}_{_slug(module_name)}"[:56]
@@ -180,10 +218,10 @@ def _normalize_snippet(test_id: str, module_name: str, test_type: str, raw_snipp
         lines = wrapped
 
     if not USE_RAW_LLM_SNIPPETS:
-        return _fallback_snippet(test_id, module_name, test_type)
+        return _fallback_snippet(test_id, module_name, test_type, behavior_hint)
 
     if not _is_safe_raw_snippet(lines):
-        return _fallback_snippet(test_id, module_name, test_type)
+        return _fallback_snippet(test_id, module_name, test_type, behavior_hint)
 
     return lines
 
@@ -209,7 +247,14 @@ def _normalize_test_items(raw_items: object, modules: list[str]) -> list[dict]:
             risk_level = "medium"
 
         module_name = str(item.get("module") or module_fallback).strip() or module_fallback
-        snippet = _normalize_snippet(tc_id, module_name, tc_type, item.get("automation_snippet"))
+        behavior_hint = str(item.get("expected_result") or "").strip()
+        snippet = _normalize_snippet(
+            tc_id,
+            module_name,
+            tc_type,
+            item.get("automation_snippet"),
+            behavior_hint=behavior_hint,
+        )
 
         normalized.append(
             {
@@ -251,7 +296,11 @@ async def generate_tests(token: str, model_id: str, story: StoryAnalysis) -> Lis
             raw_items = []
 
         normalized = _normalize_test_items(raw_items, story.modules)
-        fallback_plan = _fallback_test_plan(story.modules)
+        fallback_plan = _fallback_test_plan(
+            story.modules,
+            acceptance_criteria=story.acceptance_criteria,
+            risk_factors=story.risk_factors,
+        )
 
         if not normalized:
             normalized = fallback_plan

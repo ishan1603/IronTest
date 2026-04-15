@@ -6,6 +6,7 @@ import ConfidenceGauge from "./components/ConfidenceGauge.jsx";
 import RiskHeatmap from "./components/RiskHeatmap.jsx";
 import DeploymentVerdict from "./components/DeploymentVerdict.jsx";
 import ScoreHistoryBars from "./components/ScoreHistoryBars.jsx";
+import ScoreFactorArcs from "./components/ScoreFactorArcs.jsx";
 import StoryInsights from "./components/StoryInsights.jsx";
 import VantaGlobeBackground from "./components/VantaGlobeBackground.jsx";
 
@@ -996,9 +997,9 @@ export default function App() {
                   </span>
                 </h1>
                 <p className="max-w-2xl text-lg text-gray-600 dark:text-gray-400 mb-10 leading-relaxed">
-                  Transform raw product specs into production-ready test suites
-                  using the IronTest multi-agent architecture. Define the
-                  intent, and let intelligence do the rest.
+                  IronTest is a release intelligence platform that ingests user
+                  stories, generates and executes test cases, analyzes risk, and
+                  provides a confidence score with a deployment recommendation.
                 </p>
 
                 <div className="w-full max-w-5xl rounded-3xl border border-black/10 dark:border-emerald-400/20 bg-white/60 dark:bg-white/5 p-2 shadow-2xl dark:shadow-[0_0_30px_rgba(34,197,94,0.2)] backdrop-blur-3xl transition-all">
@@ -1389,6 +1390,10 @@ export default function App() {
                   />
                 </div>
               </div>
+
+              <ScoreFactorArcs
+                scoreBreakdown={dashboardData.defects.score_breakdown}
+              />
 
               <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
                 <ScoreHistoryBars

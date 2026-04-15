@@ -304,6 +304,8 @@ def llm_generate_json(
     max_output_tokens: int = 1024,
     temperature: float = 0.25,
 ) -> dict[str, Any]:
+    # Demo stability: keep model sampling deterministic across all agents.
+    temperature = 0.0
     endpoint = os.getenv("OPENROUTER_API_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/") + "/chat/completions"
     # Retry transient gateway/quota/network states before failing over to the next model.
     transient_statuses = {408, 409, 425, 429, 500, 502, 503, 504}
@@ -338,7 +340,7 @@ def llm_generate_json(
                 user_prompt=f"{user_prompt.strip()}{repair_suffix}",
                 model_id=candidate_model,
                 max_output_tokens=max_output_tokens,
-                temperature=temperature if attempt == 0 else 0.1,
+                temperature=temperature,
             )
 
             response = None

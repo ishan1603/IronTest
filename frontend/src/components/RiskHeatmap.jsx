@@ -11,12 +11,21 @@ const riskColor = {
 };
 
 const trendColor = {
+  first_run:
+    "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30",
   improving:
     "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30",
   stable:
     "bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-500/30",
   declining:
     "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/30",
+};
+
+const trendLabel = {
+  first_run: "first run",
+  improving: "improving",
+  stable: "stable",
+  declining: "declining",
 };
 
 const toPercent = (value) => `${(Number(value || 0) * 100).toFixed(0)}%`;
@@ -55,7 +64,7 @@ export default function RiskHeatmap({ moduleRisks = [] }) {
                     trendColor[module.trend_vs_history] || trendColor.stable,
                   )}
                 >
-                  {module.trend_vs_history || "stable"}
+                  {trendLabel[module.trend_vs_history] || "stable"}
                 </span>
               </div>
             </div>

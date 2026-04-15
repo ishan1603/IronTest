@@ -83,7 +83,7 @@ class ModuleRisk(BaseModel):
     module_skipped: int = 0
     historical_pass_rate: float = 0.0
     pass_rate_delta: float = 0.0
-    trend_vs_history: Literal["improving", "stable", "declining"] = "stable"
+    trend_vs_history: Literal["first_run", "improving", "stable", "declining"] = "stable"
     risk_drivers: List[str] = Field(default_factory=list)
     recommended_actions: List[str] = Field(default_factory=list)
 

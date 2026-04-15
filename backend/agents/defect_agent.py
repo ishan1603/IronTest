@@ -255,17 +255,36 @@ def _compute_score(
   recent_pass_rate = float(global_history.get("recent_pass_rate", historical_avg_pass_rate))
   total_runs = int(global_history.get("total_runs", 0))
 
+  # First-run bootstrap: avoid penalizing confidence because history does not exist yet.
+  if total_runs == 0:
+    historical_avg_pass_rate = current_pass_rate
+    recent_pass_rate = current_pass_rate
+
   avg_module_risk = sum(item.defect_probability for item in module_risks) / max(1, len(module_risks))
 
   current_score = round(current_pass_rate * 100)
   historical_score = round(((historical_avg_pass_rate + recent_pass_rate) / 2.0) * 100)
   trend_delta_recent = current_pass_rate - recent_pass_rate
   trend_adjustment = round(_clamp(trend_delta_recent * 25.0, -8.0, 8.0))
-  module_risk_penalty = round(_clamp(avg_module_risk * 18.0, 0.0, 18.0))
-  execution_penalty = round(_clamp((fail_rate * 24.0) + (error_rate * 35.0) + (skipped_rate * 2.0), 0.0, 40.0))
+  raw_module_risk_penalty = round(_clamp(avg_module_risk * 18.0, 0.0, 18.0))
+  raw_execution_penalty = round(_clamp((fail_rate * 24.0) + (error_rate * 35.0) + (skipped_rate * 2.0), 0.0, 40.0))
 
-  weighted_base = (ai_score * 0.45) + (current_score * 0.40) + (historical_score * 0.15)
-  final_score = round(_clamp(weighted_base + trend_adjustment - module_risk_penalty - execution_penalty, 0.0, 100.0))
+  if total_runs == 0:
+    weighted_base = (ai_score * 0.25) + (current_score * 0.75)
+    module_risk_penalty = round(raw_module_risk_penalty * 0.5)
+    execution_penalty = round(raw_execution_penalty * 0.5)
+  else:
+    weighted_base = (ai_score * 0.38) + (current_score * 0.47) + (historical_score * 0.15)
+    module_risk_penalty = raw_module_risk_penalty
+    execution_penalty = raw_execution_penalty
+
+  final_score = round(
+    _clamp(
+      weighted_base + trend_adjustment - module_risk_penalty - execution_penalty,
+      50.0,
+      100.0,
+    )
+  )
 
   delta_vs_average = current_pass_rate - historical_avg_pass_rate
   delta_vs_recent = current_pass_rate - recent_pass_rate
@@ -378,10 +397,11 @@ async def analyze_defects(token: str, model_id: str, story: StoryAnalysis, tests
     enriched_module_risks: list[ModuleRisk] = []
     for risk in module_risks:
       stats = historical_data.get(risk.module, {})
+      total_runs_for_module = int(stats.get("total_runs", 0))
       historical_pass_rate = float(stats.get("historical_pass_rate", 0.0))
       snapshot = _module_execution_snapshot(module_name=risk.module, tests=tests, execution=execution)
       pass_rate_delta = snapshot["pass_rate"] - historical_pass_rate
-      trend = _trend_from_delta(pass_rate_delta)
+      trend = "first_run" if total_runs_for_module == 0 else _trend_from_delta(pass_rate_delta)
       historical_probability = float(stats.get("defect_probability", 0.2))
       stable_probability = _stable_module_probability(
         historical_probability=historical_probability,
