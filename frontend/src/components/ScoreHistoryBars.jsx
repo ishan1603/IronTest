@@ -1,17 +1,17 @@
 import React from "react";
 
 export default function ScoreHistoryBars({ runs = [], currentScore = 0 }) {
-  const data = Array.isArray(runs) ? runs.slice(-7) : [];
-  const hasCurrent = data.some(
-    (item) => Number(item.score) === Number(currentScore),
-  );
-
-  const chartData = hasCurrent
-    ? data
-    : [
-        ...data,
-        { label: "Current", score: Number(currentScore || 0), isCurrent: true },
-      ].slice(-8);
+  const data = Array.isArray(runs) ? runs.slice(-8) : [];
+  const chartData =
+    data.length > 0
+      ? data
+      : [
+          {
+            label: "Current",
+            score: Number(currentScore || 0),
+            isCurrent: true,
+          },
+        ];
 
   const maxScore = Math.max(
     100,
@@ -49,7 +49,7 @@ export default function ScoreHistoryBars({ runs = [], currentScore = 0 }) {
                       title={`${item.label}: ${score}`}
                     />
                   </div>
-                  <div className="mt-2 text-center text-[10px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 truncate">
+                  <div className="mt-2 text-center text-[10px] font-bold tracking-wide text-gray-500 dark:text-gray-400 truncate">
                     {item.label || `Run ${idx + 1}`}
                   </div>
                   <div className="text-center text-xs font-semibold text-gray-800 dark:text-gray-200">

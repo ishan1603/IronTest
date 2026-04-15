@@ -10,6 +10,7 @@ from agents.execution_agent import execute_tests
 from agents.defect_agent import analyze_defects
 from models import PipelineDashboard, StoryAnalysis, TestCase, DefectAnalysis, TestExecutionSummary
 from database import save_execution
+from email_notifier import send_execution_summary_email
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,14 @@ class Orchestrator:
         self.api_key = api_key
         self.sessions = session_manager
 
-    async def run_pipeline(self, session_id: str, user_story: str) -> None:
+    async def run_pipeline(
+        self,
+        session_id: str,
+        user_story: str,
+        *,
+        send_email: bool = False,
+        recipient_email: str | None = None,
+    ) -> None:
         queue = await self.sessions.get_queue(session_id)
         if queue is None:
             logger.error("Queue missing for session %s", session_id)
@@ -83,6 +91,33 @@ class Orchestrator:
                 execution=execution_result,
                 defects=defect_result,
             )
+            if send_email and recipient_email:
+                await emit(
+                    {
+                        "event": "notification",
+                        "channel": "email",
+                        "status": "processing",
+                        "message": f"Sending execution summary email to {recipient_email}...",
+                    }
+                )
+                delivered, message = await asyncio.to_thread(
+                    send_execution_summary_email,
+                    recipient_email=recipient_email,
+                    user_story=user_story,
+                    story=story_result,
+                    execution=execution_result,
+                    defects=defect_result,
+                    session_id=session_id,
+                )
+                await emit(
+                    {
+                        "event": "notification",
+                        "channel": "email",
+                        "status": "sent" if delivered else "failed",
+                        "message": message,
+                    }
+                )
+
             await emit({"event": "pipeline_complete", "dashboard": dashboard.model_dump()})
         except Exception as exc:  # noqa: BLE001
             logger.exception("Pipeline error")

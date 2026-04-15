@@ -437,5 +437,238 @@
         "error_message": "Hybrid simulation evidence: assertion drift detected between expected contract and observed behavior. Module=InventoryService; type=regression; expected='Contract assertions pass deterministically.'. Likely causes: incomplete edge-condition handling or regression in business rule interpretation."
       }
     ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "f48bac7834984456b2fd8cb3fe106219",
+    "created_at": "2026-04-15T07:04:37.955891+00:00",
+    "source": "pipeline",
+    "session_id": "fe4f2692f4434d7392dca947b6df475b",
+    "story_key": "2eb414afc2b032ebf3f01733",
+    "story_label": "As a customer, I require a frictionless checkout experience using my tokenized credit card across the ecosystem. Acceptance Criteria: - Vault API must securely ",
+    "modules": [
+      "PaymentGateway",
+      "CardVault",
+      "FraudDetection",
+      "InventoryService",
+      "RefundEngine",
+      "NotificationEngine"
+    ],
+    "duration": 4.91,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 8,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 0.8,
+    "confidence_score": 66,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_001.py::test_tc_001_paymentgateway PASSED [100%]\n\n============================== 1 passed in 0.19s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_002.py::test_tc_002_paymentgateway PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_003.py::test_tc_003_cardvault PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_004.py::test_tc_004_cardvault PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_005.py::test_tc_005_inventoryservice FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_005_inventoryservice ___________________________\nE   AssertionError: observed output diverged from expected contract 'Reserved quantity is released and available stock returns to original level.'.\nE   Expected: Reserved quantity is released and available stock returns to original level.\nE   Module=InventoryService; Type=functional; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_005.py::test_tc_005_inventoryservice - business rule assertion drift in InventoryService\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_005.py::test_tc_005_inventoryservice PASSED [100%]\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_006.py::test_tc_006_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_007.py::test_tc_007_refundengine PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_008.py::test_tc_008_refundengine PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_009.py::test_tc_009_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-010",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_010.py::test_tc_010_inventoryservice FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_010_inventoryservice ___________________________\nE   AssertionError: observed output diverged from expected contract 'Contract assertions pass deterministically.'.\nE   Expected: Contract assertions pass deterministically.\nE   Module=InventoryService; Type=regression; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_010.py::test_tc_010_inventoryservice - business rule assertion drift in InventoryService\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfgufu_dx\\TC_010.py::test_tc_010_inventoryservice PASSED [100%]\n============================== 1 passed in 0.08s =============================="
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "b9051a8f3df1470c8099ec5db4161d3b",
+    "created_at": "2026-04-15T07:47:48.600093+00:00",
+    "source": "pipeline",
+    "session_id": "4d793a6c738942ed99790cf9308c81ee",
+    "story_key": "2eb414afc2b032ebf3f01733",
+    "story_label": "As a customer, I require a frictionless checkout experience using my tokenized credit card across the ecosystem. Acceptance Criteria: - Vault API must securely ",
+    "modules": [
+      "CheckoutEngine",
+      "TokenVault",
+      "ThreeDSecure",
+      "InventoryService",
+      "RefundProcessor"
+    ],
+    "duration": 4.97,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 7,
+    "failed": 3,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 0.7,
+    "confidence_score": 57,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_001.py::test_tc_001_tokenvault PASSED [100%]\n\n============================== 1 passed in 0.11s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_002.py::test_tc_002_threedsecure PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_003.py::test_tc_003_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_004.py::test_tc_004_refundprocessor FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_004_refundprocessor ___________________________\nE   AssertionError: observed output diverged from expected contract 'Refund status = 'completed' and SLA met flag = True.'.\nE   Expected: Refund status = 'completed' and SLA met flag = True.\nE   Module=RefundProcessor; Type=functional; Risk=medium\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_004.py::test_tc_004_refundprocessor - business rule assertion drift in RefundProcessor\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_004.py::test_tc_004_refundprocessor PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_005.py::test_tc_005_tokenvault PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_006.py::test_tc_006_threedsecure PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_007.py::test_tc_007_inventoryservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_008.py::test_tc_008_refundprocessor PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_009.py::test_tc_009_threedsecure FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_009_threedsecure ___________________________\nE   AssertionError: observed output diverged from expected contract '3DS not required at $500.00, required at $500.01.'.\nE   Expected: 3DS not required at $500.00, required at $500.01.\nE   Module=ThreeDSecure; Type=regression; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_009.py::test_tc_009_threedsecure - business rule assertion drift in ThreeDSecure\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_009.py::test_tc_009_threedsecure PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-010",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_010.py::test_tc_010_refundprocessor FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_010_refundprocessor ___________________________\nE   AssertionError: observed output diverged from expected contract 'Contract assertions pass deterministically.'.\nE   Expected: Contract assertions pass deterministically.\nE   Module=RefundProcessor; Type=regression; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_010.py::test_tc_010_refundprocessor - business rule assertion drift in RefundProcessor\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpvwxsxmi0\\TC_010.py::test_tc_010_refundprocessor PASSED [100%]\n============================== 1 passed in 0.08s =============================="
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "d03d1473fda54c36acf711a78794da01",
+    "created_at": "2026-04-15T07:51:11.252489+00:00",
+    "source": "pipeline",
+    "session_id": "032ca1e6f46c46818d23fc85883c3296",
+    "story_key": "2eb414afc2b032ebf3f01733",
+    "story_label": "As a customer, I require a frictionless checkout experience using my tokenized credit card across the ecosystem. Acceptance Criteria: - Vault API must securely ",
+    "modules": [
+      "PaymentGateway",
+      "CardVault",
+      "ThreeDSecure",
+      "InventoryService",
+      "RefundEngine",
+      "OrderOrchestration"
+    ],
+    "duration": 4.79,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 5,
+    "failed": 5,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 0.5,
+    "confidence_score": 31,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_001.py::test_tc_001_paymentgateway PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_002.py::test_tc_002_threedsecure PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_003.py::test_tc_003_cardvault PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_004.py::test_tc_004_inventoryservice FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_004_inventoryservice ___________________________\nE   AssertionError: observed output diverged from expected contract 'Only one checkout succeeds; inventory ends at 0; the other receives lock failure/rollback.'.\nE   Expected: Only one checkout succeeds; inventory ends at 0; the other receives lock failure/rollback.\nE   Module=InventoryService; Type=edge_case; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_004.py::test_tc_004_inventoryservice - business rule assertion drift in InventoryService\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_004.py::test_tc_004_inventoryservice PASSED [100%]\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_005.py::test_tc_005_refundengine FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_005_refundengine ___________________________\nE   AssertionError: observed output diverged from expected contract 'Refund status is 'completed' and SLA start-to-finish duration ≤ 5 business days.'.\nE   Expected: Refund status is 'completed' and SLA start-to-finish duration ≤ 5 business days.\nE   Module=RefundEngine; Type=functional; Risk=medium\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_005.py::test_tc_005_refundengine - business rule assertion drift in RefundEngine\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_005.py::test_tc_005_refundengine PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_006.py::test_tc_006_inventoryservice FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_006_inventoryservice ___________________________\nE   AssertionError: observed output diverged from expected contract 'Lock is cleared; inventory remains at original count.'.\nE   Expected: Lock is cleared; inventory remains at original count.\nE   Module=InventoryService; Type=regression; Risk=medium\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_006.py::test_tc_006_inventoryservice - business rule assertion drift in InventoryService\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_006.py::test_tc_006_inventoryservice PASSED [100%]\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_007.py::test_tc_007_threedsecure PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_008.py::test_tc_008_paymentgateway FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_008_paymentgateway ___________________________\nE   AssertionError: authentication/authorization outcome diverged from expected 'Inventory unlocked; CardVault contains no additional token entries.'.\nE   Expected: Inventory unlocked; CardVault contains no additional token entries.\nE   Module=PaymentGateway; Type=functional; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_008.py::test_tc_008_paymentgateway - authorization contract mismatch in PaymentGateway\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_008.py::test_tc_008_paymentgateway PASSED [100%]\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_009.py::test_tc_009_refundengine PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-010",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_010.py::test_tc_010_inventoryservice FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_010_inventoryservice ___________________________\nE   AssertionError: observed output diverged from expected contract 'Contract assertions pass deterministically.'.\nE   Expected: Contract assertions pass deterministically.\nE   Module=InventoryService; Type=regression; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_010.py::test_tc_010_inventoryservice - business rule assertion drift in InventoryService\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp27vdnga2\\TC_010.py::test_tc_010_inventoryservice PASSED [100%]\n============================== 1 passed in 0.08s =============================="
+      }
+    ]
   }
 ]

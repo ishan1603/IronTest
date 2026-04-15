@@ -83,6 +83,10 @@ export default function App() {
   const [ingestMessage, setIngestMessage] = useState("");
   const [ingesting, setIngesting] = useState(false);
   const [storyScoreHistory, setStoryScoreHistory] = useState([]);
+  const [sendEmailEnabled, setSendEmailEnabled] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [emailNotice, setEmailNotice] = useState("");
+  const [emailNoticeStatus, setEmailNoticeStatus] = useState("idle");
 
   // Tabs: 'hero', 'pipeline', 'tests', 'score'
   const [activeTab, setActiveTab] = useState("hero");
@@ -224,14 +228,37 @@ export default function App() {
           return;
         }
         const payload = await res.json();
-        const normalized = (payload.runs || []).map((run, idx) => ({
-          label: `Run ${idx + 1}`,
+        const runs = Array.isArray(payload.runs) ? payload.runs : [];
+        const sortedRuns = [...runs].sort((a, b) => {
+          const left = Date.parse(a?.created_at || "");
+          const right = Date.parse(b?.created_at || "");
+          if (Number.isNaN(left) && Number.isNaN(right)) return 0;
+          if (Number.isNaN(left)) return -1;
+          if (Number.isNaN(right)) return 1;
+          return left - right;
+        });
+
+        const formatRunLabel = (value, index) => {
+          const parsed = Date.parse(value || "");
+          if (Number.isNaN(parsed)) return `Run ${index + 1}`;
+          return new Date(parsed).toLocaleString([], {
+            month: "short",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        };
+
+        const normalized = sortedRuns.map((run, idx) => ({
+          label: formatRunLabel(run.created_at, idx),
           score: Number.isFinite(Number(run.confidence_score))
             ? Number(run.confidence_score)
             : Math.round(Number(run.pass_rate || 0) * 100),
           created_at: run.created_at,
+          isCurrent: idx === sortedRuns.length - 1,
         }));
-        setStoryScoreHistory(normalized.reverse());
+
+        setStoryScoreHistory(normalized);
       } catch {
         setStoryScoreHistory([]);
       }
@@ -335,10 +362,20 @@ export default function App() {
 
   const handleRun = async () => {
     if (!userStory.trim() || isRunning) return;
+    if (sendEmailEnabled) {
+      const email = recipientEmail.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        setError("Please enter a valid recipient email to enable auto-email.");
+        return;
+      }
+    }
 
     setError("");
     setPipelineError("");
     setIngestMessage("");
+    setEmailNotice("");
+    setEmailNoticeStatus("idle");
     setPipelineVisible(true);
     setDashboardData(null);
     setActiveTab("pipeline");
@@ -357,7 +394,11 @@ export default function App() {
       const res = await fetch(`${API_BASE}/api/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_story: userStory }),
+        body: JSON.stringify({
+          user_story: userStory,
+          send_email: sendEmailEnabled,
+          recipient_email: sendEmailEnabled ? recipientEmail.trim() : undefined,
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -520,6 +561,9 @@ export default function App() {
             streamClosedRef.current = true;
             es.close();
           }, 1500);
+        } else if (type === "notification" && data.channel === "email") {
+          setEmailNotice(data.message || "Email status updated.");
+          setEmailNoticeStatus(data.status || "info");
         } else if (type === "error") {
           console.error("[Pipeline] Streamed backend error", data);
           setError(data.message || "Pipeline trace failure");
@@ -1098,9 +1142,54 @@ export default function App() {
                     )}
                   </div>
 
+                  <div className="mx-2 mb-2 rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] p-4 backdrop-blur-xl">
+                    <label className="flex items-center gap-3 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                        checked={sendEmailEnabled}
+                        onChange={(e) => setSendEmailEnabled(e.target.checked)}
+                      />
+                      Send execution summary email automatically after run
+                      completes
+                    </label>
+                    {sendEmailEnabled && (
+                      <div className="mt-3">
+                        <label className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                          Recipient Email
+                        </label>
+                        <input
+                          type="email"
+                          className="mt-1 w-full bg-white dark:bg-white/[0.06] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-accent"
+                          placeholder="qa-owner@company.com"
+                          value={recipientEmail}
+                          onChange={(e) => setRecipientEmail(e.target.value)}
+                        />
+                        <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                          Uses backend SMTP settings (`SMTP_HOST`, `SMTP_PORT`,
+                          `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`).
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
                   {ingestMessage && (
                     <div className="px-4 pb-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                       {ingestMessage}
+                    </div>
+                  )}
+
+                  {emailNotice && (
+                    <div
+                      className={`px-4 pb-2 text-xs font-semibold ${
+                        emailNoticeStatus === "sent"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : emailNoticeStatus === "failed"
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-cyan-700 dark:text-cyan-300"
+                      }`}
+                    >
+                      {emailNotice}
                     </div>
                   )}
 
@@ -1204,6 +1293,22 @@ export default function App() {
                   className="mt-4 rounded-xl border border-red-300/50 bg-red-100/60 dark:bg-red-950/30 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300"
                 >
                   {pipelineError}
+                </motion.div>
+              )}
+
+              {emailNotice && activeTab === "pipeline" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`mt-4 rounded-xl px-4 py-3 text-sm font-medium ${
+                    emailNoticeStatus === "sent"
+                      ? "border border-emerald-300/50 bg-emerald-100/60 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300"
+                      : emailNoticeStatus === "failed"
+                        ? "border border-red-300/50 bg-red-100/60 dark:bg-red-950/30 text-red-700 dark:text-red-300"
+                        : "border border-cyan-300/50 bg-cyan-100/60 dark:bg-cyan-900/20 text-cyan-800 dark:text-cyan-300"
+                  }`}
+                >
+                  {emailNotice}
                 </motion.div>
               )}
 

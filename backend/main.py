@@ -50,10 +50,19 @@ if API_KEY:
 async def analyze(request: AnalyzeRequest):
     if not API_KEY:
         raise HTTPException(status_code=500, detail="Missing OPENROUTER_API_KEY environment variable.")
+    if request.send_email and not (request.recipient_email and request.recipient_email.strip()):
+        raise HTTPException(status_code=400, detail="recipient_email is required when send_email is enabled.")
 
     session_id = await session_manager.create_session()
     assert orchestrator is not None
-    asyncio.create_task(orchestrator.run_pipeline(session_id, request.user_story))
+    asyncio.create_task(
+        orchestrator.run_pipeline(
+            session_id,
+            request.user_story,
+            send_email=request.send_email,
+            recipient_email=request.recipient_email,
+        )
+    )
     return {"session_id": session_id}
 
 

@@ -4,6 +4,8 @@ from typing import List, Literal
 
 class AnalyzeRequest(BaseModel):
     user_story: str = Field(..., min_length=10, description="Jira-style user story text")
+    send_email: bool = Field(default=False, description="Send run summary email after execution")
+    recipient_email: str | None = Field(default=None, description="Recipient email for execution summary")
 
 
 class JiraIngestRequest(BaseModel):
