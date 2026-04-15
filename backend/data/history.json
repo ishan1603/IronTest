@@ -231,5 +231,694 @@
         "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpn6vy3_xl\\TC_010.py::test_tc_010_autosuggest PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
       }
     ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "e8a9c4201a864c4cb155edac707b7bea",
+    "created_at": "2026-04-15T16:15:22.874449+00:00",
+    "source": "pipeline",
+    "session_id": "613a2a5f54de43b1a7de5b54a6d0760b",
+    "story_key": "44d60e1a67dba56afb600642",
+    "story_label": "Jira Issue: KAN-4 Project: KAN Issue Type: Story Status: To Do Priority: Medium Summary: As a customer, I require real time order tracking so I can monitor deli",
+    "modules": [
+      "OrderTracking",
+      "NotificationEngine",
+      "GPSService",
+      "DeliveryManagement",
+      "APIGateway"
+    ],
+    "duration": 4.88,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 7,
+    "failed": 3,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 0.7,
+    "confidence_score": 58,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_001.py::test_tc_001_ordertracking FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_001_ordertracking ___________________________\nE   AssertionError: observed output diverged from expected contract 'Notification is sent no later than 5 seconds after the status change.'.\nE   Expected: Notification is sent no later than 5 seconds after the status change.\nE   Module=OrderTracking; Type=functional; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_001.py::test_tc_001_ordertracking - business rule assertion drift in OrderTracking\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpcqnjuzez\\TC_001.py::test_tc_001_ordertracking PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_002.py::test_tc_002_gpsservice FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_002_gpsservice ___________________________\nE   AssertionError: observed output diverged from expected contract 'Accuracy reported is >= 95% and location is displayed to the customer.'.\nE   Expected: Accuracy reported is >= 95% and location is displayed to the customer.\nE   Module=GPSService; Type=boundary; Risk=medium\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_002.py::test_tc_002_gpsservice - business rule assertion drift in GPSService\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpcqnjuzez\\TC_002.py::test_tc_002_gpsservice PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpcqnjuzez\\TC_003.py::test_tc_003_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpcqnjuzez\\TC_004.py::test_tc_004_apigateway PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpcqnjuzez\\TC_005.py::test_tc_005_deliverymanagement PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpcqnjuzez\\TC_006.py::test_tc_006_gpsservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncollecting ... collected 1 item\n\nTC_007.py::test_tc_007_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.08s ==============================\nContract check passed for module=NotificationEngine, type=functional, id=TC-007."
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpcqnjuzez\\TC_008.py::test_tc_008_apigateway PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpcqnjuzez\\TC_009.py::test_tc_009_deliverymanagement PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-010",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_010.py::test_tc_010_apigateway FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_010_apigateway ___________________________\nE   AssertionError: observed output diverged from expected contract 'Assertions satisfy acceptance intent and control risk: High concurrent user load may cause latency spikes beyond the 200 ms response target..'.\nE   Expected: Assertions satisfy acceptance intent and control risk: High concurrent user load may cause latency spikes beyond the 200 ms response target..\nE   Module=APIGateway; Type=regression; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_010.py::test_tc_010_apigateway - business rule assertion drift in APIGateway\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpcqnjuzez\\TC_010.py::test_tc_010_apigateway PASSED [100%]\n============================== 1 passed in 0.11s =============================="
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "5ab3212a872b4ce5a49c0f220525b910",
+    "created_at": "2026-04-15T16:38:29.646006+00:00",
+    "source": "pipeline",
+    "session_id": "a0cdd6eac2c549388cdf18b9e92b5da0",
+    "story_key": "44d60e1a67dba56afb600642",
+    "story_label": "Jira Issue: KAN-4 Project: KAN Issue Type: Story Status: To Do Priority: Medium Summary: As a customer, I require real time order tracking so I can monitor deli",
+    "modules": [
+      "OrderManagement",
+      "TrackingService",
+      "NotificationEngine",
+      "GPSIntegration",
+      "DeliveryService"
+    ],
+    "duration": 3.9,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 8,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 0.8,
+    "confidence_score": 70,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncollecting ... collected 1 item\n\nTC_001.py::test_tc_001_ordermanagement PASSED [100%]\n\n============================== 1 passed in 0.08s ==============================\nContract check passed for module=OrderManagement, type=functional, id=TC-001."
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmphprtk3cg\\TC_002.py::test_tc_002_gpsintegration PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_003.py::test_tc_003_trackingservice FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_003_trackingservice ___________________________\nE   AssertionError: observed output diverged from expected contract 'All responses returned in ≤200 ms.'.\nE   Expected: All responses returned in ≤200 ms.\nE   Module=TrackingService; Type=edge_case; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_003.py::test_tc_003_trackingservice - business rule assertion drift in TrackingService\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmphprtk3cg\\TC_003.py::test_tc_003_trackingservice PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmphprtk3cg\\TC_004.py::test_tc_004_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_005.py::test_tc_005_deliveryservice FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_005_deliveryservice ___________________________\nE   AssertionError: observed output diverged from expected contract 'First retry occurs within 60 seconds, total retries ≤3.'.\nE   Expected: First retry occurs within 60 seconds, total retries ≤3.\nE   Module=DeliveryService; Type=edge_case; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_005.py::test_tc_005_deliveryservice - business rule assertion drift in DeliveryService\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmphprtk3cg\\TC_005.py::test_tc_005_deliveryservice PASSED [100%]\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmphprtk3cg\\TC_006.py::test_tc_006_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.07s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmphprtk3cg\\TC_007.py::test_tc_007_gpsintegration PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmphprtk3cg\\TC_008.py::test_tc_008_trackingservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmphprtk3cg\\TC_009.py::test_tc_009_deliveryservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-010",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmphprtk3cg\\TC_010.py::test_tc_010_deliveryservice PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "b571a85c01ba4d409eba906031477200",
+    "created_at": "2026-04-15T16:45:56.185013+00:00",
+    "source": "pipeline",
+    "session_id": "a7e34e9eabce4909a8cab711100c820b",
+    "story_key": "44d60e1a67dba56afb600642",
+    "story_label": "Jira Issue: KAN-4 Project: KAN Issue Type: Story Status: To Do Priority: Medium Summary: As a customer, I require real time order tracking so I can monitor deli",
+    "modules": [
+      "OrderTracking",
+      "NotificationEngine",
+      "GPSService",
+      "DeliveryManagement",
+      "APIGateway"
+    ],
+    "duration": 4.36,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 7,
+    "failed": 3,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 0.7,
+    "confidence_score": 56,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpbw7unikr\\TC_001.py::test_tc_001_ordertracking PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpbw7unikr\\TC_002.py::test_tc_002_gpsservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_003.py::test_tc_003_notificationengine FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_003_notificationengine ___________________________\nE   AssertionError: observed output diverged from expected contract 'Exactly one alert is sent for the milestone.'.\nE   Expected: Exactly one alert is sent for the milestone.\nE   Module=NotificationEngine; Type=edge_case; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_003.py::test_tc_003_notificationengine - business rule assertion drift in NotificationEngine\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpbw7unikr\\TC_003.py::test_tc_003_notificationengine PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpbw7unikr\\TC_004.py::test_tc_004_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpbw7unikr\\TC_005.py::test_tc_005_apigateway PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpbw7unikr\\TC_006.py::test_tc_006_apigateway PASSED [100%]\n\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncollecting ... collected 1 item\n\nTC_007.py::test_tc_007_deliverymanagement PASSED [100%]\n\n============================== 1 passed in 0.08s ==============================\nContract check passed for module=DeliveryManagement, type=functional, id=TC-007."
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpbw7unikr\\TC_008.py::test_tc_008_gpsservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_009.py::test_tc_009_notificationengine FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_009_notificationengine ___________________________\nE   AssertionError: observed output diverged from expected contract 'Alert is sent; map link is omitted or replaced with placeholder.'.\nE   Expected: Alert is sent; map link is omitted or replaced with placeholder.\nE   Module=NotificationEngine; Type=regression; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_009.py::test_tc_009_notificationengine - business rule assertion drift in NotificationEngine\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpbw7unikr\\TC_009.py::test_tc_009_notificationengine PASSED [100%]\n============================== 1 passed in 0.08s =============================="
+      },
+      {
+        "test_id": "TC-010",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_010.py::test_tc_010_apigateway FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_010_apigateway ___________________________\nE   AssertionError: observed output diverged from expected contract 'Assertions satisfy acceptance intent and control risk: High concurrent tracking requests leading to latency spikes above the 200 ms threshold..'.\nE   Expected: Assertions satisfy acceptance intent and control risk: High concurrent tracking requests leading to latency spikes above the 200 ms threshold..\nE   Module=APIGateway; Type=regression; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_010.py::test_tc_010_apigateway - business rule assertion drift in APIGateway\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpbw7unikr\\TC_010.py::test_tc_010_apigateway PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "run_id": "a7408f8a26ca490caca0a9ef9e20e977",
+    "created_at": "2026-04-15T18:12:40.330257+00:00",
+    "source": "pipeline",
+    "session_id": "393b415e23284fb0b1e92c87450f7ea4",
+    "story_key": "44d60e1a67dba56afb600642",
+    "story_label": "Jira Issue: KAN-4 Project: KAN Issue Type: Story Status: To Do Priority: Medium Summary: As a customer, I require real time order tracking so I can monitor deli",
+    "modules": [
+      "OrderTracking",
+      "NotificationEngine",
+      "GPSService",
+      "DeliveryManagement",
+      "APIGateway"
+    ],
+    "duration": 4.98,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 8,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 0.8,
+    "confidence_score": 68,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfz420mrm\\TC_001.py::test_tc_001_ordertracking PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfz420mrm\\TC_002.py::test_tc_002_gpsservice PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfz420mrm\\TC_003.py::test_tc_003_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncollecting ... collected 1 item\n\nTC_004.py::test_tc_004_apigateway PASSED [100%]\n\n============================== 1 passed in 0.08s ==============================\nContract check passed for module=APIGateway, type=functional, id=TC-004."
+      },
+      {
+        "test_id": "TC-005",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_005.py::test_tc_005_apigateway FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_005_apigateway ___________________________\nE   AssertionError: expected SLA contract to hold but observed latency drift for 'All responses returned within 200 ms.'.\nE   Expected: All responses returned within 200 ms.\nE   Module=APIGateway; Type=boundary; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_005.py::test_tc_005_apigateway - latency contract breach for APIGateway\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfz420mrm\\TC_005.py::test_tc_005_apigateway PASSED [100%]\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfz420mrm\\TC_006.py::test_tc_006_gpsservice PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfz420mrm\\TC_007.py::test_tc_007_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfz420mrm\\TC_008.py::test_tc_008_ordertracking PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfz420mrm\\TC_009.py::test_tc_009_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.10s =============================="
+      },
+      {
+        "test_id": "TC-010",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_010.py::test_tc_010_gpsservice FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_010_gpsservice ___________________________\nE   AssertionError: observed output diverged from expected contract 'System behavior remains compliant for previously failing signature: business rule assertion drift in apigateway.'.\nE   Expected: System behavior remains compliant for previously failing signature: business rule assertion drift in apigateway.\nE   Module=GPSService; Type=regression; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_010.py::test_tc_010_gpsservice - business rule assertion drift in GPSService\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmpfz420mrm\\TC_010.py::test_tc_010_gpsservice PASSED [100%]\n============================== 1 passed in 0.10s =============================="
+      }
+    ],
+    "test_catalog": [
+      {
+        "id": "TC-001",
+        "module": "OrderTracking",
+        "type": "functional",
+        "risk_level": "high",
+        "description": "Verify that location updates are pushed to the UI at least every 5 seconds during an active delivery.",
+        "expected_result": "UI receives at least 5 location updates, each spaced no more than 5 seconds apart.",
+        "fingerprint": "796de3d882ff3559",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-002",
+        "module": "GPSService",
+        "type": "boundary",
+        "risk_level": "medium",
+        "description": "Validate GPS accuracy reporting when signal quality is at the minimum acceptable threshold.",
+        "expected_result": "Reported accuracy is 95% and passes acceptance criteria.",
+        "fingerprint": "6f795c7d56e4b0e4",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-003",
+        "module": "NotificationEngine",
+        "type": "edge_case",
+        "risk_level": "high",
+        "description": "Ensure notifications are not duplicated when a delivery fails and the retry mechanism fires within 1 minute.",
+        "expected_result": "Exactly one notification per event type; no duplicate alerts.",
+        "fingerprint": "aa2f1c15e85a32a4",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-004",
+        "module": "APIGateway",
+        "type": "functional",
+        "risk_level": "medium",
+        "description": "Measure API response time for a tracking request under normal load.",
+        "expected_result": "Response time is less than 200 ms.",
+        "fingerprint": "dbb09bc71cd91ae2",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-005",
+        "module": "APIGateway",
+        "type": "boundary",
+        "risk_level": "high",
+        "description": "Validate API latency when concurrent tracking requests reach peak concurrency (100 simultaneous requests).",
+        "expected_result": "All responses returned within 200 ms.",
+        "fingerprint": "8b43d7ab28cb4621",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "fail"
+      },
+      {
+        "id": "TC-006",
+        "module": "GPSService",
+        "type": "edge_case",
+        "risk_level": "medium",
+        "description": "Handle GPS signal loss: system should pause updates and resume without violating the 5‑second push rule once signal returns.",
+        "expected_result": "No UI updates during blackout; upon resume, first update arrives within 5 seconds.",
+        "fingerprint": "1a8b8778e2233f3a",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-007",
+        "module": "NotificationEngine",
+        "type": "regression",
+        "risk_level": "low",
+        "description": "Re‑assert that notifications are sent at dispatch, out‑for‑delivery, and delivery events after recent failures.",
+        "expected_result": "All three notification types are present exactly once.",
+        "fingerprint": "f1cea762aff2828c",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-008",
+        "module": "OrderTracking",
+        "type": "regression",
+        "risk_level": "high",
+        "description": "Adaptive regression guard for OrderTracking targeting prior failure signature: business rule assertion drift in notificationengine.",
+        "expected_result": "System behavior remains compliant for previously failing signature: business rule assertion drift in notificationengine.",
+        "fingerprint": "fa42e912165de246",
+        "learning_source": "adaptive",
+        "derived_from_failure_signature": "business rule assertion drift in notificationengine",
+        "novelty_reason": "Generated from prior run failure signature.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-009",
+        "module": "NotificationEngine",
+        "type": "regression",
+        "risk_level": "high",
+        "description": "Adaptive regression guard for NotificationEngine targeting prior failure signature: business rule assertion drift in notificationengine.",
+        "expected_result": "System behavior remains compliant for previously failing signature: business rule assertion drift in notificationengine.",
+        "fingerprint": "c47e81669b47d8cc",
+        "learning_source": "adaptive",
+        "derived_from_failure_signature": "business rule assertion drift in notificationengine",
+        "novelty_reason": "Generated from prior run failure signature.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-010",
+        "module": "GPSService",
+        "type": "regression",
+        "risk_level": "high",
+        "description": "Adaptive regression guard for GPSService targeting prior failure signature: business rule assertion drift in apigateway.",
+        "expected_result": "System behavior remains compliant for previously failing signature: business rule assertion drift in apigateway.",
+        "fingerprint": "d9291b05cd87d776",
+        "learning_source": "adaptive",
+        "derived_from_failure_signature": "business rule assertion drift in apigateway",
+        "novelty_reason": "Generated from prior run failure signature.",
+        "result_status": "fail"
+      }
+    ],
+    "failure_signatures": [
+      {
+        "signature": "latency contract breach for apigateway",
+        "module": "APIGateway",
+        "test_id": "TC-005",
+        "status": "fail"
+      },
+      {
+        "signature": "business rule assertion drift in gpsservice",
+        "module": "GPSService",
+        "test_id": "TC-010",
+        "status": "fail"
+      }
+    ],
+    "learning_artifacts": {
+      "test_catalog_size": 10,
+      "adaptive_tests": 3,
+      "baseline_tests": 7,
+      "failure_signature_count": 2
+    }
+  },
+  {
+    "schema_version": 2,
+    "run_id": "be852a9aa43343b79d869949a6d45fc0",
+    "created_at": "2026-04-15T18:45:39.136238+00:00",
+    "source": "pipeline",
+    "session_id": "622e1e7859f640dab6f0272dbb0feceb",
+    "story_key": "44d60e1a67dba56afb600642",
+    "story_label": "Jira Issue: KAN-4 Project: KAN Issue Type: Story Status: To Do Priority: Medium Summary: As a customer, I require real time order tracking so I can monitor deli",
+    "modules": [
+      "OrderTracking",
+      "NotificationEngine",
+      "GPSService",
+      "DeliveryManagement",
+      "API Gateway"
+    ],
+    "duration": 4.74,
+    "total_tests": 10,
+    "executed_tests": 10,
+    "passed": 8,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 0.8,
+    "confidence_score": 69,
+    "results": [
+      {
+        "test_id": "TC-001",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp4n8gy5xn\\TC_001.py::test_tc_001_ordertracking PASSED [100%]\n\n============================== 1 passed in 0.11s =============================="
+      },
+      {
+        "test_id": "TC-002",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp4n8gy5xn\\TC_002.py::test_tc_002_gpsservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-003",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_003.py::test_tc_003_notificationengine FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_003_notificationengine ___________________________\nE   AssertionError: observed output diverged from expected contract 'Exactly three distinct alerts are sent, one per state, with no duplicates.'.\nE   Expected: Exactly three distinct alerts are sent, one per state, with no duplicates.\nE   Module=NotificationEngine; Type=edge_case; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_003.py::test_tc_003_notificationengine - business rule assertion drift in NotificationEngine\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp4n8gy5xn\\TC_003.py::test_tc_003_notificationengine PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-004",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp4n8gy5xn\\TC_004.py::test_tc_004_api_gateway PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-005",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp4n8gy5xn\\TC_005.py::test_tc_005_apigateway PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-006",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp4n8gy5xn\\TC_006.py::test_tc_006_gpsservice PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-007",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp4n8gy5xn\\TC_007.py::test_tc_007_deliverymanagement PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\ishan\nplugins: anyio-4.13.0\ncollecting ... collected 1 item\n\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp4n8gy5xn\\TC_008.py::test_tc_008_notificationengine PASSED [100%]\n\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-008",
+        "status": "fail",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.x-hybrid -- simulated-contract-run\ncollecting ... collected 1 item\n\nTC_008.py::test_tc_008_apigateway FAILED [100%]\n\n================================== FAILURES ===================================\n___________________________ test_tc_008_apigateway ___________________________\nE   AssertionError: expected SLA contract to hold but observed latency drift for 'System behavior remains compliant for previously failing signature: latency contract breach for apigateway.'.\nE   Expected: System behavior remains compliant for previously failing signature: latency contract breach for apigateway.\nE   Module=APIGateway; Type=regression; Risk=high\nE   Observed signal: branch output stayed internally valid but diverged from expected contract edge conditions.\n\n=========================== short test summary info ===========================\nFAILED TC_008.py::test_tc_008_apigateway - latency contract breach for APIGateway\n============================== 1 failed in 0.11s ==============================\n\n--- Captured terminal tail before contract failure ---\n..\\..\\..\\..\\AppData\\Local\\Temp\\tmp4n8gy5xn\\TC_008.py::test_tc_008_apigateway PASSED [100%]\n============================== 1 passed in 0.09s =============================="
+      },
+      {
+        "test_id": "TC-009",
+        "status": "pass",
+        "error_message": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.2.0, pluggy-1.6.0 -- C:\\Users\\ishan\\Desktop\\ATOS\\.venv\\Scripts\\python.exe\ncollecting ... collected 1 item\n\nTC_009.py::test_tc_009_gpsservice PASSED [100%]\n\n============================== 1 passed in 0.08s ==============================\nContract check passed for module=GPSService, type=regression, id=TC-009."
+      }
+    ],
+    "test_catalog": [
+      {
+        "id": "TC-001",
+        "module": "OrderTracking",
+        "type": "functional",
+        "risk_level": "high",
+        "description": "Verify that location updates are pushed to the UI at least every 5 seconds during an active delivery.",
+        "expected_result": "At least four location updates are received, each spaced no more than 5 seconds apart.",
+        "fingerprint": "4fd90fca2dcc5e1a",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-002",
+        "module": "GPSService",
+        "type": "boundary",
+        "risk_level": "medium",
+        "description": "Check GPS accuracy calculation at the 95% threshold.",
+        "expected_result": "Reported accuracy is 95% and meets acceptance criteria.",
+        "fingerprint": "f6bba43738f008cd",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-003",
+        "module": "NotificationEngine",
+        "type": "edge_case",
+        "risk_level": "high",
+        "description": "Ensure alerts are not duplicated when order state changes rapidly (dispatch -> out for delivery -> delivered).",
+        "expected_result": "Exactly three distinct alerts are sent, one per state, with no duplicates.",
+        "fingerprint": "7baebdd16510f2eb",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "fail"
+      },
+      {
+        "id": "TC-004",
+        "module": "API Gateway",
+        "type": "functional",
+        "risk_level": "medium",
+        "description": "Validate that tracking API responses are returned in under 200 ms under normal load.",
+        "expected_result": "All responses complete within 200 ms.",
+        "fingerprint": "40b5eea7d319b23a",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-005",
+        "module": "APIGateway",
+        "type": "regression",
+        "risk_level": "high",
+        "description": "Re‑run the latency contract test that previously failed (TC-005) to ensure fix.",
+        "expected_result": "All response times are ≤200 ms.",
+        "fingerprint": "fd0a09891cdaa406",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-006",
+        "module": "GPSService",
+        "type": "edge_case",
+        "risk_level": "high",
+        "description": "Handle loss of GPS signal: service should fallback to last known good location and flag accuracy as low.",
+        "expected_result": "Service emits last known location with an 'accuracy' flag set to false.",
+        "fingerprint": "db98a8e6432e5b07",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-007",
+        "module": "DeliveryManagement",
+        "type": "functional",
+        "risk_level": "medium",
+        "description": "Verify automatic retry of a failed delivery attempt within 1 minute.",
+        "expected_result": "A retry is triggered no later than 60 seconds after the failure.",
+        "fingerprint": "eea9d638412c8032",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "pass"
+      },
+      {
+        "id": "TC-008",
+        "module": "NotificationEngine",
+        "type": "boundary",
+        "risk_level": "medium",
+        "description": "Test notification latency when network latency spikes to 300 ms.",
+        "expected_result": "Alert is still delivered within 5 seconds overall, satisfying UI update window.",
+        "fingerprint": "6b7de0a0e8a84f77",
+        "learning_source": "baseline",
+        "derived_from_failure_signature": "",
+        "novelty_reason": "New baseline behavior path introduced in this run.",
+        "result_status": "fail"
+      },
+      {
+        "id": "TC-008",
+        "module": "APIGateway",
+        "type": "regression",
+        "risk_level": "high",
+        "description": "Adaptive regression guard for APIGateway targeting prior failure signature: latency contract breach for apigateway.",
+        "expected_result": "System behavior remains compliant for previously failing signature: latency contract breach for apigateway.",
+        "fingerprint": "53a83e7668f47d1d",
+        "learning_source": "adaptive",
+        "derived_from_failure_signature": "latency contract breach for apigateway",
+        "novelty_reason": "Generated from prior run failure signature.",
+        "result_status": "fail"
+      },
+      {
+        "id": "TC-009",
+        "module": "GPSService",
+        "type": "regression",
+        "risk_level": "high",
+        "description": "Adaptive regression guard for GPSService targeting prior failure signature: business rule assertion drift in gpsservice.",
+        "expected_result": "System behavior remains compliant for previously failing signature: business rule assertion drift in gpsservice.",
+        "fingerprint": "d7ff902b063a11b2",
+        "learning_source": "adaptive",
+        "derived_from_failure_signature": "business rule assertion drift in gpsservice",
+        "novelty_reason": "Generated from prior run failure signature.",
+        "result_status": "pass"
+      }
+    ],
+    "failure_signatures": [
+      {
+        "signature": "business rule assertion drift in notificationengine",
+        "module": "NotificationEngine",
+        "test_id": "TC-003",
+        "status": "fail"
+      },
+      {
+        "signature": "latency contract breach for apigateway",
+        "module": "APIGateway",
+        "test_id": "TC-008",
+        "status": "fail"
+      }
+    ],
+    "learning_artifacts": {
+      "test_catalog_size": 10,
+      "adaptive_tests": 2,
+      "baseline_tests": 8,
+      "failure_signature_count": 2
+    }
   }
 ]

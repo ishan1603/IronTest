@@ -41,6 +41,7 @@ class StoryAnalysis(BaseModel):
 
 TestType = Literal["functional", "boundary", "edge_case", "regression"]
 RiskLevel = Literal["low", "medium", "high"]
+LearningSource = Literal["baseline", "adaptive", "fallback"]
 
 
 class TestCase(BaseModel):
@@ -53,6 +54,9 @@ class TestCase(BaseModel):
     risk_level: RiskLevel = "low"
     automated: bool = False
     automation_snippet: List[str] = Field(default_factory=list)
+    learning_source: LearningSource = "baseline"
+    derived_from_failure_signature: str = ""
+    novelty_reason: str = ""
 
 
 class TestResult(BaseModel):

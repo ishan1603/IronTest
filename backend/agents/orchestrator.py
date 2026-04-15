@@ -63,7 +63,12 @@ class Orchestrator:
             await emit({"event": "agent_complete", "agent": "story", "result": story_result.model_dump()})
 
             await emit({"event": "agent_start", "agent": "test", "message": "Generating test suite..."})
-            test_result: list[TestCase] = await generate_tests(self.api_key, self.model_id, story_result)
+            test_result: list[TestCase] = await generate_tests(
+                self.api_key,
+                self.model_id,
+                story_result,
+                story_text=user_story,
+            )
             await emit({"event": "agent_complete", "agent": "test", "result": [t.model_dump() for t in test_result]})
 
             await emit({"event": "agent_start", "agent": "execution", "message": "Executing automated tests..."})
@@ -78,6 +83,7 @@ class Orchestrator:
             save_execution(
                 story_result.modules,
                 execution_result,
+                tests=test_result,
                 story_text=user_story,
                 story_intent=story_result.intent,
                 source="pipeline",

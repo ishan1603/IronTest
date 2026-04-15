@@ -11,6 +11,9 @@ from typing import List
 from models import TestCase, TestResult, TestExecutionSummary
 
 
+ENABLE_DEMO_SHAPING = os.getenv("ENABLE_DEMO_SHAPING", "true").lower() in {"1", "true", "yes"}
+
+
 def _deterministic_ratio(seed_text: str) -> float:
     digest = hashlib.sha256(seed_text.encode("utf-8")).hexdigest()[:8]
     return int(digest, 16) / 0xFFFFFFFF
@@ -277,8 +280,9 @@ async def execute_tests(tests: List[TestCase]) -> TestExecutionSummary:
                 except Exception as e:
                     results.append(TestResult(test_id=t.id, status="error", error_message=str(e)))
 
-            _enforce_realistic_mix(tests, results)
-            _enforce_demo_pass_band(tests, results)
+            if ENABLE_DEMO_SHAPING:
+                _enforce_realistic_mix(tests, results)
+                _enforce_demo_pass_band(tests, results)
 
         duration = time.time() - start_time
         return TestExecutionSummary(results=results, duration_seconds=round(duration, 2))

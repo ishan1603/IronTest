@@ -5,6 +5,7 @@ import hashlib
 import tempfile
 import threading
 import uuid
+from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, List
 
@@ -20,7 +21,8 @@ HISTORY_DIR = os.path.join(os.path.dirname(__file__), "data")
 HISTORY_FILE = os.path.join(HISTORY_DIR, "history.json")
 DEFAULT_DB_NAME = os.getenv("MONGODB_DB_NAME", "irontest")
 DEFAULT_COLLECTION = os.getenv("MONGODB_COLLECTION", "executions")
-USE_MONGODB = os.getenv("USE_MONGODB", "true").lower() in {"1", "true", "yes"}
+# Default to local file persistence for hackathon-friendly runs.
+USE_MONGODB = os.getenv("USE_MONGODB", "false").lower() in {"1", "true", "yes"}
 
 _mongo_client: MongoClient | None = None
 _mongo_unavailable_logged = False
@@ -94,6 +96,244 @@ def build_story_identity(
     return _normalized_story_key(story_text, story_intent, modules or [])
 
 
+def _safe_text(value: Any) -> str:
+    return " ".join(str(value or "").split())
+
+
+def _normalize_signature_text(value: Any) -> str:
+    text = _safe_text(value).lower()
+    return "".join(ch for ch in text if ch.isalnum() or ch in {" ", "_", "-", ":"}).strip()
+
+
+def _test_fingerprint(test_case: dict[str, Any]) -> str:
+    basis = "|".join(
+        [
+            _safe_text(test_case.get("module", "")).lower(),
+            _safe_text(test_case.get("type", "")).lower(),
+            _safe_text(test_case.get("description", "")).lower(),
+            _safe_text(test_case.get("expected_result", "")).lower(),
+        ]
+    )
+    return hashlib.sha256(basis.encode("utf-8")).hexdigest()[:16]
+
+
+def _failure_signature_from_message(error_message: Any, status: str) -> str:
+    message = str(error_message or "")
+    lines = [line.strip() for line in message.splitlines() if line.strip()]
+
+    reason = ""
+    failed_summary = next((line for line in lines if line.startswith("FAILED ") and " - " in line), "")
+    if failed_summary:
+        reason = failed_summary.split(" - ", 1)[1].strip()
+
+    if not reason:
+        assertion_line = next((line for line in lines if "AssertionError:" in line), "")
+        if assertion_line:
+            reason = assertion_line.split("AssertionError:", 1)[1].strip()
+
+    if not reason and lines:
+        reason = lines[-1]
+
+    if not reason:
+        reason = f"{status}_without_message"
+
+    return _normalize_signature_text(reason)
+
+
+def _normalize_failure_signature_item(item: Any) -> dict[str, Any] | None:
+    if isinstance(item, str):
+        signature = _normalize_signature_text(item)
+        return {"signature": signature, "module": "", "test_id": "", "status": "fail"} if signature else None
+
+    if not isinstance(item, dict):
+        return None
+
+    signature = _normalize_signature_text(item.get("signature") or item.get("reason") or "")
+    if not signature:
+        signature = _failure_signature_from_message(item.get("error_message"), str(item.get("status") or "fail"))
+    if not signature:
+        return None
+
+    return {
+        "signature": signature,
+        "module": _safe_text(item.get("module")),
+        "test_id": _safe_text(item.get("test_id")),
+        "status": _safe_text(item.get("status") or "fail").lower() or "fail",
+    }
+
+
+def _normalize_test_catalog_item(item: Any) -> dict[str, Any] | None:
+    if not isinstance(item, dict):
+        return None
+
+    test_id = _safe_text(item.get("id"))
+    module = _safe_text(item.get("module"))
+    test_type = _safe_text(item.get("type") or "functional").lower() or "functional"
+    description = _safe_text(item.get("description"))
+    expected_result = _safe_text(item.get("expected_result"))
+    learning_source = _safe_text(item.get("learning_source") or "baseline").lower()
+    if learning_source not in {"baseline", "adaptive", "fallback"}:
+        learning_source = "baseline"
+
+    derived_signature = _normalize_signature_text(item.get("derived_from_failure_signature"))
+    fingerprint = _safe_text(item.get("fingerprint")) or _test_fingerprint(
+        {
+            "module": module,
+            "type": test_type,
+            "description": description,
+            "expected_result": expected_result,
+        }
+    )
+
+    return {
+        "id": test_id,
+        "module": module,
+        "type": test_type,
+        "risk_level": _safe_text(item.get("risk_level") or "medium").lower() or "medium",
+        "description": description,
+        "expected_result": expected_result,
+        "fingerprint": fingerprint,
+        "learning_source": learning_source,
+        "derived_from_failure_signature": derived_signature,
+        "novelty_reason": _safe_text(item.get("novelty_reason")),
+        "result_status": _safe_text(item.get("result_status") or "not_executed").lower() or "not_executed",
+    }
+
+
+def _run_test_catalog(run: dict[str, Any]) -> list[dict[str, Any]]:
+    catalog = run.get("test_catalog", [])
+    if not isinstance(catalog, list):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for item in catalog:
+        parsed = _normalize_test_catalog_item(item)
+        if parsed is not None:
+            normalized.append(parsed)
+    return normalized
+
+
+def _run_failure_signature_items(run: dict[str, Any]) -> list[dict[str, Any]]:
+    raw_items = run.get("failure_signatures", [])
+    if not isinstance(raw_items, list):
+        raw_items = []
+
+    normalized: list[dict[str, Any]] = []
+    for item in raw_items:
+        parsed = _normalize_failure_signature_item(item)
+        if parsed is not None:
+            normalized.append(parsed)
+
+    if normalized:
+        return normalized
+
+    for result in run.get("results", []):
+        if not isinstance(result, dict):
+            continue
+        status = _safe_text(result.get("status")).lower()
+        if status not in {"fail", "error"}:
+            continue
+        signature = _failure_signature_from_message(result.get("error_message"), status)
+        if not signature:
+            continue
+        normalized.append(
+            {
+                "signature": signature,
+                "module": "",
+                "test_id": _safe_text(result.get("test_id")),
+                "status": status,
+            }
+        )
+    return normalized
+
+
+def _build_story_learning_summary(runs: list[dict[str, Any]]) -> dict[str, Any]:
+    if not runs:
+        return {
+            "current_run_id": "",
+            "previous_run_id": "",
+            "current_total_tests": 0,
+            "adaptive_tests": 0,
+            "baseline_tests": 0,
+            "new_test_fingerprints": 0,
+            "novelty_ratio": 0.0,
+            "prior_failure_signatures": 0,
+            "failure_targeted_tests": 0,
+            "prior_failure_signatures_covered": 0,
+            "targeted_coverage": 0.0,
+            "resolved_recurring_failure_signatures": 0,
+            "resolution_rate": 0.0,
+            "recurring_failure_signatures": [],
+        }
+
+    current_run = runs[0]
+    previous_run = runs[1] if len(runs) > 1 else None
+
+    current_catalog = _run_test_catalog(current_run)
+    previous_catalog = _run_test_catalog(previous_run) if previous_run else []
+
+    current_fingerprints = {item.get("fingerprint", "") for item in current_catalog if item.get("fingerprint")}
+    previous_fingerprints = {item.get("fingerprint", "") for item in previous_catalog if item.get("fingerprint")}
+    new_fingerprints = current_fingerprints - previous_fingerprints if previous_fingerprints else current_fingerprints
+
+    prior_failure_signatures = {
+        item.get("signature", "")
+        for item in (_run_failure_signature_items(previous_run) if previous_run else [])
+        if item.get("signature")
+    }
+    targeted_signatures = {
+        _normalize_signature_text(item.get("derived_from_failure_signature", ""))
+        for item in current_catalog
+        if _normalize_signature_text(item.get("derived_from_failure_signature", ""))
+    }
+    covered_signatures = prior_failure_signatures.intersection(targeted_signatures)
+
+    resolved_signatures: set[str] = set()
+    for item in current_catalog:
+        target_signature = _normalize_signature_text(item.get("derived_from_failure_signature", ""))
+        if not target_signature or target_signature not in prior_failure_signatures:
+            continue
+        if _safe_text(item.get("result_status", "")).lower() == "pass":
+            resolved_signatures.add(target_signature)
+
+    recurring_counter: Counter[str] = Counter()
+    for run in runs:
+        seen_this_run = {
+            item.get("signature", "")
+            for item in _run_failure_signature_items(run)
+            if item.get("signature")
+        }
+        recurring_counter.update(seen_this_run)
+
+    adaptive_tests = sum(1 for item in current_catalog if item.get("learning_source") == "adaptive")
+    baseline_tests = sum(1 for item in current_catalog if item.get("learning_source") != "adaptive")
+    failure_targeted_tests = sum(1 for item in current_catalog if item.get("derived_from_failure_signature"))
+
+    return {
+        "current_run_id": _safe_text(current_run.get("run_id")),
+        "previous_run_id": _safe_text(previous_run.get("run_id")) if previous_run else "",
+        "current_total_tests": len(current_catalog),
+        "adaptive_tests": adaptive_tests,
+        "baseline_tests": baseline_tests,
+        "new_test_fingerprints": len(new_fingerprints),
+        "novelty_ratio": round(len(new_fingerprints) / max(1, len(current_fingerprints)), 4),
+        "prior_failure_signatures": len(prior_failure_signatures),
+        "failure_targeted_tests": failure_targeted_tests,
+        "prior_failure_signatures_covered": len(covered_signatures),
+        "targeted_coverage": round(len(covered_signatures) / max(1, len(prior_failure_signatures)), 4)
+        if prior_failure_signatures
+        else 0.0,
+        "resolved_recurring_failure_signatures": len(resolved_signatures),
+        "resolution_rate": round(len(resolved_signatures) / max(1, len(prior_failure_signatures)), 4)
+        if prior_failure_signatures
+        else 0.0,
+        "recurring_failure_signatures": [
+            {"signature": signature, "count": count}
+            for signature, count in recurring_counter.most_common(6)
+            if count >= 2
+        ],
+    }
+
+
 def _atomic_write_history(history: List[dict]) -> None:
     with tempfile.NamedTemporaryFile(
         mode="w",
@@ -124,6 +364,7 @@ def save_execution(
     module_names: List[str],
     execution: TestExecutionSummary,
     *,
+    tests: List[Any] | None = None,
     story_text: str | None = None,
     story_intent: str | None = None,
     source: str = "pipeline",
@@ -137,6 +378,49 @@ def save_execution(
     skipped = sum(1 for r in execution.results if r.status == "skipped")
     executed_tests = passed + failed + errors
     story_key, story_label = _normalized_story_key(story_text, story_intent, module_names)
+    result_by_id = {item.test_id: item for item in execution.results}
+
+    test_catalog: list[dict[str, Any]] = []
+    for test in tests or []:
+        if hasattr(test, "model_dump"):
+            raw_test = test.model_dump()
+        elif isinstance(test, dict):
+            raw_test = test
+        else:
+            continue
+
+        normalized_test = _normalize_test_catalog_item(raw_test)
+        if normalized_test is None:
+            continue
+
+        test_id = normalized_test.get("id", "")
+        result = result_by_id.get(test_id)
+        normalized_test["result_status"] = (result.status if result is not None else "not_executed").lower()
+        test_catalog.append(normalized_test)
+
+    test_by_id = {item.get("id", ""): item for item in test_catalog if item.get("id")}
+    failure_signatures: list[dict[str, Any]] = []
+    seen_failures: set[tuple[str, str]] = set()
+    for item in execution.results:
+        if item.status not in {"fail", "error"}:
+            continue
+
+        signature = _failure_signature_from_message(item.error_message, item.status)
+        module = _safe_text(test_by_id.get(item.test_id, {}).get("module", ""))
+        dedupe_key = (signature, item.test_id)
+        if dedupe_key in seen_failures:
+            continue
+        seen_failures.add(dedupe_key)
+        failure_signatures.append(
+            {
+                "signature": signature,
+                "module": module,
+                "test_id": item.test_id,
+                "status": item.status,
+            }
+        )
+
+    adaptive_count = sum(1 for item in test_catalog if item.get("learning_source") == "adaptive")
 
     run_record = {
         "schema_version": 2,
@@ -157,6 +441,14 @@ def save_execution(
         "pass_rate": passed / max(1, executed_tests),
         "confidence_score": int(confidence_score) if confidence_score is not None else None,
         "results": [r.model_dump() for r in execution.results],
+        "test_catalog": test_catalog,
+        "failure_signatures": failure_signatures,
+        "learning_artifacts": {
+            "test_catalog_size": len(test_catalog),
+            "adaptive_tests": adaptive_count,
+            "baseline_tests": max(0, len(test_catalog) - adaptive_count),
+            "failure_signature_count": len(failure_signatures),
+        },
     }
 
     collection = _get_collection()
@@ -191,6 +483,20 @@ def _normalize_run_record(run: dict[str, Any]) -> dict[str, Any]:
         )
         run["story_key"] = story_key
         run["story_label"] = story_label
+
+    normalized_catalog = _run_test_catalog(run)
+    run["test_catalog"] = normalized_catalog
+
+    normalized_failure_signatures = _run_failure_signature_items(run)
+    run["failure_signatures"] = normalized_failure_signatures
+
+    adaptive_count = sum(1 for item in normalized_catalog if item.get("learning_source") == "adaptive")
+    run["learning_artifacts"] = {
+        "test_catalog_size": len(normalized_catalog),
+        "adaptive_tests": adaptive_count,
+        "baseline_tests": max(0, len(normalized_catalog) - adaptive_count),
+        "failure_signature_count": len(normalized_failure_signatures),
+    }
 
     def _legacy_confidence_estimate(item: dict[str, Any]) -> int:
         executed = int(item.get("executed_tests", item.get("total_tests", 0)) or 0)
@@ -341,6 +647,60 @@ def get_story_history(*, story_key: str, limit: int = 80) -> List[dict[str, Any]
     return runs[:capped_limit]
 
 
+def get_story_learning_context(
+    *,
+    story_text: str | None = None,
+    story_intent: str | None = None,
+    modules: List[str] | None = None,
+    limit: int = 25,
+) -> dict[str, Any]:
+    module_names = modules or []
+    story_key, story_label = build_story_identity(
+        story_text=story_text,
+        story_intent=story_intent,
+        modules=module_names,
+    )
+    runs = get_story_history(story_key=story_key, limit=max(1, min(limit, 80)))
+
+    known_fingerprints: set[str] = set()
+    for run in runs:
+        for item in _run_test_catalog(run):
+            fingerprint = _safe_text(item.get("fingerprint"))
+            if fingerprint:
+                known_fingerprints.add(fingerprint)
+
+    recent_failure_signatures = _run_failure_signature_items(runs[0]) if runs else []
+    recurring_counter: Counter[str] = Counter()
+    signature_module_hint: dict[str, str] = {}
+    for run in runs:
+        for entry in _run_failure_signature_items(run):
+            signature = entry.get("signature", "")
+            if not signature:
+                continue
+            recurring_counter[signature] += 1
+            if signature not in signature_module_hint and entry.get("module"):
+                signature_module_hint[signature] = entry.get("module", "")
+
+    recurring_failure_signatures = [
+        {
+            "signature": signature,
+            "count": count,
+            "module": signature_module_hint.get(signature, ""),
+        }
+        for signature, count in recurring_counter.most_common(8)
+        if count >= 2
+    ]
+
+    return {
+        "story_key": story_key,
+        "story_label": story_label,
+        "total_runs": len(runs),
+        "known_test_fingerprints": sorted(known_fingerprints),
+        "recent_failure_signatures": recent_failure_signatures,
+        "recurring_failure_signatures": recurring_failure_signatures,
+    }
+
+
 def get_story_history_by_context(
     *,
     story_text: str | None = None,
@@ -364,6 +724,7 @@ def get_story_history_by_context(
             "average_pass_rate": 0.0,
             "recent_pass_rate": 0.0,
             "trend": "stable",
+            "learning_summary": _build_story_learning_summary([]),
             "runs": [],
         }
 
@@ -384,5 +745,6 @@ def get_story_history_by_context(
         "average_pass_rate": round(avg_pass, 4),
         "recent_pass_rate": round(recent_pass, 4),
         "trend": trend,
+        "learning_summary": _build_story_learning_summary(runs),
         "runs": runs,
     }

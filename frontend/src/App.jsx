@@ -8,6 +8,7 @@ import DeploymentVerdict from "./components/DeploymentVerdict.jsx";
 import ScoreHistoryBars from "./components/ScoreHistoryBars.jsx";
 import ScoreFactorArcs from "./components/ScoreFactorArcs.jsx";
 import StoryInsights from "./components/StoryInsights.jsx";
+import LearningEvidencePanel from "./components/LearningEvidencePanel.jsx";
 import VantaGlobeBackground from "./components/VantaGlobeBackground.jsx";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
@@ -84,6 +85,7 @@ export default function App() {
   const [ingestMessage, setIngestMessage] = useState("");
   const [ingesting, setIngesting] = useState(false);
   const [storyScoreHistory, setStoryScoreHistory] = useState([]);
+  const [storyLearningSummary, setStoryLearningSummary] = useState(null);
   const [sendEmailEnabled, setSendEmailEnabled] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [emailNotice, setEmailNotice] = useState("");
@@ -211,6 +213,7 @@ export default function App() {
     const fetchHistory = async () => {
       if (!dashboardData) {
         setStoryScoreHistory([]);
+        setStoryLearningSummary(null);
         return;
       }
       try {
@@ -226,9 +229,11 @@ export default function App() {
         });
         if (!res.ok) {
           setStoryScoreHistory([]);
+          setStoryLearningSummary(null);
           return;
         }
         const payload = await res.json();
+        setStoryLearningSummary(payload?.learning_summary || null);
         const runs = Array.isArray(payload.runs) ? payload.runs : [];
         const sortedRuns = [...runs].sort((a, b) => {
           const left = Date.parse(a?.created_at || "");
@@ -262,6 +267,7 @@ export default function App() {
         setStoryScoreHistory(normalized);
       } catch {
         setStoryScoreHistory([]);
+        setStoryLearningSummary(null);
       }
     };
 
@@ -723,6 +729,8 @@ export default function App() {
           : "trend stable";
 
     const historicalComparison = dashboardData.defects?.historical_comparison;
+    const learningSummary =
+      storyHistory?.learning_summary || storyLearningSummary || null;
 
     const html = `<!doctype html>
 <html>
@@ -768,6 +776,15 @@ export default function App() {
       <p><strong>Historical Average Pass Rate:</strong> ${escapeHtml(toPercent(historicalComparison?.historical_average_pass_rate ?? storyHistory?.average_pass_rate ?? 0))}</p>
       <p><strong>Recent Pass Rate:</strong> ${escapeHtml(toPercent(historicalComparison?.recent_pass_rate ?? storyHistory?.recent_pass_rate ?? 0))}</p>
       <p><strong>Trend:</strong> <span class="${escapeHtml(trendClass)}">${escapeHtml((historicalComparison?.trend || storyHistory?.trend || "stable").toUpperCase())}</span></p>
+    </div>
+
+    <div class="summary card">
+      <h2>Learning Evidence</h2>
+      <p><strong>Novelty Ratio:</strong> ${escapeHtml(toPercent(learningSummary?.novelty_ratio ?? 0))}</p>
+      <p><strong>Targeted Coverage:</strong> ${escapeHtml(toPercent(learningSummary?.targeted_coverage ?? 0))}</p>
+      <p><strong>Resolution Rate:</strong> ${escapeHtml(toPercent(learningSummary?.resolution_rate ?? 0))}</p>
+      <p><strong>Test Mix:</strong> ${escapeHtml((learningSummary?.baseline_tests ?? 0).toString())} baseline / ${escapeHtml((learningSummary?.adaptive_tests ?? 0).toString())} adaptive</p>
+      <p><strong>Failure-Targeted Tests:</strong> ${escapeHtml((learningSummary?.failure_targeted_tests ?? 0).toString())}</p>
     </div>
 
     <div class="summary card">
@@ -1401,6 +1418,8 @@ export default function App() {
                   runs={storyScoreHistory}
                 />
               </div>
+
+              <LearningEvidencePanel summary={storyLearningSummary} />
 
               <div className="rounded-2xl border border-black/5 dark:border-emerald-400/20 bg-white/50 dark:bg-white/5 p-6 backdrop-blur-xl shadow-xl dark:shadow-[0_0_22px_rgba(34,197,94,0.18)]">
                 <StoryInsights story={dashboardData.story} />

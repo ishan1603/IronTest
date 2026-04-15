@@ -46,7 +46,7 @@ Recommended defaults:
 - OPENROUTER_MODEL_CANDIDATES=openai/gpt-oss-20b:free
 - OPENROUTER_HTTP_REFERER=http://localhost:5173
 - OPENROUTER_APP_NAME=IronTest QA Agent
-- USE_MONGODB=true (when MongoDB is ready)
+- USE_MONGODB=false (default file mode; set true only when MongoDB is ready)
 - MONGODB_URI=mongodb://localhost:27017 (when MongoDB is ready)
 - MONGODB_DB_NAME=irontest (when MongoDB is ready)
 - MONGODB_COLLECTION=executions (when MongoDB is ready)

@@ -23,6 +23,20 @@ const statusColors = {
   skipped: "text-gray-400 bg-gray-400/10",
 };
 
+const learningColors = {
+  adaptive: "text-sky-700 dark:text-sky-200 bg-sky-100 dark:bg-sky-500/20",
+  baseline:
+    "text-emerald-700 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-500/20",
+  fallback:
+    "text-amber-700 dark:text-amber-200 bg-amber-100 dark:bg-amber-500/20",
+};
+
+function normalizeLearningSource(value) {
+  const source = String(value || "baseline").toLowerCase();
+  if (source === "adaptive" || source === "fallback") return source;
+  return "baseline";
+}
+
 function deterministicIndex(seed, size) {
   if (!size) return 0;
   let hash = 0;
@@ -330,6 +344,7 @@ export default function TestCaseTable({
               <th className="px-6 py-4 text-left font-semibold">
                 Hypothesis / Description
               </th>
+              <th className="px-6 py-4 text-left font-semibold">Learning</th>
               <th className="px-6 py-4 font-semibold text-center">Status</th>
               <th className="px-6 py-4 text-left font-semibold">Scripted</th>
             </tr>
@@ -363,6 +378,29 @@ export default function TestCaseTable({
                   <td className="px-6 py-4 text-gray-700 dark:text-gray-300 max-w-3xl whitespace-normal leading-relaxed">
                     {test.description}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {(() => {
+                      const source = normalizeLearningSource(
+                        test.learning_source,
+                      );
+                      const label =
+                        source === "adaptive"
+                          ? "Adaptive"
+                          : source === "fallback"
+                            ? "Fallback"
+                            : "Baseline";
+                      return (
+                        <span
+                          className={clsx(
+                            "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase",
+                            learningColors[source],
+                          )}
+                        >
+                          {label}
+                        </span>
+                      );
+                    })()}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     {(() => {
                       const res = executionById.get(test.id);
@@ -391,8 +429,41 @@ export default function TestCaseTable({
                 </tr>
                 {expandedRow === test.id && (
                   <tr>
-                    <td colSpan={6} className="p-0 border-0">
+                    <td colSpan={7} className="p-0 border-0">
                       <div className="bg-gray-50 dark:bg-black/60 border-y border-black/5 dark:border-white/10 px-6 py-5 space-y-4">
+                        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-black/30 p-4">
+                          <div className="text-xs uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400 mb-2">
+                            Learning Evidence
+                          </div>
+                          <div className="grid gap-3 md:grid-cols-3 text-sm">
+                            <div>
+                              <div className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                Source
+                              </div>
+                              <div className="font-semibold text-gray-800 dark:text-gray-200 mt-1">
+                                {normalizeLearningSource(test.learning_source)}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                Derived Signature
+                              </div>
+                              <div className="font-semibold text-gray-800 dark:text-gray-200 mt-1 break-words">
+                                {test.derived_from_failure_signature || "N/A"}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                Novelty Reason
+                              </div>
+                              <div className="font-semibold text-gray-800 dark:text-gray-200 mt-1 break-words">
+                                {test.novelty_reason ||
+                                  "Known behavior path re-validated."}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Automation Snippet */}
                         {test.automation_snippet &&
                           test.automation_snippet.length > 0 && (

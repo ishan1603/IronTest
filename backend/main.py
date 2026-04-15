@@ -158,7 +158,7 @@ async def github_webhook(payload: dict):
     try:
         story_text = payload.get("commit_message", "Automated commit deployment validation. Check stability.")
         story = await analyze_story(API_KEY, MODEL_ID, story_text)
-        tests = await generate_tests(API_KEY, MODEL_ID, story)
+        tests = await generate_tests(API_KEY, MODEL_ID, story, story_text=story_text)
         execution = await execute_tests(tests)
         defects = await analyze_defects(API_KEY, MODEL_ID, story, tests, execution)
         
@@ -167,6 +167,7 @@ async def github_webhook(payload: dict):
         save_execution(
             story.modules,
             execution,
+            tests=tests,
             story_text=story_text,
             story_intent=story.intent,
             source="github_webhook",

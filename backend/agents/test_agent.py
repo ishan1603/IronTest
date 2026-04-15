@@ -3,8 +3,10 @@ import json
 import os
 import re
 import ast
-from typing import List
+import hashlib
+from typing import Any, List
 
+from database import get_story_learning_context
 from llm_client import llm_generate_json
 from models import StoryAnalysis, TestCase
 
@@ -54,6 +56,23 @@ _DISALLOWED_RUNTIME_MARKERS = (
 )
 
 USE_RAW_LLM_SNIPPETS = os.getenv("USE_RAW_LLM_SNIPPETS", "false").lower() in {"1", "true", "yes"}
+
+
+def _normalize_signature(value: str | None) -> str:
+    text = " ".join(str(value or "").split()).lower()
+    return "".join(ch for ch in text if ch.isalnum() or ch in {" ", "_", "-", ":"}).strip()
+
+
+def _test_fingerprint(item: dict[str, Any]) -> str:
+    basis = "|".join(
+        [
+            str(item.get("module", "")).strip().lower(),
+            str(item.get("type", "")).strip().lower(),
+            str(item.get("description", "")).strip().lower(),
+            str(item.get("expected_result", "")).strip().lower(),
+        ]
+    )
+    return hashlib.sha256(basis.encode("utf-8")).hexdigest()[:16]
 
 
 def _is_safe_raw_snippet(lines: list[str]) -> bool:
@@ -187,9 +206,94 @@ def _fallback_test_plan(
                 "risk_level": risk_map[test_type],
                 "automated": True,
                 "automation_snippet": _fallback_snippet(tc_id, module_name, test_type, criterion_hint),
+                "learning_source": "fallback",
+                "derived_from_failure_signature": "",
+                "novelty_reason": "Template-based fallback scenario.",
             }
         )
     return fallback
+
+
+def _adaptive_test_plan(
+    signatures: list[dict[str, Any]],
+    modules: list[str],
+    *,
+    start_index: int,
+    count: int,
+) -> list[dict[str, Any]]:
+    if count <= 0:
+        return []
+
+    module_pool = modules[:] if modules else ["CoreService"]
+    selected: list[dict[str, Any]] = []
+
+    for idx, entry in enumerate(signatures):
+        if len(selected) >= count:
+            break
+
+        signature = _normalize_signature(str(entry.get("signature") or ""))
+        if not signature:
+            continue
+
+        module_hint = str(entry.get("module") or "").strip() or module_pool[idx % len(module_pool)]
+        tc_number = start_index + len(selected)
+        tc_id = f"TC-{tc_number:03d}"
+        description = f"Adaptive regression guard for {module_hint} targeting prior failure signature: {signature}."
+        expected = f"System behavior remains compliant for previously failing signature: {signature}."
+        selected.append(
+            {
+                "id": tc_id,
+                "type": "regression",
+                "module": module_hint,
+                "description": description,
+                "steps": [
+                    "Prepare payload that recreates the historical failure path",
+                    "Execute behavior contract for the same condition",
+                    "Assert prior failure signature no longer reproduces",
+                ],
+                "expected_result": expected,
+                "risk_level": "high",
+                "automated": True,
+                "automation_snippet": _fallback_snippet(tc_id, module_hint, "regression", expected),
+                "learning_source": "adaptive",
+                "derived_from_failure_signature": signature,
+                "novelty_reason": "Generated from prior run failure signature.",
+            }
+        )
+
+    return selected
+
+
+def _attach_learning_evidence(items: list[dict[str, Any]], known_fingerprints: set[str]) -> list[dict[str, Any]]:
+    stamped: list[dict[str, Any]] = []
+    for item in items:
+        learning_source = str(item.get("learning_source") or "baseline").strip().lower()
+        if learning_source not in {"baseline", "adaptive", "fallback"}:
+            learning_source = "baseline"
+
+        signature = _normalize_signature(str(item.get("derived_from_failure_signature") or ""))
+        fingerprint = _test_fingerprint(item)
+        already_seen = fingerprint in known_fingerprints
+
+        novelty_reason = str(item.get("novelty_reason") or "").strip()
+        if not novelty_reason:
+            if learning_source == "adaptive" and not already_seen:
+                novelty_reason = "New targeted guard generated from historical defect pattern."
+            elif learning_source == "adaptive":
+                novelty_reason = "Historical defect guard re-validated for consistency."
+            elif not already_seen:
+                novelty_reason = "New baseline behavior path introduced in this run."
+            else:
+                novelty_reason = "Known behavior path re-validated for stability."
+
+        enriched = {
+            **item,
+            "learning_source": learning_source,
+            "derived_from_failure_signature": signature,
+            "novelty_reason": novelty_reason,
+        }
+        stamped.append(enriched)
+    return stamped
 
 
 def _normalize_snippet(
@@ -267,18 +371,52 @@ def _normalize_test_items(raw_items: object, modules: list[str]) -> list[dict]:
                 "risk_level": risk_level,
                 "automated": True,
                 "automation_snippet": snippet,
+                "learning_source": "baseline",
+                "derived_from_failure_signature": _normalize_signature(item.get("derived_from_failure_signature")),
+                "novelty_reason": str(item.get("novelty_reason") or "").strip(),
             }
         )
 
     return normalized
 
 
-async def generate_tests(token: str, model_id: str, story: StoryAnalysis) -> List[TestCase]:
+async def generate_tests(
+    token: str,
+    model_id: str,
+    story: StoryAnalysis,
+    *,
+    story_text: str | None = None,
+) -> List[TestCase]:
     def _call_model() -> List[TestCase]:
+        learning_context = get_story_learning_context(
+            story_text=story_text,
+            story_intent=story.intent,
+            modules=story.modules,
+            limit=20,
+        )
+        known_fingerprints = {
+            str(item).strip()
+            for item in learning_context.get("known_test_fingerprints", [])
+            if str(item).strip()
+        }
+        recent_failure_signatures = [
+            item
+            for item in learning_context.get("recent_failure_signatures", [])
+            if isinstance(item, dict) and str(item.get("signature") or "").strip()
+        ]
+        has_history = int(learning_context.get("total_runs", 0)) > 0
+
         user_payload = {
             "modules": story.modules,
             "acceptance_criteria": story.acceptance_criteria,
             "risk_factors": story.risk_factors,
+            "learning_context": {
+                "total_runs": learning_context.get("total_runs", 0),
+                "recent_failure_signatures": recent_failure_signatures[:6],
+                "recurring_failure_signatures": learning_context.get("recurring_failure_signatures", [])[:6],
+                "known_test_fingerprint_count": len(known_fingerprints),
+                "target_mix_hint": "Keep roughly 60-70% baseline intent coverage and 30-40% adaptive tests from prior failures when history exists.",
+            },
         }
         prompt = f"Input:\n{json.dumps(user_payload)}\nReturn only the JSON object with key test_cases."
         raw_items: object = []
@@ -313,8 +451,19 @@ async def generate_tests(token: str, model_id: str, story: StoryAnalysis) -> Lis
                 if len(normalized) >= 10:
                     break
 
+        if has_history and recent_failure_signatures:
+            adaptive_count = 4 if len(recent_failure_signatures) >= 4 else 3
+            adaptive_tests = _adaptive_test_plan(
+                recent_failure_signatures,
+                story.modules,
+                start_index=10 - adaptive_count + 1,
+                count=adaptive_count,
+            )
+            baseline_count = max(6, 10 - len(adaptive_tests))
+            normalized = normalized[:baseline_count] + adaptive_tests
+
         # Keep output deterministic: always return exactly 10 vectors.
-        normalized = normalized[:10]
+        normalized = _attach_learning_evidence(normalized[:10], known_fingerprints)
 
         return [TestCase(**item) for item in normalized]
 
