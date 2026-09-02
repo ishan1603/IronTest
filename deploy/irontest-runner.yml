@@ -1,0 +1,133 @@
+# IronTest sandboxed test runner.
+#
+# Copy this file to .github/workflows/irontest-runner.yml in a DEDICATED
+# dispatch repository -- not in the repositories being tested. IronTest
+# dispatches this workflow with the target repository as an input; the target
+# is only ever cloned, never written to.
+#
+# The repository holding this workflow should be empty apart from it, and
+# private. Anyone able to dispatch it can run arbitrary code in your Actions
+# account, so the ACTIONS_DISPATCH_TOKEN must be treated as a secret.
+
+name: IronTest Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      correlation_id:
+        description: Identifier IronTest uses to find this run
+        required: true
+      target_repo:
+        description: owner/name of the repository under test
+        required: true
+      target_ref:
+        description: Branch or commit to test
+        required: true
+        default: main
+      target_token:
+        description: Short-lived token used to clone the target
+        required: true
+      language:
+        description: python | javascript | typescript | go | rust | ruby
+        required: true
+        default: python
+      install_command:
+        description: Dependency install command
+        required: false
+        default: ""
+      test_command:
+        description: Test command; must emit JUnit XML to results.xml
+        required: false
+        default: ""
+      files_payload:
+        description: Base64 JSON array of {path, content} to write before running
+        required: false
+        default: "[]"
+
+# Names the run so IronTest can correlate the dispatch with its run id.
+run-name: "IronTest ${{ inputs.correlation_id }}"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # A generous ceiling; IronTest abandons the run well before this.
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the target repository
+        run: |
+          git clone --depth 1 --branch "${{ inputs.target_ref }}" \
+            "https://x-access-token:${{ inputs.target_token }}@github.com/${{ inputs.target_repo }}.git" \
+            work
+        # The token reaches git through the URL only within this step, and the
+        # step's output is not echoed.
+
+      - name: Set up Python
+        if: inputs.language == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        if: inputs.language == 'javascript' || inputs.language == 'typescript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Go
+        if: inputs.language == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Write generated test files
+        working-directory: work
+        env:
+          PAYLOAD: ${{ inputs.files_payload }}
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, pathlib
+          payload = os.environ.get("PAYLOAD") or "W10="
+          for item in json.loads(base64.b64decode(payload)):
+              path = pathlib.Path(item["path"])
+              # Refuse to escape the checkout.
+              if path.is_absolute() or ".." in path.parts:
+                  raise SystemExit(f"refusing to write outside the checkout: {path}")
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text(item["content"], encoding="utf-8")
+              print("wrote", path)
+          PY
+
+      - name: Install dependencies
+        working-directory: work
+        continue-on-error: true
+        run: |
+          if [ -n "${{ inputs.install_command }}" ]; then
+            ${{ inputs.install_command }}
+          else
+            echo "no install command supplied"
+          fi
+
+      - name: Run tests
+        working-directory: work
+        # A failing suite is a result, not a workflow error.
+        continue-on-error: true
+        run: |
+          if [ -n "${{ inputs.test_command }}" ]; then
+            ${{ inputs.test_command }}
+          else
+            echo "no test command supplied"
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: irontest-results
+          path: |
+            work/results.xml
+            work/**/junit*.xml
+          if-no-files-found: warn
+          retention-days: 1

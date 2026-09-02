@@ -1,0 +1,210 @@
+"""Result parsing and backend selection.
+
+Results come from the runner's own JUnit report. A run that produced no
+report must surface as failed with its logs, never as a pass -- that
+substitution is exactly what the old execution layer did.
+"""
+
+import pytest
+
+from runners import runner_status, select_runner
+from runners.actions_runner import GitHubActionsRunner
+from runners.base import failure_result, parse_junit
+from runners.docker_runner import DockerRunner
+
+PYTEST_REPORT = """<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="pytest" errors="1" failures="1" skipped="1" tests="4">
+    <testcase classname="tests.test_billing" name="test_TC-001_applies_discount" time="0.01"/>
+    <testcase classname="tests.test_billing" name="test_TC-002_rejects_expired">
+      <failure message="assert 100 == 90">E assert 100 == 90</failure>
+    </testcase>
+    <testcase classname="tests.test_billing" name="test_TC-003_boom">
+      <error message="ImportError: no module named app">traceback here</error>
+    </testcase>
+    <testcase classname="tests.test_billing" name="test_TC-004_pending">
+      <skipped message="not implemented"/>
+    </testcase>
+  </testsuite>
+</testsuites>
+"""
+
+SINGLE_SUITE_REPORT = """<testsuite name="jest" tests="1">
+  <testcase classname="cart" name="TC-010 applies tax"/>
+</testsuite>
+"""
+
+
+def test_parses_every_outcome_from_a_junit_report():
+    results = {r.test_id: r for r in parse_junit(PYTEST_REPORT)}
+
+    assert results["TC-001"].status == "pass"
+    assert results["TC-002"].status == "fail"
+    assert results["TC-003"].status == "error"
+    assert results["TC-004"].status == "skipped"
+
+
+def test_failure_detail_is_preserved():
+    results = {r.test_id: r for r in parse_junit(PYTEST_REPORT)}
+    assert "assert 100 == 90" in results["TC-002"].error_message
+    assert "ImportError" in results["TC-003"].error_message
+
+
+def test_handles_a_bare_testsuite_root():
+    """pytest emits <testsuites>, jest and vitest emit a bare <testsuite>."""
+    results = parse_junit(SINGLE_SUITE_REPORT)
+    assert len(results) == 1
+    assert results[0].test_id == "TC-010"
+    assert results[0].status == "pass"
+
+
+def test_falls_back_to_classname_when_no_case_id_is_embedded():
+    report = '<testsuite><testcase classname="pkg.mod" name="test_something"/></testsuite>'
+    assert parse_junit(report)[0].test_id == "pkg.mod::test_something"
+
+
+@pytest.mark.parametrize(
+    "payload", ["", "   ", "not xml at all", "<testsuite><unclosed>"], ids=["empty", "blank", "prose", "malformed"]
+)
+def test_unparseable_report_yields_no_results_rather_than_raising(payload):
+    assert parse_junit(payload) == []
+
+
+def test_a_run_without_results_is_a_failure_not_a_pass():
+    """The critical invariant: absence of evidence is never reported as success."""
+    result = failure_result("docker", "no report produced", output="install failed")
+
+    assert result.status == "failed"
+    assert result.results == []
+    assert result.produced_results is False
+    assert "install failed" in result.raw_output
+
+
+def test_parses_junit_emitted_by_a_real_pytest_run(tmp_path):
+    """Validates the parser against genuine output, not a hand-written fixture.
+
+    Hand-written XML can drift from what pytest actually emits; this generates
+    a report by running pytest for real and parses that.
+    """
+    import subprocess
+    import sys
+
+    suite = tmp_path / "test_generated.py"
+    suite.write_text(
+        "import pytest\n"
+        "def test_TC_001_passes():\n    assert sum([1, 2, 3]) == 6\n"
+        "def test_TC_002_fails():\n    assert sum([1, 2, 3]) == 7\n"
+        "@pytest.mark.skip(reason='not implemented yet')\n"
+        "def test_TC_003_skipped():\n    pass\n",
+        encoding="utf-8",
+    )
+    report = tmp_path / "results.xml"
+    subprocess.run(
+        [sys.executable, "-m", "pytest", str(suite), f"--junitxml={report}", "-q"],
+        capture_output=True,
+        cwd=tmp_path,
+    )
+
+    results = {r.test_id: r for r in parse_junit(report.read_text(encoding="utf-8"))}
+
+    assert results["TC-001"].status == "pass"
+    assert results["TC-002"].status == "fail"
+    assert results["TC-003"].status == "skipped"
+    assert "assert 6 == 7" in results["TC-002"].error_message
+
+
+# -- backend selection -----------------------------------------------------
+
+
+@pytest.fixture(autouse=True)
+def clean_runner_env(monkeypatch):
+    for key in ("TEST_RUNNER", "ACTIONS_RUNNER_REPO", "ACTIONS_DISPATCH_TOKEN"):
+        monkeypatch.delenv(key, raising=False)
+
+
+def test_actions_runner_needs_both_repo_and_token(monkeypatch):
+    assert GitHubActionsRunner().is_available() is False
+
+    monkeypatch.setenv("ACTIONS_RUNNER_REPO", "me/runner")
+    assert GitHubActionsRunner().is_available() is False
+
+    monkeypatch.setenv("ACTIONS_DISPATCH_TOKEN", "ghp_x")
+    assert GitHubActionsRunner().is_available() is True
+
+
+def test_auto_prefers_actions_when_configured(monkeypatch):
+    monkeypatch.setenv("ACTIONS_RUNNER_REPO", "me/runner")
+    monkeypatch.setenv("ACTIONS_DISPATCH_TOKEN", "ghp_x")
+    monkeypatch.setattr(DockerRunner, "is_available", lambda self: True)
+
+    assert select_runner().name == "github_actions"
+
+
+def test_auto_falls_back_to_docker(monkeypatch):
+    monkeypatch.setattr(DockerRunner, "is_available", lambda self: True)
+    assert select_runner().name == "docker"
+
+
+def test_auto_returns_none_when_no_sandbox_exists(monkeypatch):
+    """No sandbox must mean no repository run, not a silent local execution."""
+    monkeypatch.setattr(DockerRunner, "is_available", lambda self: False)
+    assert select_runner() is None
+
+
+def test_explicit_choice_that_is_unavailable_returns_none(monkeypatch):
+    monkeypatch.setenv("TEST_RUNNER", "docker")
+    monkeypatch.setattr(DockerRunner, "is_available", lambda self: False)
+    assert select_runner() is None
+
+
+def test_local_is_never_selected_automatically(monkeypatch):
+    monkeypatch.setattr(DockerRunner, "is_available", lambda self: False)
+    selected = select_runner()
+    assert selected is None or selected.name != "local"
+
+
+def test_status_reports_availability_without_secrets(monkeypatch):
+    monkeypatch.setenv("ACTIONS_RUNNER_REPO", "me/runner")
+    monkeypatch.setenv("ACTIONS_DISPATCH_TOKEN", "ghp_supersecret")
+
+    status = runner_status()
+    assert status["available"]["github_actions"] is True
+    assert "ghp_supersecret" not in str(status)
+
+
+# -- container hardening ---------------------------------------------------
+
+
+def test_container_script_never_puts_the_token_on_a_command_line():
+    """The token must reach git via a credentials file, not argv."""
+    from runners.base import GeneratedFile, RunnerRequest
+
+    request = RunnerRequest(
+        repo_full_name="acme/app",
+        ref="main",
+        github_token="ghp_secret_value",
+        stack={"language": "python", "install_command": "pip install -r requirements.txt",
+               "test_command": "pytest --junitxml=results.xml"},
+        files=[GeneratedFile(path="tests/test_gen.py", content="def test_x(): assert True")],
+    )
+    script = DockerRunner()._build_script(request)
+
+    assert "ghp_secret_value" not in script
+    assert "$GITHUB_TOKEN" in script
+    assert "git clone" in script
+
+
+def test_container_script_lets_test_failures_through():
+    """A failing suite is a result; only setup runs under `set -e`."""
+    from runners.base import RunnerRequest
+
+    script = DockerRunner()._build_script(
+        RunnerRequest(
+            repo_full_name="acme/app",
+            ref="main",
+            github_token="t",
+            stack={"language": "python", "test_command": "pytest"},
+        )
+    )
+    assert "set +e" in script
+    assert "TEST_EXIT" in script
