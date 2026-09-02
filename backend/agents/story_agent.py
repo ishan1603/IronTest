@@ -1,6 +1,6 @@
 import asyncio
 
-from llm_client import llm_generate_json
+from llm import generate_json
 from models import StoryAnalysis
 
 
@@ -55,7 +55,7 @@ def _validate_story(data: dict, user_story: str) -> StoryAnalysis:
     )
 
 
-async def analyze_story(token: str, model_id: str, user_story: str) -> StoryAnalysis:
+async def analyze_story(user_story: str) -> StoryAnalysis:
     def _call_model() -> StoryAnalysis:
         base_prompt = (
             "User Story:\n"
@@ -73,9 +73,7 @@ async def analyze_story(token: str, model_id: str, user_story: str) -> StoryAnal
                     " security_vectors, and microservices."
                 )
 
-            data = llm_generate_json(
-                api_key=token,
-                model_id=model_id,
+            data = generate_json(
                 system_prompt=SYSTEM_PROMPT,
                 user_prompt=prompt,
                 max_output_tokens=900,

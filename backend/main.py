@@ -19,6 +19,7 @@ from agents.defect_agent import analyze_defects
 from jira_client import fetch_jira_issue
 from azure_devops_client import fetch_azure_devops_work_item
 from database import get_story_history_by_context
+from llm import configured_providers, provider_status
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -34,27 +35,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_KEY = os.getenv("OPENROUTER_API_KEY")
-MODEL_ID = os.getenv("OPENROUTER_MODEL_ID", "openai/gpt-oss-120b:free")
-if not API_KEY:
-    logger.error("OPENROUTER_API_KEY is not set. API calls will fail.")
+if not configured_providers():
+    logger.error(
+        "No LLM provider configured. Set at least one of GROQ_API_KEY, "
+        "GEMINI_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY."
+    )
 
 session_manager = SessionManager()
-orchestrator: Orchestrator | None = None
-
-if API_KEY:
-    orchestrator = Orchestrator(api_key=API_KEY, model_id=MODEL_ID, session_manager=session_manager)
+orchestrator = Orchestrator(session_manager=session_manager)
 
 
 @app.post("/api/analyze")
 async def analyze(request: AnalyzeRequest):
-    if not API_KEY:
-        raise HTTPException(status_code=500, detail="Missing OPENROUTER_API_KEY environment variable.")
+    if not configured_providers():
+        raise HTTPException(
+            status_code=503,
+            detail="No LLM provider is configured on the server.",
+        )
     if request.send_email and not (request.recipient_email and request.recipient_email.strip()):
         raise HTTPException(status_code=400, detail="recipient_email is required when send_email is enabled.")
 
     session_id = await session_manager.create_session()
-    assert orchestrator is not None
     asyncio.create_task(
         orchestrator.run_pipeline(
             session_id,
@@ -151,16 +152,16 @@ async def ingest_azure_devops(request: AzureDevOpsIngestRequest):
 @app.post("/api/webhook/github")
 async def github_webhook(payload: dict):
     # Simulates a DevOps integration endpoint (e.g. GitHub Action webhook triggering QA run)
-    if not API_KEY:
-        raise HTTPException(status_code=500, detail="Missing OPENROUTER_API_KEY")
+    if not configured_providers():
+        raise HTTPException(status_code=503, detail="No LLM provider is configured on the server.")
     
     # We do a quick synchronous run for the CI/CD pipeline
     try:
         story_text = payload.get("commit_message", "Automated commit deployment validation. Check stability.")
-        story = await analyze_story(API_KEY, MODEL_ID, story_text)
-        tests = await generate_tests(API_KEY, MODEL_ID, story, story_text=story_text)
+        story = await analyze_story(story_text)
+        tests = await generate_tests(story, story_text=story_text)
         execution = await execute_tests(tests)
-        defects = await analyze_defects(API_KEY, MODEL_ID, story, tests, execution)
+        defects = await analyze_defects(story, tests, execution)
         
         # Save history just like orchestrator
         from database import save_execution
@@ -202,7 +203,11 @@ async def story_history(request: StoryHistoryRequest):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    providers = provider_status()
+    return {
+        "status": "ok" if any(p["active"] for p in providers) else "degraded",
+        "llm_providers": providers,
+    }
 
 
 # Serve built frontend if placed under /frontend/dist (optional for docker-compose)

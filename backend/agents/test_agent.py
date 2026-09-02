@@ -12,7 +12,7 @@ import json
 from typing import Any, List
 
 from database import get_story_learning_context
-from llm_client import llm_generate_json
+from llm import generate_json
 from models import StoryAnalysis, TestCase
 
 SYSTEM_PROMPT = """
@@ -282,8 +282,6 @@ def _normalize_test_items(raw_items: object, modules: list[str]) -> list[dict]:
 
 
 async def generate_tests(
-    token: str,
-    model_id: str,
     story: StoryAnalysis,
     *,
     story_text: str | None = None,
@@ -319,9 +317,7 @@ async def generate_tests(
         }
         prompt = f"Input:\n{json.dumps(user_payload)}\nReturn only the JSON object with key test_cases."
 
-        parsed = llm_generate_json(
-            api_key=token,
-            model_id=model_id,
+        parsed = generate_json(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=prompt,
             max_output_tokens=3000,

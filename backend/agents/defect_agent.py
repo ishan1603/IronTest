@@ -3,7 +3,7 @@ import json
 from typing import List
 
 from database import get_global_history_stats, get_module_history_stats
-from llm_client import llm_generate_json
+from llm import generate_json
 from models import (
   DefectAnalysis,
   HistoricalComparison,
@@ -320,7 +320,7 @@ def _compute_score(
   return final_score, breakdown, comparison
 
 
-async def analyze_defects(token: str, model_id: str, story: StoryAnalysis, tests: List[TestCase], execution: TestExecutionSummary) -> DefectAnalysis:
+async def analyze_defects(story: StoryAnalysis, tests: List[TestCase], execution: TestExecutionSummary) -> DefectAnalysis:
   def _call_model() -> DefectAnalysis:
     historical_data = {m: get_module_history_stats(m) for m in story.modules}
     global_history = get_global_history_stats()
@@ -356,9 +356,7 @@ async def analyze_defects(token: str, model_id: str, story: StoryAnalysis, tests
       "Return ONLY the JSON object with keys: module_risks, overall_confidence_score, deployment_recommendation, recommendation_rationale, critical_test_ids."
     )
 
-    data = llm_generate_json(
-      api_key=token,
-      model_id=model_id,
+    data = generate_json(
       system_prompt=SYSTEM_PROMPT,
       user_prompt=prompt,
       max_output_tokens=1400,

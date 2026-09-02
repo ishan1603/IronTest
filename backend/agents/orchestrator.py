@@ -36,9 +36,7 @@ class SessionManager:
 
 
 class Orchestrator:
-    def __init__(self, api_key: str, model_id: str, session_manager: SessionManager) -> None:
-        self.model_id = model_id
-        self.api_key = api_key
+    def __init__(self, session_manager: SessionManager) -> None:
         self.sessions = session_manager
 
     async def run_pipeline(
@@ -59,13 +57,11 @@ class Orchestrator:
 
         try:
             await emit({"event": "agent_start", "agent": "story", "message": "Analyzing user story..."})
-            story_result: StoryAnalysis = await analyze_story(self.api_key, self.model_id, user_story)
+            story_result: StoryAnalysis = await analyze_story(user_story)
             await emit({"event": "agent_complete", "agent": "story", "result": story_result.model_dump()})
 
             await emit({"event": "agent_start", "agent": "test", "message": "Generating test suite..."})
             test_result: list[TestCase] = await generate_tests(
-                self.api_key,
-                self.model_id,
                 story_result,
                 story_text=user_story,
             )
@@ -76,7 +72,7 @@ class Orchestrator:
             await emit({"event": "agent_complete", "agent": "execution", "result": execution_result.model_dump()})
 
             await emit({"event": "agent_start", "agent": "defect", "message": "Running risk analysis..."})
-            defect_result: DefectAnalysis = await analyze_defects(self.api_key, self.model_id, story_result, test_result, execution_result)
+            defect_result: DefectAnalysis = await analyze_defects(story_result, test_result, execution_result)
             await emit({"event": "agent_complete", "agent": "defect", "result": defect_result.model_dump()})
             
             # Save the execution run to our history file so the defect agent can learn from it next time
