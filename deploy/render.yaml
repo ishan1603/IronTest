@@ -1,0 +1,65 @@
+# Render blueprint for the IronTest API and its database.
+#
+# Both services fit inside Render's free tier. Note that free web services
+# sleep after ~15 minutes idle and take ~30s to wake, and free Postgres
+# instances expire after 90 days -- fine for a project, worth knowing before
+# a live demo.
+
+databases:
+  - name: irontest-db
+    databaseName: irontest
+    plan: free
+
+services:
+  - type: web
+    name: irontest-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: ENVIRONMENT
+        value: production
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: irontest-db
+          property: connectionString
+
+      # Generated once by Render and then held stable. Rotating it invalidates
+      # every session and every stored GitHub token, forcing a re-login.
+      - key: SECRET_KEY
+        generateValue: true
+
+      # Set these in the Render dashboard; they are secrets.
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CEREBRAS_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+
+      # Docker is unavailable on Render, so a deployed install must run tests
+      # on GitHub Actions.
+      - key: TEST_RUNNER
+        value: github_actions
+      - key: ACTIONS_RUNNER_REPO
+        sync: false
+      - key: ACTIONS_DISPATCH_TOKEN
+        sync: false
+
+      # Must match the Vercel deployment and the OAuth app's callback exactly.
+      - key: FRONTEND_URL
+        sync: false
+      - key: GITHUB_CALLBACK_URL
+        sync: false

@@ -1,154 +1,145 @@
-<p align="center">
-	<img src="frontend/public/favicon.svg" width="86" alt="IRONTEST logo" />
-</p>
-
-<h1 align="center"><strong>IRONTEST</strong></h1>
+<h1 align="center">IRONTEST</h1>
 
 <p align="center">
-	Production-ready autonomous QA intelligence platform that transforms stories into test intelligence, execution evidence, and release confidence.
+  Point it at a repository, describe what you're building, and get tests that
+  actually run against your code.
 </p>
-
-<p align="center"><strong>Thank you Team ATOS for this challenging and fun hackathon experience.</strong></p>
-
-## Screenshot
 
 <p align="center">
-	<img src="docs/assets/Untitled design.png" alt="IRONTEST application screenshot in macOS frame" width="960" />
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="docs/architecture.md">Architecture</a> ·
+  <a href="docs/deployment.md">Deployment</a>
 </p>
 
-## Why IRONTEST
+---
 
-- Multi-agent QA pipeline with stage-by-stage telemetry.
-- Streaming updates over Server-Sent Events for live traceability.
-- Cost-aware OpenRouter default model profile for hackathon usage.
-- Resilient storage strategy with MongoDB primary and JSON fallback.
+## What it does
 
-## Tech Stack
+Connect a GitHub repository and describe a feature in plain language, or import
+a story from Jira or Azure DevOps. Four agents then read your actual source,
+write tests that **import your real modules**, execute them in a sandbox, and
+report what happened — with the runner's own output as evidence.
 
-<table align="center">
-	<tr>
-		<td align="center"><strong>Frontend</strong><br/>React<br/>Vite<br/>Tailwind CSS<br/>Framer Motion</td>
-		<td align="center"><strong>Backend</strong><br/>FastAPI<br/>Pydantic<br/>Requests<br/>Pytest</td>
-		<td align="center"><strong>AI Gateway</strong><br/>OpenRouter<br/>openai/gpt-oss-120b:free<br/>Fallback candidates supported</td>
-	</tr>
-	<tr>
-		<td align="center"><strong>Data</strong><br/>MongoDB primary<br/>history.json fallback</td>
-		<td align="center"><strong>Integrations</strong><br/>Jira REST API v3</td>
-		<td align="center"><strong>Runtime Pattern</strong><br/>SSE streaming orchestration<br/>Agent-by-agent telemetry</td>
-	</tr>
-</table>
+It works in two modes, which differ only in what a failure means:
 
-## Architecture
+| Mode | When | A failing test means |
+| --- | --- | --- |
+| **Already built** | The behavior ships today | You found a real defect |
+| **Not built yet** | The feature doesn't exist | The red phase of TDD — the test *is* the spec |
 
-### System Topology
+That second mode is the answer to "what about a feature nobody has written
+yet". The tests fail at import, and that is correct: they define what *done*
+means, and you implement until they go green.
+
+## How it works
 
 ```mermaid
-graph TD
-		UI[React Frontend] -->|POST /api/analyze| API[FastAPI Backend]
-		UI -->|POST /api/ingest/jira| API
-		UI <-->|SSE /api/stream/:session_id| API
+graph LR
+  U[Describe a feature] --> S[Story Agent]
+  S --> T[Test Agent]
+  T --> X[Execution Agent]
+  X --> D[Risk Agent]
 
-		API --> ORCH[Pipeline Orchestrator]
-		ORCH --> STORY[Story Agent]
-		STORY --> TEST[Test Agent]
-		TEST --> EXEC[Execution Agent]
-		EXEC --> DEFECT[Defect Agent]
-
-		STORY --> LLM[OpenRouter LLM]
-		TEST --> LLM
-		DEFECT --> LLM
-
-		EXEC --> DB[(MongoDB)]
-		DB -. fallback unavailable .-> JSON[(backend/data/history.json)]
-		DEFECT --> DB
-		DEFECT --> JSON
+  R[(Your repo)] -. read only .-> S
+  R -. symbols + signatures .-> T
+  T -- generated suite --> SB[Sandbox<br/>Docker or GitHub Actions]
+  R -- shallow clone --> SB
+  SB -- JUnit XML --> X
+  D --> V[Verdict + confidence]
 ```
 
-### Runtime Flow
+1. **Story Agent** turns the requirement into intent, modules, acceptance
+   criteria, and risks.
+2. **Test Agent** reads your repository's stack, ranked source files, and the
+   public symbols extracted from them, then writes tests that import those
+   symbols by their real paths.
+3. **Execution Agent** runs the suite in a sandbox — never on the API host —
+   and parses the runner's JUnit report.
+4. **Risk Agent** scores release confidence against this user's own run
+   history and returns GO / CONDITIONAL GO / NO-GO.
 
-```mermaid
-sequenceDiagram
-		participant U as User
-		participant F as Frontend
-		participant B as Backend API
-		participant O as Orchestrator
-		participant A as Agents
-		participant D as Data Store
+## Honesty guarantees
 
-		U->>F: Submit story or Jira URL
-		F->>B: POST /api/analyze
-		B->>O: Create session and queue
-		F->>B: GET /api/stream/:session_id
+These are enforced by tests, not convention:
 
-		O->>A: Run Story Agent
-		A-->>B: Story intelligence
-		B-->>F: SSE agent_complete
+- **A test that cannot fail is rejected.** Snippets that only assert literals
+  against themselves are refused and reported as skipped, with the reason.
+- **Results are never shaped.** A fully passing suite reports as fully passing.
+  There is no sampling, no target band, no synthesized traceback.
+- **No evidence is never reported as success.** A run that produced no
+  parseable report fails loudly with its logs attached.
+- **No sandbox means no run.** A repository run never silently degrades to
+  local execution that could not have imported your code.
+- **History never crosses users.** Every query is scoped by user id.
 
-		O->>A: Run Test Agent
-		A-->>B: Generated tests
-		B-->>F: SSE agent_complete
+## Quick start
 
-		O->>A: Run Execution Agent
-		A->>D: Persist execution history
-		A-->>B: Execution summary
-		B-->>F: SSE agent_complete
+**Requirements:** Python 3.12+, Node 20+, and one free LLM API key.
+Docker is optional but needed to run tests against a repository locally.
 
-		O->>A: Run Defect Agent
-		A-->>B: Confidence and recommendation
-		B-->>F: SSE pipeline_complete
+```bash
+git clone <your-fork> && cd IronTest
+cp .env.example .env
 ```
 
-## Documentation Map
+Fill in `.env`. At minimum you need one AI key and a GitHub OAuth app:
 
-- Setup guide: [setup.md](setup.md)
-- Full documentation: [docs](docs)
-- Architecture deep dive: [docs/architecture.md](docs/architecture.md)
-- Story agent: [docs/story_agent.md](docs/story_agent.md)
-- Test agent: [docs/test_agent.md](docs/test_agent.md)
-- Execution agent: [docs/execution_agent.md](docs/execution_agent.md)
-- Defect agent: [docs/defect_agent.md](docs/defect_agent.md)
-- Interface contract: [docs/interface.md](docs/interface.md)
+| Variable | Where to get it |
+| --- | --- |
+| `GROQ_API_KEY` | [console.groq.com/keys](https://console.groq.com/keys) — fastest, most generous free tier |
+| `GEMINI_API_KEY` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) — largest free daily quota |
+| `GITHUB_CLIENT_ID` / `SECRET` | [github.com/settings/developers](https://github.com/settings/developers) → New OAuth App |
 
-## Quick Start
+Set the OAuth app's **Authorization callback URL** to
+`http://localhost:8000/api/auth/github/callback`.
 
-Follow [setup.md](setup.md) for complete local setup.
+Adding more than one AI key is worth it: providers are tried in order, so a
+rate limit on one silently falls through to the next instead of ending a run.
 
-Minimum requirements:
+```bash
+# Backend
+cd backend
+python -m venv .venv && .venv/Scripts/activate   # Windows
+# source .venv/bin/activate                       # macOS / Linux
+pip install -r requirements.txt
+uvicorn main:app --reload
 
-- Python 3.12+
-- Node.js 20+
-- OPENROUTER_API_KEY
-- Optional MongoDB and Jira credentials
+# Frontend, in a second terminal
+cd frontend
+npm install && npm run dev
+```
 
-## Production Configuration
+Open http://localhost:5173.
 
-See [.env.example](.env.example) for all supported variables.
+Check your configuration any time at http://localhost:8000/health — it reports
+which AI providers are live and which test sandbox was selected.
 
-Core variables:
+## Cost
 
-- OPENROUTER_API_KEY
-- OPENROUTER_MODEL_ID (default: openai/gpt-oss-120b:free)
-- OPENROUTER_MODEL_CANDIDATES (fallback: openai/gpt-oss-20b:free)
-- OPENROUTER_HTTP_REFERER
-- OPENROUTER_APP_NAME
-- MONGODB_URI
-- MONGODB_DB_NAME
-- MONGODB_COLLECTION
-- JIRA_EMAIL
-- JIRA_API_TOKEN
+Zero. Every AI provider is on its free tier, tests run either in local Docker
+or on GitHub's free Actions runners, and both Render and Vercel host the
+deployed app for free. See [docs/deployment.md](docs/deployment.md).
 
-## API Surface
+## Tests
 
-- POST /api/analyze
-- GET /api/stream/{session_id}
-- POST /api/ingest/jira
-- POST /api/webhook/github
-- GET /health
+```bash
+cd backend && pytest -q      # 101 tests
+cd frontend && npm run build
+```
 
-## Team 838
+## Tech
 
-| Member | Responsibility | Scope                                                                |
-| ------ | -------------- | -------------------------------------------------------------------- |
-| Ishan  | Agents         | Story, Test, Execution, Defect agent logic and orchestration quality |
-| Aryan  | Frontend       | UX flow, dashboards, pipeline visualization, interaction polish      |
-| Meet   | Backend        | API reliability, integrations, persistence, deployment wiring        |
+React 18 · Vite · Tailwind · FastAPI · SQLAlchemy · SQLite/Postgres ·
+Groq / Gemini / Cerebras / OpenRouter · Docker or GitHub Actions sandbox
+
+## Documentation
+
+- [Architecture](docs/architecture.md) — how the pieces fit and why
+- [Deployment](docs/deployment.md) — free-tier hosting, end to end
+- [Agents](docs/agents.md) — what each agent does
+- [Security](docs/security.md) — trust boundaries and sandboxing
+
+## Credits
+
+Built for the ATOS hackathon by **Team 838** — Ishan, Aryan, and Meet.

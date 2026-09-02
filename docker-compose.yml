@@ -1,41 +1,53 @@
-version: "3.9"
-services:
-  mongo:
-    image: mongo:7
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
+# Local stack: API, Postgres, and the Vite dev server.
+#
+# The Docker test runner needs a Docker socket, which is why the API mounts
+# one. Only do this locally: it grants the container control of your daemon.
 
-  backend:
-    build: ./backend
+services:
+  db:
+    image: postgres:16-alpine
     environment:
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - OPENROUTER_MODEL_ID=${OPENROUTER_MODEL_ID:-openai/gpt-oss-120b:free}
-      - OPENROUTER_MODEL_CANDIDATES=${OPENROUTER_MODEL_CANDIDATES:-openai/gpt-oss-20b:free}
-      - OPENROUTER_HTTP_REFERER=${OPENROUTER_HTTP_REFERER:-http://localhost:5173}
-      - OPENROUTER_APP_NAME=${OPENROUTER_APP_NAME:-IronTest QA Agent}
-      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017}
-      - MONGODB_DB_NAME=${MONGODB_DB_NAME:-irontest}
-      - MONGODB_COLLECTION=${MONGODB_COLLECTION:-executions}
-      - JIRA_EMAIL=${JIRA_EMAIL}
-      - JIRA_API_TOKEN=${JIRA_API_TOKEN}
+      POSTGRES_USER: irontest
+      POSTGRES_PASSWORD: irontest
+      POSTGRES_DB: irontest
+    ports:
+      - "5432:5432"
     volumes:
-      - ./backend/data:/app/data
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U irontest"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://irontest:irontest@db:5432/irontest
+      ENVIRONMENT: development
+      FRONTEND_URL: http://localhost:5173
+      TEST_RUNNER: docker
+    env_file:
+      - .env
     ports:
       - "8000:8000"
-    depends_on:
-      - mongo
+    volumes:
+      # Lets the API drive the host daemon for sandboxed test runs.
+      - /var/run/docker.sock:/var/run/docker.sock
 
-  frontend:
-    build: ./frontend
+  web:
+    image: node:20-slim
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     environment:
-      - VITE_API_BASE=http://localhost:8000
-    depends_on:
-      - backend
+      VITE_API_BASE: http://localhost:8000
     ports:
       - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
 volumes:
-  mongo_data:
+  pgdata:
