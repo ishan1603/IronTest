@@ -54,6 +54,10 @@ class TestCase(BaseModel):
     risk_level: RiskLevel = "low"
     automated: bool = False
     automation_snippet: List[str] = Field(default_factory=list)
+    skip_reason: str = Field(
+        default="",
+        description="Why this case was not executed, when automated is False.",
+    )
     learning_source: LearningSource = "baseline"
     derived_from_failure_signature: str = ""
     novelty_reason: str = ""
