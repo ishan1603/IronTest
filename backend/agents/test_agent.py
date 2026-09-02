@@ -11,7 +11,6 @@ import hashlib
 import json
 from typing import Any, List
 
-from database import get_story_learning_context
 from llm import generate_json
 from models import StoryAnalysis, TestCase
 
@@ -285,14 +284,15 @@ async def generate_tests(
     story: StoryAnalysis,
     *,
     story_text: str | None = None,
+    learning: dict[str, Any] | None = None,
 ) -> List[TestCase]:
+    """Generate cases for a story, informed by prior runs of the same story.
+
+    The learning context is injected rather than queried here so the agent
+    holds no database session and the caller controls user scoping.
+    """
     def _call_model() -> List[TestCase]:
-        learning_context = get_story_learning_context(
-            story_text=story_text,
-            story_intent=story.intent,
-            modules=story.modules,
-            limit=20,
-        )
+        learning_context = learning or {}
         known_fingerprints = {
             str(item).strip()
             for item in learning_context.get("known_test_fingerprints", [])

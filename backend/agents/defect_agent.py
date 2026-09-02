@@ -2,7 +2,6 @@ import asyncio
 import json
 from typing import List
 
-from database import get_global_history_stats, get_module_history_stats
 from llm import generate_json
 from models import (
   DefectAnalysis,
@@ -320,10 +319,22 @@ def _compute_score(
   return final_score, breakdown, comparison
 
 
-async def analyze_defects(story: StoryAnalysis, tests: List[TestCase], execution: TestExecutionSummary) -> DefectAnalysis:
+async def analyze_defects(
+  story: StoryAnalysis,
+  tests: List[TestCase],
+  execution: TestExecutionSummary,
+  *,
+  module_history: dict[str, dict] | None = None,
+  global_history: dict | None = None,
+) -> DefectAnalysis:
+  """Score release confidence from this run plus the caller's history.
+
+  History is injected rather than queried here so the agent stays free of a
+  database session and the caller controls user scoping.
+  """
   def _call_model() -> DefectAnalysis:
-    historical_data = {m: get_module_history_stats(m) for m in story.modules}
-    global_history = get_global_history_stats()
+    historical_data = module_history or {}
+    global_stats = global_history or {"total_runs": 0, "average_pass_rate": 0.0, "recent_pass_rate": 0.0}
 
     trimmed_tests = []
     for test in tests:
@@ -348,7 +359,7 @@ async def analyze_defects(story: StoryAnalysis, tests: List[TestCase], execution
       "test_cases": trimmed_tests,
       "execution_summary": trimmed_execution,
       "module_history": historical_data,
-      "global_history": global_history,
+      "global_history": global_stats,
     }
     prompt = (
       "Input:\n"
@@ -462,7 +473,7 @@ async def analyze_defects(story: StoryAnalysis, tests: List[TestCase], execution
     ai_score = _stable_ai_score(
       llm_score=llm_score,
       execution=execution,
-      global_history=global_history,
+      global_history=global_stats,
     )
 
     llm_recommendation = _normalize_recommendation(data.get("deployment_recommendation"))
@@ -470,7 +481,7 @@ async def analyze_defects(story: StoryAnalysis, tests: List[TestCase], execution
     final_score, score_breakdown, historical_comparison = _compute_score(
       ai_score=ai_score,
       execution=execution,
-      global_history=global_history,
+      global_history=global_stats,
       module_risks=module_risks,
     )
     deterministic_recommendation = _derive_recommendation_from_execution(final_score, execution)

@@ -2,8 +2,19 @@ from pydantic import BaseModel, Field
 from typing import List, Literal
 
 
+PipelineMode = Literal["existing_code", "specification"]
+
+
 class AnalyzeRequest(BaseModel):
-    user_story: str = Field(..., min_length=10, description="Jira-style user story text")
+    user_story: str = Field(..., min_length=10, description="Requirement or user story text")
+    mode: PipelineMode = Field(
+        default="existing_code",
+        description=(
+            "existing_code tests shipped behavior, so failures are defects. "
+            "specification tests behavior that is not built yet, so failures "
+            "are the expected red phase."
+        ),
+    )
     send_email: bool = Field(default=False, description="Send run summary email after execution")
     recipient_email: str | None = Field(default=None, description="Recipient email for execution summary")
 
