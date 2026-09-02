@@ -1,9 +1,36 @@
-node_modules/
+# Python
 .venv/
+venv/
+env/
 __pycache__/
-*.pyc
-.env
-.DS_Store
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
 dist/
 build/
 .next/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local runtime state
+backend/data/*.db
+backend/data/*.sqlite3
+workspaces/
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
