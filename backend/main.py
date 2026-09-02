@@ -28,6 +28,7 @@ from github_client import GitHubError
 from history import story_history
 from jira_client import fetch_jira_issue
 from llm import LLMError, configured_providers, provider_status
+from runners import runner_status
 from models import AnalyzeRequest, AzureDevOpsIngestRequest, JiraIngestRequest, StoryHistoryRequest
 from routers import auth_routes, chat_routes, repo_routes
 from security import read_session_token
@@ -227,6 +228,7 @@ async def health():
         "status": "ok" if any(p["active"] for p in providers) else "degraded",
         "version": app.version,
         "llm_providers": providers,
+        "test_runner": runner_status(),
         "github_oauth": settings.github_oauth_configured,
     }
 

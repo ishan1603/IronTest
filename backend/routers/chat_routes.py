@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from auth import current_user
+from auth import current_user, github_token
 from db import Chat, Message, PipelineRun, Repository, User, get_session, utcnow
 from models import PipelineMode
 
@@ -167,6 +167,7 @@ async def start_run(
     chat_id: str,
     request: StartRunRequest,
     user: User = Depends(current_user),
+    token: str = Depends(github_token),
     session: Session = Depends(get_session),
 ):
     """Launch the pipeline for this chat and return its event-stream id."""
@@ -203,6 +204,9 @@ async def start_run(
                 source="chat",
                 send_email=request.send_email,
                 recipient_email=request.recipient_email,
+                github_token=token,
+                repo_full_name=repo.full_name,
+                repo_ref=repo.default_branch,
             ),
         )
     )

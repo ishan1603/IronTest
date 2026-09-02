@@ -13,14 +13,18 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
+import repo_analysis
 from agents.defect_agent import analyze_defects
 from agents.execution_agent import execute_tests
+from agents.repo_test_agent import generate_repo_tests
 from agents.story_agent import analyze_story
+from agents.suite_builder import build_suite
 from agents.test_agent import generate_tests
-from db import PipelineRun, session_scope, utcnow
+from db import PipelineRun, Repository, session_scope, utcnow
 from email_notifier import send_execution_summary_email
 from history import build_story_identity, global_stats, learning_context, module_stats
 from models import DefectAnalysis, PipelineDashboard, StoryAnalysis, TestCase, TestExecutionSummary
+from runners import RunnerRequest, RunnerUnavailable, select_runner
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +47,14 @@ class RunRequest:
     source: str = "chat"
     send_email: bool = False
     recipient_email: str | None = None
-    repo_context: dict[str, Any] = field(default_factory=dict)
+    #: Present for repository runs; enables cloning and sandboxed execution.
+    github_token: str = ""
+    repo_full_name: str = ""
+    repo_ref: str = ""
+
+    @property
+    def is_repository_run(self) -> bool:
+        return bool(self.repository_id and self.repo_full_name and self.github_token)
 
 
 class SessionManager:
@@ -99,24 +110,14 @@ class Orchestrator:
             story: StoryAnalysis = await analyze_story(request.story_text)
             await emit({"event": "agent_complete", "agent": "story", "result": story.model_dump()})
 
-            await emit({"event": "agent_start", "agent": "test", "message": "Generating test suite..."})
             learning = await asyncio.to_thread(
                 self._learning_for, request.user_id, request.story_text, story
             )
-            tests: list[TestCase] = await generate_tests(
-                story, story_text=request.story_text, learning=learning
-            )
-            await emit(
-                {
-                    "event": "agent_complete",
-                    "agent": "test",
-                    "result": [test.model_dump() for test in tests],
-                }
-            )
 
-            await emit({"event": "agent_start", "agent": "execution", "message": "Executing tests..."})
-            execution: TestExecutionSummary = await execute_tests(tests)
-            await emit({"event": "agent_complete", "agent": "execution", "result": execution.model_dump()})
+            if request.is_repository_run:
+                tests, execution = await self._run_against_repository(emit, request, story, learning)
+            else:
+                tests, execution = await self._run_standalone(emit, request, story, learning)
 
             await emit({"event": "agent_start", "agent": "defect", "message": "Assessing release risk..."})
             module_history, overall = await asyncio.to_thread(
@@ -147,6 +148,126 @@ class Orchestrator:
             await queue.put(None)
             await asyncio.sleep(SESSION_LINGER_SECONDS)
             await self.sessions.close_session(session_id)
+
+    # -- generation and execution -----------------------------------------
+
+    async def _run_standalone(
+        self, emit, request: RunRequest, story: StoryAnalysis, learning: dict[str, Any]
+    ) -> tuple[list[TestCase], TestExecutionSummary]:
+        """No repository: run self-contained snippets on this host.
+
+        Snippets here import nothing, so they validate the behavior described
+        by the requirement rather than any real code.
+        """
+        await emit({"event": "agent_start", "agent": "test", "message": "Generating test suite..."})
+        tests = await generate_tests(story, story_text=request.story_text, learning=learning)
+        await emit(
+            {"event": "agent_complete", "agent": "test", "result": [t.model_dump() for t in tests]}
+        )
+
+        await emit({"event": "agent_start", "agent": "execution", "message": "Executing tests..."})
+        execution = await execute_tests(tests)
+        await emit(
+            {
+                "event": "agent_complete",
+                "agent": "execution",
+                "backend": "local",
+                "scope": "standalone",
+                "result": execution.model_dump(),
+            }
+        )
+        return tests, execution
+
+    async def _run_against_repository(
+        self, emit, request: RunRequest, story: StoryAnalysis, learning: dict[str, Any]
+    ) -> tuple[list[TestCase], TestExecutionSummary]:
+        """Generate tests that import the repository's code, then run them in a sandbox."""
+        runner = select_runner()
+        if runner is None:
+            raise RunnerUnavailable(
+                "No test sandbox is available. Install Docker for local runs, or set "
+                "ACTIONS_RUNNER_REPO and ACTIONS_DISPATCH_TOKEN to run on GitHub Actions. "
+                "Tests against a repository are never executed on the API host."
+            )
+
+        await emit(
+            {"event": "agent_start", "agent": "test", "message": f"Reading {request.repo_full_name}..."}
+        )
+        repo_context = await repo_analysis.build_code_context(
+            request.github_token,
+            request.repo_full_name,
+            request.repo_ref,
+            request.story_text,
+        )
+        await emit(
+            {
+                "event": "repo_context",
+                "stack": repo_context.get("stack", {}),
+                "files_examined": [f["path"] for f in repo_context.get("files", [])],
+                "existing_tests": repo_context.get("existing_tests", []),
+            }
+        )
+
+        tests, imports = await generate_repo_tests(
+            story,
+            repo_context,
+            requirement=request.story_text,
+            mode=request.mode,
+            learning=learning,
+        )
+        await emit(
+            {
+                "event": "agent_complete",
+                "agent": "test",
+                "result": [t.model_dump() for t in tests],
+                "imports": imports,
+            }
+        )
+
+        stack = repo_context.get("stack", {})
+        files = build_suite(tests, imports, language=stack.get("language", "python"))
+        if not files:
+            raise ValueError("No runnable tests were generated for this repository.")
+
+        await emit(
+            {
+                "event": "agent_start",
+                "agent": "execution",
+                "message": f"Running tests in {runner.name} sandbox...",
+                "backend": runner.name,
+            }
+        )
+        outcome = await runner.run(
+            RunnerRequest(
+                repo_full_name=request.repo_full_name,
+                ref=request.repo_ref,
+                github_token=request.github_token,
+                stack=stack,
+                files=files,
+                mode=request.mode,
+            )
+        )
+
+        if outcome.status != "completed":
+            # No parseable results: surface the failure with its logs rather
+            # than presenting an outcome that was never measured.
+            raise RuntimeError(outcome.error_message or "The sandboxed test run produced no results.")
+
+        execution = TestExecutionSummary(
+            results=outcome.results, duration_seconds=outcome.duration_seconds
+        )
+        await emit(
+            {
+                "event": "agent_complete",
+                "agent": "execution",
+                "backend": outcome.backend,
+                "scope": "repository",
+                "mode": request.mode,
+                "result": execution.model_dump(),
+                "logs": outcome.raw_output[-4000:],
+            }
+        )
+        return tests, execution
 
     # -- database work, all run off the event loop -------------------------
 
