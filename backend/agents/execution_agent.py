@@ -59,12 +59,18 @@ def _run_one(test: TestCase, temp_dir: str) -> TestResult:
     with open(test_file, "w", encoding="utf-8") as handle:
         handle.write(_snippet_source(test))
 
+    # pytest elides its short-summary line to the terminal width. Tests live
+    # under a long temp path, so without a wide terminal the failure reason is
+    # cut to a stub and every failure ends up with the same signature.
+    env = {**os.environ, "COLUMNS": "200"}
+
     try:
         proc = subprocess.run(
             [sys.executable, "-m", "pytest", test_file, "-v", "--tb=short"],
             capture_output=True,
             text=True,
             timeout=TEST_TIMEOUT_SECONDS,
+            env=env,
         )
     except subprocess.TimeoutExpired:
         return TestResult(

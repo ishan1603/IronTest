@@ -56,24 +56,68 @@ def test_fingerprint(test: dict[str, Any]) -> str:
     return hashlib.sha256(basis.encode("utf-8")).hexdigest()[:16]
 
 
-def failure_signature(error_message: Any, status: str) -> str:
-    """Condense a failure into a comparable signature.
+#: A candidate shorter than this carries no distinguishing information.
+MIN_SIGNATURE_LENGTH = 8
 
-    Prefers pytest's short-summary line, then the assertion text, then the last
-    non-empty line, so the same defect recurring across runs hashes alike.
+
+def _is_truncated(text: str) -> bool:
+    """pytest elides its short-summary line to the terminal width.
+
+    With tests written to a temp directory the path alone can consume the
+    line, leaving a stub like "assert 90.0 ..." cut to "as...". Treating that
+    as a signature made every failure collide.
+    """
+    return text.rstrip().endswith("...")
+
+
+def failure_signature(error_message: Any, status: str) -> str:
+    """Condense a failure into a signature that recurs when the defect does.
+
+    Prefers the assertion detail from the FAILURES section, which pytest does
+    not width-truncate, over the short-summary line, which it does.
     """
     lines = [line.strip() for line in str(error_message or "").splitlines() if line.strip()]
 
-    summary = next((line for line in lines if line.startswith("FAILED ") and " - " in line), "")
-    if summary:
-        return _normalize_signature(summary.split(" - ", 1)[1])
+    candidates: list[str] = []
 
-    assertion = next((line for line in lines if "AssertionError:" in line), "")
-    if assertion:
-        return _normalize_signature(assertion.split("AssertionError:", 1)[1])
+    # 1. An explicit exception message.
+    for line in lines:
+        if "AssertionError:" in line:
+            candidates.append(line.split("AssertionError:", 1)[1])
 
+    # 2. pytest's assertion detail lines ("E   assert 90.0 == 50"), skipping
+    #    the "+ where ..." continuations that explain intermediate values.
+    for line in lines:
+        if line.startswith("E ") or line == "E":
+            detail = line[1:].strip()
+            if detail and not detail.startswith("+"):
+                candidates.append(detail)
+
+    # 3. The short-summary line, only when it survived un-truncated.
+    for line in lines:
+        if line.startswith("FAILED ") and " - " in line:
+            reason = line.split(" - ", 1)[1]
+            if not _is_truncated(reason):
+                candidates.append(reason)
+
+    # 4. Anything left.
     if lines:
-        return _normalize_signature(lines[-1])
+        candidates.append(lines[-1])
+
+    for candidate in candidates:
+        if _is_truncated(candidate):
+            continue
+        normalized = _normalize_signature(candidate)
+        if len(normalized) >= MIN_SIGNATURE_LENGTH:
+            return normalized
+
+    # Nothing usable: fall back to the first normalized candidate rather than
+    # an empty string, so the failure is still counted.
+    for candidate in candidates:
+        normalized = _normalize_signature(candidate)
+        if normalized:
+            return normalized
+
     return _normalize_signature(f"{status} without message")
 
 
