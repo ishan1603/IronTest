@@ -1,101 +1,76 @@
-import React from "react";
-import { motion } from "framer-motion";
 import clsx from "clsx";
-import AgentCard from "./AgentCard.jsx";
+import { Spinner } from "./ui";
 
-function Arrow({ active }) {
+const STAGES = [
+  { key: "story", label: "Story", hint: "Reads the requirement" },
+  { key: "test", label: "Tests", hint: "Writes cases against your code" },
+  { key: "execution", label: "Execution", hint: "Runs them in a sandbox" },
+  { key: "defect", label: "Risk", hint: "Scores release confidence" },
+];
+
+/**
+ * Live view of the four agents.
+ *
+ * `stages` maps an agent key to "pending" | "running" | "done" | "failed".
+ */
+export function Pipeline({ stages, message }) {
   return (
-    <motion.div
-      animate={{ opacity: active ? [0.4, 1, 0.4] : 0.15 }}
-      transition={{ repeat: active ? Infinity : 0, duration: 1.2 }}
-      className="flex items-center justify-center px-1 lg:px-2 self-center flex-shrink-0"
-    >
-      <div
-        className={clsx(
-          "h-0.5 w-4 lg:w-8 bg-gradient-to-r from-accent to-transparent rounded-full",
-          active && "shadow-[0_0_20px_rgba(34,197,94,0.9)] bg-accent",
-        )}
-      />
-    </motion.div>
+    <div className="hairline rounded-md p-4">
+      <ol className="grid gap-3 sm:grid-cols-4" role="list">
+        {STAGES.map((stage, index) => {
+          const state = stages[stage.key] || "pending";
+          return (
+            <li key={stage.key} className="flex gap-3 sm:flex-col sm:gap-2">
+              <div className="flex items-center gap-2 sm:w-full">
+                <StageMark state={state} index={index} />
+                {/* Connector between stages, horizontal on desktop only. */}
+                <span
+                  aria-hidden="true"
+                  className={clsx(
+                    "hidden h-px flex-1 sm:block",
+                    state === "done" ? "bg-line/40" : "bg-line/12",
+                    index === STAGES.length - 1 && "sm:hidden",
+                  )}
+                />
+              </div>
+              <div className="min-w-0">
+                <p
+                  className={clsx(
+                    "text-sm font-medium",
+                    state === "pending" ? "text-muted" : "text-ink",
+                  )}
+                >
+                  {stage.label}
+                </p>
+                <p className="text-xs text-muted">{stage.hint}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      {message && (
+        <p className="mt-4 border-t border-line/12 pt-3 font-mono text-xs text-muted" aria-live="polite">
+          {message}
+        </p>
+      )}
+    </div>
   );
 }
 
-export default function Pipeline({ agents, isRunning = false }) {
+function StageMark({ state, index }) {
+  if (state === "running") return <Spinner className="h-5 w-5 shrink-0" />;
+
   return (
-    <div className="flex w-full flex-col gap-4 rounded-3xl border border-black/5 dark:border-emerald-400/20 bg-white/40 dark:bg-white/5 p-4 lg:p-6 shadow-2xl dark:shadow-[0_0_24px_rgba(34,197,94,0.22)] backdrop-blur-3xl transition-colors duration-300 overflow-hidden">
-      <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
-        <span>Live Autonomous Orchestration</span>
-        <span
-          className={clsx(
-            "flex items-center gap-2",
-            isRunning ? "text-accent" : "text-gray-400",
-          )}
-        >
-          <span
-            className={clsx(
-              "h-1.5 w-1.5 rounded-full",
-              isRunning ? "bg-accent animate-ping" : "bg-gray-400",
-            )}
-          />
-          {isRunning ? "System Engaged" : "Standby"}
-        </span>
-      </div>
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch lg:justify-between lg:gap-1">
-        <div className="flex-1 min-w-0">
-          <AgentCard
-            title="Story"
-            icon="🧠"
-            status={agents.story.status}
-            summary={agents.story.summary}
-            message={agents.story.message}
-          />
-        </div>
-        <Arrow
-          active={
-            agents.story.status === "done" &&
-            agents.test.status === "processing"
-          }
-        />
-        <div className="flex-1 min-w-0">
-          <AgentCard
-            title="Test Gen"
-            icon="⚙️"
-            status={agents.test.status}
-            summary={agents.test.summary}
-            message={agents.test.message}
-          />
-        </div>
-        <Arrow
-          active={
-            agents.test.status === "done" &&
-            agents.execution.status === "processing"
-          }
-        />
-        <div className="flex-1 min-w-0">
-          <AgentCard
-            title="Execution"
-            icon="🚀"
-            status={agents.execution.status}
-            summary={agents.execution.summary}
-            message={agents.execution.message}
-          />
-        </div>
-        <Arrow
-          active={
-            agents.execution.status === "done" &&
-            agents.defect.status === "processing"
-          }
-        />
-        <div className="flex-1 min-w-0">
-          <AgentCard
-            title="Defects"
-            icon="🔍"
-            status={agents.defect.status}
-            summary={agents.defect.summary}
-            message={agents.defect.message}
-          />
-        </div>
-      </div>
-    </div>
+    <span
+      className={clsx(
+        "flex h-5 w-5 shrink-0 items-center justify-center rounded-pill border font-mono text-[10px]",
+        state === "done" && "border-transparent bg-contrast text-contrast-ink",
+        state === "failed" && "border-danger text-danger",
+        state === "pending" && "border-line/25 text-muted",
+      )}
+      aria-hidden="true"
+    >
+      {state === "done" ? "✓" : state === "failed" ? "!" : index + 1}
+    </span>
   );
 }

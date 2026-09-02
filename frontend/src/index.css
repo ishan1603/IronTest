@@ -2,46 +2,109 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Codex: a blank-canvas surface where black is the only fill, the only
+  divider, and the only emphasis. Colour appears solely to signal a test
+  outcome. The palette is literally black and white, so dark mode is a clean
+  inversion of the same two tokens.
+*/
+
 @layer base {
   :root {
-    --bg-color: #fafafa;
-    --text-color: #111827;
-    --grid-color: rgba(0, 0, 0, 0.12);
+    --page: 255 255 255;
+    --surface: 255 255 255;
+    --ink: 17 24 39;
+    --muted: 107 114 128;
+    --line: 0 0 0;
+    --contrast: 0 0 0;
+    --contrast-ink: 255 255 255;
     color-scheme: light;
   }
 
-  .dark {
-    --bg-color: #05070d;
-    --text-color: #f3f4f6;
-    --grid-color: rgba(255, 255, 255, 0.05);
+  :root[data-theme="dark"] {
+    --page: 10 10 10;
+    --surface: 18 18 18;
+    --ink: 245 245 245;
+    --muted: 156 163 175;
+    --line: 255 255 255;
+    --contrast: 255 255 255;
+    --contrast-ink: 10 10 10;
     color-scheme: dark;
   }
 
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page: 10 10 10;
+      --surface: 18 18 18;
+      --ink: 245 245 245;
+      --muted: 156 163 175;
+      --line: 255 255 255;
+      --contrast: 255 255 255;
+      --contrast-ink: 10 10 10;
+      color-scheme: dark;
+    }
+  }
+
+  * {
+    border-color: rgb(var(--line) / 0.14);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
+    @apply bg-page text-ink font-sans antialiased;
     margin: 0;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: "Inter", system-ui, sans-serif;
-    transition:
-      background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-      color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-      --grid-color 0.5s ease;
+    /* Prevent the horizontal scroll a wide table would otherwise force. */
+    overflow-x: hidden;
   }
 
-  /* Awwwards style modern grid background */
-  .bg-grid {
-    background-size: 40px 40px;
-    background-image:
-      linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  }
-
-  button:focus-visible,
-  textarea:focus-visible,
-  input:focus-visible {
-    outline: 2px solid #22c55e;
+  /* Keyboard-first: focus must always be visible, never removed. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--line));
     outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: rgb(var(--contrast));
+    color: rgb(var(--contrast-ink));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Uppercase mono label, the system's only decorative typographic move. */
+  .label-caps {
+    @apply font-mono text-xs uppercase tracking-[0.12em] text-muted;
+  }
+
+  .hairline {
+    @apply border border-line/15;
+  }
+
+  .card {
+    @apply hairline rounded-md bg-surface;
+  }
+
+  /* Inverted card: black on light, white on dark. Used for emphasis only. */
+  .card-contrast {
+    @apply rounded-md bg-contrast text-contrast-ink;
+  }
+}
+
+@layer utilities {
+  .scroll-x {
+    @apply overflow-x-auto;
+    scrollbar-width: thin;
   }
 }
