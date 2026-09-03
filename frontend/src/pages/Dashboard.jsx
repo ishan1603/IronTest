@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { Shell } from "../components/Shell";
-import { Banner, Button, Card, EmptyState, Label, Spinner, Tag } from "../components/ui";
+import { motion } from "framer-motion";
+import { Banner, Button, Card, EmptyState, Label, Skeleton, Tag } from "../components/ui";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -93,26 +94,37 @@ export default function Dashboard() {
         )}
 
         {loading ? (
-          <div className="flex justify-center py-24">
-            <Spinner />
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-40" />
+            ))}
           </div>
         ) : (
           <>
             {connected.length > 0 && (
               <section className="mb-10">
                 <h2 className="label-caps mb-3">Connected</h2>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <motion.div
+                  className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+                  initial="hidden"
+                  animate="show"
+                  variants={{ show: { transition: { staggerChildren: 0.04 } } }}
+                >
                   {connected.map((repo) => (
-                    <RepoCard
+                    <motion.div
                       key={repo.id}
-                      repo={repo}
-                      connected
-                      busy={busy.startsWith(`${repo.id}:`) ? busy.split(":")[1] : ""}
-                      onTestExisting={() => goTestExisting(repo)}
-                      onPlanFeature={() => goPlanFeature(repo)}
-                    />
+                      variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
+                    >
+                      <RepoCard
+                        repo={repo}
+                        connected
+                        busy={busy.startsWith(`${repo.id}:`) ? busy.split(":")[1] : ""}
+                        onTestExisting={() => goTestExisting(repo)}
+                        onPlanFeature={() => goPlanFeature(repo)}
+                      />
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </section>
             )}
 

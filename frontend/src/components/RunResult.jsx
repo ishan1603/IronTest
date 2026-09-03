@@ -1,5 +1,6 @@
 import { useState } from "react";
 import clsx from "clsx";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Card, Label, Meter, StatusDot, Tag } from "./ui";
 
 const VERDICT_TONE = {
@@ -270,11 +271,16 @@ function TestTable({ tests, results }) {
         <Label>Test cases</Label>
       </div>
       <ul className="divide-y divide-line/12">
-        {results.map((result) => {
+        {results.map((result, rowIndex) => {
           const test = byId[result.test_id] || {};
           const isOpen = open === result.test_id;
           return (
-            <li key={result.test_id}>
+            <motion.li
+              key={result.test_id}
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: Math.min(rowIndex * 0.03, 0.4), duration: 0.2 }}
+            >
               <button
                 onClick={() => setOpen(isOpen ? null : result.test_id)}
                 aria-expanded={isOpen}
@@ -298,7 +304,15 @@ function TestTable({ tests, results }) {
                 </span>
               </button>
 
-              {isOpen && (
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="overflow-hidden"
+                  >
                 <div className="border-t border-line/12 bg-line/[0.02] px-5 py-4">
                   {test.expected_result && (
                     <p className="mb-3 text-sm">
@@ -322,8 +336,10 @@ function TestTable({ tests, results }) {
                     <p className="mt-2 text-xs text-muted">{test.skip_reason}</p>
                   )}
                 </div>
-              )}
-            </li>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.li>
           );
         })}
       </ul>

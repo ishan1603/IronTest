@@ -1,4 +1,6 @@
 import clsx from "clsx";
+import { useMemo } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 
 // Codex primitives. Every interactive element is a pill; every boundary is a
 // hairline; nothing casts a shadow or carries a gradient.
@@ -17,17 +19,50 @@ const BUTTON_SIZES = {
 };
 
 export function Button({ variant = "primary", size = "md", className, as: Tag = "button", ...props }) {
+  const reduce = useReducedMotion();
+  // Memoised: motion(Tag) creates a component; doing it inline would remount children each render.
+  const MotionTag = useMemo(() => motion(Tag), [Tag]);
   return (
-    <Tag
+    <MotionTag
+      whileHover={reduce || props.disabled ? undefined : { y: -1 }}
+      whileTap={reduce || props.disabled ? undefined : { scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 500, damping: 30 }}
       className={clsx(
         "inline-flex items-center justify-center gap-2 rounded-pill font-medium",
-        "transition-opacity duration-150 disabled:cursor-not-allowed",
+        "transition-colors duration-150 disabled:cursor-not-allowed",
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
         className,
       )}
       {...props}
     />
+  );
+}
+
+/** Shimmering placeholder block for loading states. */
+export function Skeleton({ className }) {
+  return (
+    <div
+      className={clsx(
+        "animate-pulse rounded-md bg-line/10",
+        className,
+      )}
+    />
+  );
+}
+
+/** Fade + rise wrapper for page content and list items. */
+export function Reveal({ children, delay = 0, className }) {
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      initial={reduce ? false : { opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.32, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
   );
 }
 

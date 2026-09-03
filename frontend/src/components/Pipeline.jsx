@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
 import { Spinner } from "./ui";
 
 const BASE_STAGES = [
@@ -70,14 +71,24 @@ function StageMark({ state, index }) {
   return (
     <span
       className={clsx(
-        "flex h-5 w-5 shrink-0 items-center justify-center rounded-pill border font-mono text-[10px]",
+        "flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-pill border font-mono text-[10px]",
         state === "done" && "border-transparent bg-contrast text-contrast-ink",
         state === "failed" && "border-danger text-danger",
         state === "pending" && "border-line/25 text-muted",
       )}
       aria-hidden="true"
     >
-      {state === "done" ? "✓" : state === "failed" ? "!" : index + 1}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={state}
+          initial={{ scale: 0.4, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.4, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 600, damping: 26 }}
+        >
+          {state === "done" ? "✓" : state === "failed" ? "!" : index + 1}
+        </motion.span>
+      </AnimatePresence>
     </span>
   );
 }
