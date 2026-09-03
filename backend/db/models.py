@@ -63,6 +63,13 @@ class User(Base, TimestampMixin):
     #: Personal key for the CI endpoint (X-IronTest-Key). Rotatable.
     api_key: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
 
+    #: Persistent issue-tracker connections, tokens Fernet-encrypted.
+    jira_base_url: Mapped[str | None] = mapped_column(String(300))
+    jira_email: Mapped[str | None] = mapped_column(String(320))
+    encrypted_jira_token: Mapped[str | None] = mapped_column(Text)
+    ado_org: Mapped[str | None] = mapped_column(String(200))
+    encrypted_ado_pat: Mapped[str | None] = mapped_column(Text)
+
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     repositories: Mapped[list["Repository"]] = relationship(

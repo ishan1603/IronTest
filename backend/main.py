@@ -38,6 +38,7 @@ from routers import (
     integration_routes,
     repo_routes,
     report_routes,
+    tracker_routes,
 )
 from security import read_session_token
 
@@ -84,6 +85,7 @@ app.include_router(report_routes.manage)
 app.include_router(report_routes.public)
 app.include_router(integration_routes.router)
 app.include_router(ci_routes.router)
+app.include_router(tracker_routes.router)
 
 
 @app.exception_handler(GitHubError)

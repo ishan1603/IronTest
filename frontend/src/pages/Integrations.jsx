@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { API_BASE, api } from "../lib/api";
 import { Shell } from "../components/Shell";
 import { Banner, Button, Card, Label, Spinner } from "../components/ui";
+import { TrackerCards } from "../components/TrackerCards";
 
 const WORKFLOW = `name: IronTest PR gate
 
@@ -29,15 +30,18 @@ jobs:
 
 export default function Integrations() {
   const [apiKey, setApiKey] = useState(null);
+  const [trackers, setTrackers] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
 
   useEffect(() => {
-    api
-      .getApiKey()
-      .then((r) => setApiKey(r.api_key))
+    Promise.all([api.getApiKey(), api.integrations()])
+      .then(([k, tr]) => {
+        setApiKey(k.api_key);
+        setTrackers(tr);
+      })
       .catch((exc) => setError(exc.message))
       .finally(() => setLoading(false));
   }, []);
@@ -62,12 +66,14 @@ export default function Integrations() {
     });
   }
 
+  const reloadTrackers = () => api.integrations().then(setTrackers).catch(() => {});
+
   return (
     <Shell>
       <div className="px-4 py-8 sm:px-6 sm:py-10">
         <header className="mb-8">
           <Label>Integrations</Label>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">CI &amp; API</h1>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Trackers, CI &amp; API</h1>
           <p className="mt-2 max-w-prose text-sm text-muted">
             Run IronTest on every pull request. It generates a suite against the PR branch, runs it,
             and posts the verdict as a comment.
@@ -86,6 +92,11 @@ export default function Integrations() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
+            <section>
+              <h2 className="label-caps mb-3">Issue trackers</h2>
+              <TrackerCards status={trackers} onChange={reloadTrackers} />
+            </section>
+
             <Card className="p-5">
               <Label>Your API key</Label>
               <p className="mt-1 text-xs text-muted">

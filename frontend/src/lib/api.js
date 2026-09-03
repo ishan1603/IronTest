@@ -96,6 +96,13 @@ export const api = {
   deleteChat: (id) => request(`/api/chats/${id}`, { method: "DELETE" }),
   startRun: (chatId, payload) => request(`/api/chats/${chatId}/runs`, { method: "POST", body: payload }),
 
+  integrations: () => request("/api/integrations"),
+  connectJira: (body) => request("/api/integrations/jira", { method: "POST", body }),
+  disconnectJira: () => request("/api/integrations/jira", { method: "DELETE" }),
+  jiraIssues: () => request("/api/integrations/jira/issues"),
+  connectAdo: (body) => request("/api/integrations/ado", { method: "POST", body }),
+  disconnectAdo: () => request("/api/integrations/ado", { method: "DELETE" }),
+  adoWorkItems: () => request("/api/integrations/ado/work-items"),
   ingestJira: (payload) => request("/api/ingest/jira", { method: "POST", body: payload }),
   ingestAzure: (payload) => request("/api/ingest/azure-devops", { method: "POST", body: payload }),
 };
