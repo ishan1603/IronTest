@@ -34,6 +34,8 @@ class StartRunRequest(BaseModel):
     # stands with no prompt. A specification run must describe the feature.
     requirement: str | None = Field(default=None, max_length=20_000)
     mode: PipelineMode = "existing_code"
+    #: Optional base branch/ref for the regression gate.
+    compare_ref: str | None = None
     send_email: bool = False
     recipient_email: str | None = None
 
@@ -107,6 +109,7 @@ def _serialize_run(run: PipelineRun) -> dict:
         "execution": run.execution_result,
         "defects": run.defects_result,
         "fixes": run.fixes_result or [],
+        "compare": run.compare_result,
     }
 
 
@@ -230,6 +233,7 @@ async def start_run(
                 github_token=token,
                 repo_full_name=repo.full_name,
                 repo_ref=repo.default_branch,
+                compare_ref=(request.compare_ref or "").strip(),
             ),
         )
     )

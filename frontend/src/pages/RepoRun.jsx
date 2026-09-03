@@ -25,6 +25,8 @@ export default function RepoRun() {
   const [loadError, setLoadError] = useState("");
   const [focus, setFocus] = useState("");
   const [showFocus, setShowFocus] = useState(false);
+  const [branches, setBranches] = useState([]);
+  const [compareRef, setCompareRef] = useState("");
 
   const run = useRun();
   const bottom = useRef(null);
@@ -46,6 +48,13 @@ export default function RepoRun() {
 
       const full = await api.getChat(chat.id);
       setRuns((full.runs || []).slice().reverse());
+
+      try {
+        const { branches: names } = await api.repoBranches(repoId);
+        setBranches(names || []);
+      } catch {
+        /* branch list is optional; the compare control just stays hidden */
+      }
     } catch (exc) {
       setLoadError(exc.message);
     } finally {
@@ -72,7 +81,12 @@ export default function RepoRun() {
 
   async function startSuite() {
     await run.start(
-      { chatId, requirement: focus.trim() || undefined, mode: "existing_code" },
+      {
+        chatId,
+        requirement: focus.trim() || undefined,
+        mode: "existing_code",
+        compareRef: compareRef || undefined,
+      },
       {
         onComplete: async () => {
           const full = await api.getChat(chatId);
@@ -155,6 +169,32 @@ export default function RepoRun() {
             >
               Add an optional focus
             </button>
+          )}
+
+          {branches.length > 1 && (
+            <div className="mt-4">
+              <label className="label-caps">Regression gate (optional)</label>
+              <div className="mt-2 flex items-center gap-2">
+                <select
+                  value={compareRef}
+                  onChange={(event) => setCompareRef(event.target.value)}
+                  disabled={run.running}
+                  className="h-9 rounded-pill border border-line/20 bg-transparent px-3 text-sm focus:border-line/50"
+                >
+                  <option value="">Don't compare</option>
+                  {branches
+                    .filter((b) => b !== (repo.default_branch || "main"))
+                    .map((b) => (
+                      <option key={b} value={b}>
+                        Compare against {b}
+                      </option>
+                    ))}
+                </select>
+                <span className="text-xs text-muted">
+                  Runs the same suite on the base branch and flags what newly fails.
+                </span>
+              </div>
+            </div>
           )}
 
           <div className="mt-4">

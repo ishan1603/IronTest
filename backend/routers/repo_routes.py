@@ -135,6 +135,20 @@ async def connect_repository(
     return _serialize(repo)
 
 
+@router.get("/{repo_id}/branches")
+async def repository_branches(
+    repo_id: str,
+    user: User = Depends(current_user),
+    token: str = Depends(github_token),
+    session: Session = Depends(get_session),
+):
+    repo = _owned_repo(session, user, repo_id)
+    branches = await github_client.list_branches(token, repo.full_name)
+    # Surface the default branch first.
+    branches.sort(key=lambda b: (b != repo.default_branch, b))
+    return {"branches": branches, "default": repo.default_branch}
+
+
 @router.get("/{repo_id}")
 async def get_repository(
     repo_id: str,

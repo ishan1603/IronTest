@@ -168,6 +168,8 @@ class PipelineRun(Base, TimestampMixin):
     execution_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     defects_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     fixes_result: Mapped[list[Any] | None] = mapped_column(JSON)
+    #: Regression-gate diff when the run compared two refs.
+    compare_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
 
     #: Set when the run is shared. Anyone with the token can view a read-only
     #: report; None means not shared. Cleared to revoke.

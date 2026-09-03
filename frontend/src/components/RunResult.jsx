@@ -15,6 +15,7 @@ export function RunResult({ run }) {
   const story = run.story || {};
   const tests = run.tests || [];
   const fixes = run.fixes || [];
+  const compare = run.compare || null;
   const results = execution.results || [];
   const ranOnHost = run.sandboxed === false || run.execution?.backend === "local_host";
 
@@ -87,6 +88,8 @@ export function RunResult({ run }) {
 
       <TestTable tests={tests} results={results} />
 
+      {compare && <RegressionDiff compare={compare} />}
+
       {fixes.length > 0 && <SuggestedFixes fixes={fixes} />}
 
       {Array.isArray(defects.module_risks) && defects.module_risks.length > 0 && (
@@ -107,6 +110,68 @@ function SpecificationNotice({ counts }) {
         they pass.
       </p>
     </div>
+  );
+}
+
+function RegressionDiff({ compare }) {
+  const regressions = compare.regressions || [];
+  const fixed = compare.fixed || [];
+  const clean = compare.verdict === "clean";
+
+  return (
+    <Card className="overflow-hidden p-0">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/12 px-5 py-3">
+        <Label>Regression gate</Label>
+        <span className="font-mono text-xs text-muted">
+          {compare.base_ref} → {compare.head_ref}
+        </span>
+      </div>
+
+      {!compare.base_measured ? (
+        <p className="px-5 py-4 text-sm text-muted">
+          The base branch run produced no results ({compare.base_error}). Nothing to compare against.
+        </p>
+      ) : (
+        <div className="px-5 py-4">
+          {regressions.length > 0 ? (
+            <p className="text-sm font-medium text-danger">
+              {regressions.length} regression{regressions.length === 1 ? "" : "s"} — passed on{" "}
+              {compare.base_ref}, fails on {compare.head_ref}
+            </p>
+          ) : (
+            <p className="text-sm font-medium text-success">
+              No regressions. Nothing that passed on {compare.base_ref} broke on {compare.head_ref}.
+            </p>
+          )}
+
+          {regressions.length > 0 && (
+            <ul className="mt-3 flex flex-col gap-1.5">
+              {regressions.map((r) => (
+                <li key={r.test_id} className="flex items-center gap-2 text-sm">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-pill bg-danger" />
+                  <span className="font-mono text-xs">{r.test_id}</span>
+                  <span className="text-muted">
+                    {r.base} → {r.head}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {fixed.length > 0 && (
+            <p className="mt-3 text-sm text-muted">
+              <span className="text-success">{fixed.length} fixed</span> — failed on {compare.base_ref},
+              passes on {compare.head_ref}.
+            </p>
+          )}
+
+          <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs text-muted">
+            <span>{(compare.still_passing || []).length} still passing</span>
+            <span>{(compare.still_failing || []).length} still failing</span>
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
 

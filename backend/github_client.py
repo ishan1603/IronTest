@@ -162,6 +162,22 @@ async def list_repositories(token: str, *, limit: int = 100) -> list[dict[str, A
     ]
 
 
+async def list_branches(token: str, full_name: str, *, limit: int = 60) -> list[str]:
+    """Branch names, default-branch-first where possible."""
+    names: list[str] = []
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        page = 1
+        while len(names) < limit:
+            batch = await _get(client, token, f"/repos/{full_name}/branches", per_page=100, page=page)
+            if not isinstance(batch, list) or not batch:
+                break
+            names.extend(b["name"] for b in batch if isinstance(b, dict) and b.get("name"))
+            if len(batch) < 100:
+                break
+            page += 1
+    return names[:limit]
+
+
 async def fetch_repo_tree(token: str, full_name: str, ref: str) -> list[dict[str, Any]]:
     """Flat file listing for a ref. Large repos come back truncated by GitHub."""
     async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:

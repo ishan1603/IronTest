@@ -49,6 +49,7 @@ export function useRun() {
           }),
           ...(event.agent === "defect" && { defects: event.result }),
           ...(event.agent === "fix" && { fixes: event.result }),
+          ...(event.agent === "compare" && { compare: event.result }),
         }));
         break;
       case "pipeline_complete":
@@ -73,7 +74,7 @@ export function useRun() {
   }, []);
 
   const start = useCallback(
-    async ({ chatId, requirement, mode }, { onComplete: done } = {}) => {
+    async ({ chatId, requirement, mode, compareRef }, { onComplete: done } = {}) => {
       onComplete.current = done || null;
       setError("");
       setNotice("");
@@ -84,7 +85,11 @@ export function useRun() {
       setStatusMessage("Starting…");
 
       try {
-        const { session_id } = await api.startRun(chatId, { requirement, mode });
+        const { session_id } = await api.startRun(chatId, {
+          requirement,
+          mode,
+          ...(compareRef ? { compare_ref: compareRef } : {}),
+        });
         closeStream.current = openRunStream(session_id, {
           onEvent: (event) => handleEvent(event, mode),
           onError: () => {

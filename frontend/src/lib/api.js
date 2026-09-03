@@ -70,6 +70,7 @@ export const api = {
   connectRepo: (fullName) => request("/api/repos", { method: "POST", body: { full_name: fullName } }),
   getRepo: (id) => request(`/api/repos/${id}`),
   rescanRepo: (id) => request(`/api/repos/${id}/rescan`, { method: "POST" }),
+  repoBranches: (id) => request(`/api/repos/${id}/branches`),
   disconnectRepo: (id) => request(`/api/repos/${id}`, { method: "DELETE" }),
 
   analytics: () => request("/api/analytics"),

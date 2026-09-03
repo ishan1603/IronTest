@@ -49,6 +49,7 @@ async def run_detail(
         "execution": run.execution_result,
         "defects": run.defects_result,
         "fixes": run.fixes_result or [],
+        "compare": run.compare_result,
         "passed": run.passed,
         "failed": run.failed,
         "errors": run.errors,

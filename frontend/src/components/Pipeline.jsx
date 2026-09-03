@@ -7,6 +7,7 @@ const BASE_STAGES = [
   { key: "execution", label: "Execution", hint: "Runs them in a sandbox" },
   { key: "defect", label: "Risk", hint: "Scores release confidence" },
 ];
+const COMPARE_STAGE = { key: "compare", label: "Compare", hint: "Runs the suite on the base branch" };
 const FIX_STAGE = { key: "fix", label: "Fixes", hint: "Drafts a change per failure" };
 
 /**
@@ -16,11 +17,13 @@ const FIX_STAGE = { key: "fix", label: "Fixes", hint: "Drafts a change per failu
  */
 export function Pipeline({ stages, message }) {
   // The fix stage only exists on repo runs that had failures.
-  const STAGES = stages.fix ? [...BASE_STAGES, FIX_STAGE] : BASE_STAGES;
+  let STAGES = BASE_STAGES;
+  if (stages.compare) STAGES = [...STAGES.slice(0, 3), COMPARE_STAGE, ...STAGES.slice(3)];
+  if (stages.fix) STAGES = [...STAGES, FIX_STAGE];
 
   return (
     <div className="hairline rounded-md p-4">
-      <ol className={clsx("grid gap-3", STAGES.length === 5 ? "sm:grid-cols-5" : "sm:grid-cols-4")} role="list">
+      <ol className={clsx("grid gap-3", {4:"sm:grid-cols-4",5:"sm:grid-cols-5",6:"sm:grid-cols-6"}[STAGES.length] || "sm:grid-cols-4")} role="list">
         {STAGES.map((stage, index) => {
           const state = stages[stage.key] || "pending";
           return (

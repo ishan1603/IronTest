@@ -34,6 +34,51 @@ logger = logging.getLogger(__name__)
 SESSION_LINGER_SECONDS = 30
 
 
+def _diff_runs(*, base_ref: str, head_ref: str, base, head) -> dict[str, Any]:
+    """Compare the same suite across two refs.
+
+    A test that passed on base and fails on head is a regression; the reverse
+    is a fix. Anything the base run could not measure is reported as such
+    rather than assumed.
+    """
+    def _by_id(outcome) -> dict[str, str]:
+        if outcome.status != "completed":
+            return {}
+        return {r.test_id: r.status for r in outcome.results}
+
+    base_map = _by_id(base)
+    head_map = _by_id(head)
+
+    regressions, fixed, still_failing, still_passing = [], [], [], []
+    for test_id, head_status in head_map.items():
+        base_status = base_map.get(test_id)
+        head_ok = head_status == "pass"
+        base_ok = base_status == "pass"
+        if base_status is None:
+            continue
+        if base_ok and not head_ok:
+            regressions.append({"test_id": test_id, "base": base_status, "head": head_status})
+        elif not base_ok and head_ok:
+            fixed.append({"test_id": test_id, "base": base_status, "head": head_status})
+        elif not base_ok and not head_ok:
+            still_failing.append(test_id)
+        else:
+            still_passing.append(test_id)
+
+    return {
+        "base_ref": base_ref,
+        "head_ref": head_ref,
+        "base_measured": base.status == "completed",
+        "base_error": "" if base.status == "completed" else (base.error_message or "base run produced no results"),
+        "regressions": regressions,
+        "fixed": fixed,
+        "still_failing": still_failing,
+        "still_passing": still_passing,
+        "verdict": "regressions_found" if regressions else ("clean" if base.status == "completed" else "base_unmeasured"),
+    }
+
+
+
 @dataclass
 class RunRequest:
     """Everything a pipeline run needs, resolved before it starts."""
@@ -52,6 +97,9 @@ class RunRequest:
     github_token: str = ""
     repo_full_name: str = ""
     repo_ref: str = ""
+    #: When set, run the same generated suite against this base ref too and
+    #: diff the outcomes -- the regression gate.
+    compare_ref: str = ""
 
     @property
     def is_repository_run(self) -> bool:
@@ -116,11 +164,11 @@ class Orchestrator:
             )
 
             if request.is_repository_run:
-                tests, execution, repo_context = await self._run_against_repository(
+                tests, execution, repo_context, comparison = await self._run_against_repository(
                     emit, request, story, learning
                 )
             else:
-                tests, execution, repo_context = await self._run_standalone(
+                tests, execution, repo_context, comparison = await self._run_standalone(
                     emit, request, story, learning
                 )
 
@@ -145,7 +193,9 @@ class Orchestrator:
                     {"event": "agent_complete", "agent": "fix", "result": [f.model_dump() for f in fixes]}
                 )
 
-            await asyncio.to_thread(self._complete_run, run_id, story, tests, execution, defects, fixes)
+            await asyncio.to_thread(
+                self._complete_run, run_id, story, tests, execution, defects, fixes, comparison
+            )
 
             if request.send_email and request.recipient_email:
                 await self._notify(emit, request, story, execution, defects, session_id)
@@ -168,7 +218,7 @@ class Orchestrator:
 
     async def _run_standalone(
         self, emit, request: RunRequest, story: StoryAnalysis, learning: dict[str, Any]
-    ) -> tuple[list[TestCase], TestExecutionSummary, dict[str, Any] | None]:
+    ) -> tuple[list[TestCase], TestExecutionSummary, dict[str, Any] | None, dict[str, Any] | None]:
         """No repository: run self-contained snippets on this host.
 
         Snippets here import nothing, so they validate the behavior described
@@ -191,11 +241,11 @@ class Orchestrator:
                 "result": execution.model_dump(),
             }
         )
-        return tests, execution, None
+        return tests, execution, None, None
 
     async def _run_against_repository(
         self, emit, request: RunRequest, story: StoryAnalysis, learning: dict[str, Any]
-    ) -> tuple[list[TestCase], TestExecutionSummary, dict[str, Any]]:
+    ) -> tuple[list[TestCase], TestExecutionSummary, dict[str, Any], dict[str, Any] | None]:
         """Generate tests that import the repository's code, then run them in a sandbox."""
         runner = select_runner()
         if runner is None:
@@ -297,7 +347,36 @@ class Orchestrator:
                 "logs": outcome.raw_output[-4000:],
             }
         )
-        return tests, execution, repo_context
+
+        if request.compare_ref and request.compare_ref != request.repo_ref:
+            await emit(
+                {
+                    "event": "agent_start",
+                    "agent": "compare",
+                    "message": f"Running the same suite against {request.compare_ref}...",
+                }
+            )
+            base = await runner.run(
+                RunnerRequest(
+                    repo_full_name=request.repo_full_name,
+                    ref=request.compare_ref,
+                    github_token=request.github_token,
+                    stack=stack,
+                    files=files,
+                    mode=request.mode,
+                )
+            )
+            comparison = _diff_runs(
+                base_ref=request.compare_ref,
+                head_ref=request.repo_ref,
+                base=base,
+                head=outcome,
+            )
+            await emit({"event": "agent_complete", "agent": "compare", "result": comparison})
+        else:
+            comparison = None
+
+        return tests, execution, repo_context, comparison
 
     # -- database work, all run off the event loop -------------------------
 
@@ -346,6 +425,7 @@ class Orchestrator:
         execution: TestExecutionSummary,
         defects: DefectAnalysis,
         fixes: list[FixSuggestion] | None = None,
+        comparison: dict[str, Any] | None = None,
     ) -> None:
         counts = {status: 0 for status in ("pass", "fail", "error", "skipped")}
         for result in execution.results:
@@ -362,6 +442,7 @@ class Orchestrator:
             run.execution_result = execution.model_dump()
             run.defects_result = defects.model_dump()
             run.fixes_result = [f.model_dump() for f in (fixes or [])]
+            run.compare_result = comparison
             run.total_tests = len(execution.results)
             run.passed = counts["pass"]
             run.failed = counts["fail"]

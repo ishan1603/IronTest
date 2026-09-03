@@ -33,6 +33,7 @@ def public_view(run: PipelineRun) -> dict[str, Any]:
         "execution": run.execution_result,
         "defects": run.defects_result,
         "fixes": run.fixes_result or [],
+        "compare": run.compare_result,
     }
 
 
