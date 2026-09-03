@@ -71,6 +71,9 @@ export const api = {
   rescanRepo: (id) => request(`/api/repos/${id}/rescan`, { method: "POST" }),
   disconnectRepo: (id) => request(`/api/repos/${id}`, { method: "DELETE" }),
 
+  analytics: () => request("/api/analytics"),
+  analyticsRuns: (limit = 100) => request(`/api/analytics/runs?limit=${limit}`),
+  analyticsRun: (runId) => request(`/api/analytics/runs/${runId}`),
   chats: () => request("/api/chats"),
   createChat: (repositoryId, title) =>
     request("/api/chats", { method: "POST", body: { repository_id: repositoryId, title } }),

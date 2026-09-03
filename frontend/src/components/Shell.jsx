@@ -68,7 +68,7 @@ export function Shell({ children, aside }) {
               Repositories
             </NavLink>
             <NavLink to="/runs" active={pathname.startsWith("/runs")}>
-              Runs
+              Analytics
             </NavLink>
           </nav>
 
@@ -113,7 +113,7 @@ export function Shell({ children, aside }) {
                 Repositories
               </NavLink>
               <NavLink to="/runs" active={pathname.startsWith("/runs")}>
-                Runs
+                Analytics
               </NavLink>
               {user && (
                 <button onClick={signOut} className="px-3 py-2 text-left text-sm text-muted">

@@ -6,7 +6,8 @@ import AuthCallback from "./pages/AuthCallback";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import RepoRun from "./pages/RepoRun";
-import Runs from "./pages/Runs";
+import Analytics from "./pages/Analytics";
+import RunDetail from "./pages/RunDetail";
 
 function RequireAuth({ children }) {
   const { status } = useAuth();
@@ -41,7 +42,15 @@ export default function App() {
             path="/runs"
             element={
               <RequireAuth>
-                <Runs />
+                <Analytics />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/runs/:runId"
+            element={
+              <RequireAuth>
+                <RunDetail />
               </RequireAuth>
             }
           />

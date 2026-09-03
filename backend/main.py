@@ -30,7 +30,7 @@ from jira_client import fetch_jira_issue
 from llm import LLMError, configured_providers, provider_status
 from runners import runner_status
 from models import AnalyzeRequest, AzureDevOpsIngestRequest, JiraIngestRequest, StoryHistoryRequest
-from routers import auth_routes, chat_routes, repo_routes
+from routers import analytics_routes, auth_routes, chat_routes, repo_routes
 from security import read_session_token
 
 logging.basicConfig(level=logging.INFO)
@@ -71,6 +71,7 @@ orchestrator = Orchestrator(session_manager=session_manager)
 app.include_router(auth_routes.router)
 app.include_router(repo_routes.router)
 app.include_router(chat_routes.router)
+app.include_router(analytics_routes.router)
 
 
 @app.exception_handler(GitHubError)
