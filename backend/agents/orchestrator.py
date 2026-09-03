@@ -335,9 +335,23 @@ class Orchestrator:
         )
 
         if outcome.status != "completed":
-            # No parseable results: surface the failure with its logs rather
-            # than presenting an outcome that was never measured.
-            raise RuntimeError(outcome.error_message or "The sandboxed test run produced no results.")
+            # No parseable results: surface the failure *with* the runner's own
+            # output, so the error is actionable rather than just "no report".
+            await emit(
+                {
+                    "event": "agent_complete",
+                    "agent": "execution",
+                    "backend": outcome.backend,
+                    "sandboxed": sandboxed,
+                    "scope": "repository",
+                    "status": "failed",
+                    "message": outcome.error_message,
+                    "logs": outcome.raw_output[-6000:],
+                }
+            )
+            tail = "\n".join(outcome.raw_output.strip().splitlines()[-25:])
+            detail = outcome.error_message or "The test run produced no results."
+            raise RuntimeError(f"{detail}\n\n--- runner output (tail) ---\n{tail}" if tail else detail)
 
         execution = TestExecutionSummary(
             results=outcome.results, duration_seconds=outcome.duration_seconds

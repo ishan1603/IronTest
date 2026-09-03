@@ -170,18 +170,48 @@ class LocalRepoRunner(TestRunner):
             log_parts.append("--- install project ---\n" + dep_out[-2000:])
 
         report = os.path.join(clone_dir, "results.xml")
-        _, test_out = await _run(
-            [py, "-m", "pytest", "-q", "--tb=short", f"--junitxml={report}"],
+
+        # Target the generated files explicitly and neutralise the repo's own
+        # pytest config: `-o addopts=` drops coverage/other plugin flags that
+        # would abort the run, and `-p no:cacheprovider` avoids a stale cache.
+        targets = [f.path for f in request.files] or ["."]
+        code, test_out = await _run(
+            [
+                py, "-m", "pytest", "-q", "--tb=short", "--no-header",
+                "-o", "addopts=", "-p", "no:cacheprovider",
+                f"--junitxml={report}",
+                *targets,
+            ],
             cwd=clone_dir,
             timeout=max(60, budget),
-            env={"COLUMNS": "200"},
+            env={"COLUMNS": "200", "PYTHONDONTWRITEBYTECODE": "1"},
         )
-        log_parts.append("--- pytest ---\n" + test_out)
+        log_parts.append(f"--- pytest (exit {code}) ---\n" + test_out)
 
         results = []
         if os.path.exists(report):
             with open(report, encoding="utf-8", errors="replace") as handle:
                 results = parse_junit(handle.read())
+
+        # Attach a precise reason when nothing came back, so the UI is not just
+        # "no report". pytest exit codes: 2 usage, 3 internal, 4 usage, 5 no tests.
+        if not results:
+            if code == 5:
+                log_parts.append(
+                    "\nIRONTEST_NOTE: pytest collected 0 tests from the generated file. "
+                    "The generator may have produced no runnable cases for this repository."
+                )
+            elif code in (2, 3, 4):
+                log_parts.append(
+                    "\nIRONTEST_NOTE: pytest could not start (a plugin the repo declares is "
+                    "missing, or an option it sets is invalid). See the output above."
+                )
+            elif not os.path.exists(report):
+                log_parts.append(
+                    "\nIRONTEST_NOTE: pytest ran but wrote no results.xml. The generated tests "
+                    "likely failed to import the repository's modules (missing dependency)."
+                )
+
         return "\n".join(log_parts), results
 
     async def _run_node(self, clone_dir: str, request: RunnerRequest, budget: int):
