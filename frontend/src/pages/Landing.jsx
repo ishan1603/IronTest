@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { Button, Label, Spinner } from "../components/ui";
+import { HeroAnimation } from "../components/HeroAnimation";
 
 const STEPS = [
   {
@@ -40,23 +41,35 @@ export default function Landing() {
       </header>
 
       <main className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
-        <section className="border-b border-line/15 py-16 sm:py-24">
-          <Label>Autonomous QA</Label>
-          <h1 className="mt-4 max-w-[16ch] text-3xl font-light leading-[1.05] tracking-tight sm:text-[3.5rem]">
-            Tests that <span className="font-semibold">actually run</span> against your code.
-          </h1>
-          <p className="mt-6 max-w-prose text-base text-muted">
-            Point IronTest at a repository and describe what you are building. It reads your modules, writes
-            tests that import them for real, runs those tests in a sandbox, and tells you what broke — with
-            the pytest output to prove it.
-          </p>
+        <section className="border-b border-line/15 py-14 sm:py-20">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+            <div>
+              <div className="animate-fade-up">
+                <Label>Autonomous QA</Label>
+              </div>
+              <h1 className="mt-4 max-w-[16ch] animate-fade-up text-3xl font-light leading-[1.05] tracking-tight [animation-delay:60ms] sm:text-[3.5rem]">
+                Tests that <span className="font-semibold">actually run</span> against your code.
+              </h1>
+              <p className="mt-6 max-w-prose animate-fade-up text-base text-muted [animation-delay:120ms]">
+                Point IronTest at a repository and describe what you are building. It reads your modules,
+                writes tests that import them for real, runs those tests in a sandbox, and tells you what
+                broke — with the pytest output to prove it.
+              </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button as="a" href={api.loginUrl()} size="lg" className="w-full sm:w-auto">
-              <GitHubMark />
-              Continue with GitHub
-            </Button>
-            <span className="text-xs text-muted">Read-only access. Nothing is ever written to your repository.</span>
+              <div className="mt-8 flex flex-col gap-3 animate-fade-up [animation-delay:180ms] sm:flex-row sm:items-center">
+                <Button as="a" href={api.loginUrl()} size="lg" className="w-full sm:w-auto">
+                  <GitHubMark />
+                  Continue with GitHub
+                </Button>
+                <span className="text-xs text-muted">
+                  Read-only access. Nothing is ever written to your repository.
+                </span>
+              </div>
+            </div>
+
+            <div className="animate-fade-up [animation-delay:240ms]">
+              <HeroAnimation />
+            </div>
           </div>
         </section>
 
