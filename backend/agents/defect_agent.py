@@ -280,7 +280,7 @@ def _compute_score(
   final_score = round(
     _clamp(
       weighted_base + trend_adjustment - module_risk_penalty - execution_penalty,
-      50.0,
+      5.0,
       100.0,
     )
   )
@@ -490,6 +490,17 @@ async def analyze_defects(
       if _recommendation_rank(deterministic_recommendation) >= _recommendation_rank(llm_recommendation)
       else llm_recommendation
     )
+
+    # Keep the number and the verdict in the same band. A 91/100 next to a
+    # NO-GO reads as a bug; the verdict is the stricter signal, so the score
+    # follows it rather than the other way around.
+    if recommendation == "NO-GO":
+      final_score = min(final_score, 40)
+    elif recommendation == "CONDITIONAL GO":
+      final_score = max(45, min(final_score, 74))
+    else:
+      final_score = max(final_score, 75)
+    score_breakdown.final_score = final_score
 
     critical_ids = data.get("critical_test_ids", [])
     if not isinstance(critical_ids, list) or not critical_ids:
