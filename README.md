@@ -142,7 +142,7 @@ deployed app for free. See [docs/deployment.md](docs/deployment.md).
 ## Tests
 
 ```bash
-cd backend && pytest -q      # 101 tests
+cd backend && pytest -q      # 158 tests
 cd frontend && npm run build
 ```
 
