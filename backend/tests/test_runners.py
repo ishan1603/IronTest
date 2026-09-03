@@ -11,6 +11,7 @@ from runners import runner_status, select_runner
 from runners.actions_runner import GitHubActionsRunner
 from runners.base import failure_result, parse_junit
 from runners.docker_runner import DockerRunner
+from runners.local_repo_runner import LocalRepoRunner
 
 PYTEST_REPORT = """<?xml version="1.0" encoding="utf-8"?>
 <testsuites>
@@ -118,8 +119,10 @@ def test_parses_junit_emitted_by_a_real_pytest_run(tmp_path):
 
 @pytest.fixture(autouse=True)
 def clean_runner_env(monkeypatch):
-    for key in ("TEST_RUNNER", "ACTIONS_RUNNER_REPO", "ACTIONS_DISPATCH_TOKEN"):
+    for key in ("TEST_RUNNER", "ACTIONS_RUNNER_REPO", "ACTIONS_DISPATCH_TOKEN", "ALLOW_HOST_TEST_EXECUTION"):
         monkeypatch.delenv(key, raising=False)
+    # Most selection tests want to reason about the sandboxed backends alone.
+    monkeypatch.setattr(LocalRepoRunner, "is_available", lambda self: False)
 
 
 def test_actions_runner_needs_both_repo_and_token(monkeypatch):
@@ -145,8 +148,7 @@ def test_auto_falls_back_to_docker(monkeypatch):
     assert select_runner().name == "docker"
 
 
-def test_auto_returns_none_when_no_sandbox_exists(monkeypatch):
-    """No sandbox must mean no repository run, not a silent local execution."""
+def test_auto_returns_none_when_nothing_is_available(monkeypatch):
     monkeypatch.setattr(DockerRunner, "is_available", lambda self: False)
     assert select_runner() is None
 
@@ -157,10 +159,45 @@ def test_explicit_choice_that_is_unavailable_returns_none(monkeypatch):
     assert select_runner() is None
 
 
-def test_local_is_never_selected_automatically(monkeypatch):
+def test_auto_falls_back_to_host_execution_only_after_the_sandboxes(monkeypatch):
+    """local_host is the last resort, never chosen over Docker or Actions."""
+    monkeypatch.setattr(DockerRunner, "is_available", lambda self: True)
+    monkeypatch.setattr(LocalRepoRunner, "is_available", lambda self: True)
+    assert select_runner().name == "docker"
+
     monkeypatch.setattr(DockerRunner, "is_available", lambda self: False)
-    selected = select_runner()
-    assert selected is None or selected.name != "local"
+    assert select_runner().name == "local_host"
+
+
+def test_host_execution_is_gated_by_environment(monkeypatch):
+    # This test exercises the real is_available; drop the autouse stub.
+    monkeypatch.undo()
+    monkeypatch.setattr("runners.local_repo_runner.shutil.which", lambda _name: "/usr/bin/git")
+    from config import get_settings
+
+    get_settings.cache_clear()
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    monkeypatch.setenv("SECRET_KEY", "x")
+    get_settings.cache_clear()
+    assert LocalRepoRunner().is_available() is False
+
+    monkeypatch.setenv("ALLOW_HOST_TEST_EXECUTION", "true")
+    assert LocalRepoRunner().is_available() is True
+
+    monkeypatch.setenv("ENVIRONMENT", "development")
+    monkeypatch.delenv("ALLOW_HOST_TEST_EXECUTION", raising=False)
+    get_settings.cache_clear()
+    assert LocalRepoRunner().is_available() is True
+    get_settings.cache_clear()
+
+
+def test_status_flags_whether_the_selected_runner_is_sandboxed(monkeypatch):
+    monkeypatch.setattr(DockerRunner, "is_available", lambda self: True)
+    assert runner_status()["sandboxed"] is True
+
+    monkeypatch.setattr(DockerRunner, "is_available", lambda self: False)
+    monkeypatch.setattr(LocalRepoRunner, "is_available", lambda self: True)
+    assert runner_status()["sandboxed"] is False
 
 
 def test_status_reports_availability_without_secrets(monkeypatch):

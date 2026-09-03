@@ -24,7 +24,7 @@ from db import PipelineRun, Repository, session_scope, utcnow
 from email_notifier import send_execution_summary_email
 from history import build_story_identity, global_stats, learning_context, module_stats
 from models import DefectAnalysis, PipelineDashboard, StoryAnalysis, TestCase, TestExecutionSummary
-from runners import RunnerRequest, RunnerUnavailable, select_runner
+from runners import SANDBOXED_BACKENDS, RunnerRequest, RunnerUnavailable, select_runner
 
 logger = logging.getLogger(__name__)
 
@@ -185,9 +185,23 @@ class Orchestrator:
         runner = select_runner()
         if runner is None:
             raise RunnerUnavailable(
-                "No test sandbox is available. Install Docker for local runs, or set "
-                "ACTIONS_RUNNER_REPO and ACTIONS_DISPATCH_TOKEN to run on GitHub Actions. "
-                "Tests against a repository are never executed on the API host."
+                "No test runner is available. For local development, run the API with "
+                "ENVIRONMENT=development (the default) and make sure git is on PATH -- tests "
+                "then run in a subprocess on this machine. For a sandboxed run, install Docker, "
+                "or set ACTIONS_RUNNER_REPO and ACTIONS_DISPATCH_TOKEN to use GitHub Actions."
+            )
+
+        sandboxed = runner.name in SANDBOXED_BACKENDS
+        if not sandboxed:
+            await emit(
+                {
+                    "event": "runner_notice",
+                    "backend": runner.name,
+                    "message": (
+                        "Running on this machine rather than in a sandbox. Fine for local "
+                        "development; a deployed install uses Docker or GitHub Actions."
+                    ),
+                }
             )
 
         await emit(
@@ -261,6 +275,7 @@ class Orchestrator:
                 "event": "agent_complete",
                 "agent": "execution",
                 "backend": outcome.backend,
+                "sandboxed": sandboxed,
                 "scope": "repository",
                 "mode": request.mode,
                 "result": execution.model_dump(),

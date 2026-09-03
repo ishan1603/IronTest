@@ -252,7 +252,7 @@ def test_repository_run_without_a_sandbox_fails_loudly(user, repository, monkeyp
     )
 
     error = next(e for e in events if e["event"] == "error")
-    assert "No test sandbox is available" in error["message"]
+    assert "No test runner is available" in error["message"]
 
     # No results were fabricated to fill the gap.
     assert not any(e.get("agent") == "execution" and e["event"] == "agent_complete" for e in events)
