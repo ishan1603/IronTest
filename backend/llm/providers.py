@@ -54,11 +54,14 @@ REGISTRY: tuple[Provider, ...] = (
         api_key_env="GROQ_API_KEY",
         models_env="GROQ_MODELS",
         default_models=(
-            "llama-3.3-70b-versatile",
-            "openai/gpt-oss-120b",
+            # Smallest first: the free tier caps tokens-per-minute low, and a
+            # large request is rejected outright rather than queued.
+            "openai/gpt-oss-20b",
             "llama-3.1-8b-instant",
+            "openai/gpt-oss-120b",
+            "llama-3.3-70b-versatile",
         ),
-        notes="Fast, generous free tier. Best default.",
+        notes="Fast, but the free tier's ~8k tokens/minute is tight for repo context. Pair it with Gemini.",
     ),
     Provider(
         name="gemini",
@@ -66,10 +69,11 @@ REGISTRY: tuple[Provider, ...] = (
         api_key_env="GEMINI_API_KEY",
         models_env="GEMINI_MODELS",
         default_models=(
-            "gemini-2.0-flash",
             "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-2.5-flash-lite",
         ),
-        notes="Largest free daily quota and context window.",
+        notes="Recommended primary: 1M-token context and a generous free tier handle repo context comfortably.",
     ),
     Provider(
         name="cerebras",

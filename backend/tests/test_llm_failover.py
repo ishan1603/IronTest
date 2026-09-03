@@ -168,6 +168,37 @@ def test_exhausting_every_provider_raises_with_diagnostics(monkeypatch, calls):
     assert exc.value.attempts
 
 
+def test_oversized_request_shrinks_and_retries_same_model(monkeypatch, calls):
+    """A 413 is not a rate limit: halve the prompt and try the same model again."""
+    recorded, queue = calls
+    monkeypatch.setenv("GROQ_API_KEY", "k")
+    monkeypatch.setenv("GROQ_MODELS", "only")
+
+    queue.append(FakeResponse(status_code=413, payload={"error": {"message": "Request too large for model"}}))
+    queue.append(completion('{"ok": true}'))
+
+    big = "x" * 60_000
+    assert generate_json(system_prompt="s", user_prompt=big) == {"ok": True}
+
+    # Two calls, same model, second prompt materially shorter than the first.
+    assert len(recorded) == 2
+    first_len = len(recorded[0]["body"]["messages"][1]["content"])
+    second_len = len(recorded[1]["body"]["messages"][1]["content"])
+    assert second_len < first_len
+
+
+def test_prompt_over_the_hard_cap_is_clipped_before_the_first_send(monkeypatch, calls):
+    recorded, queue = calls
+    monkeypatch.setenv("GROQ_API_KEY", "k")
+    queue.append(completion('{"ok": true}'))
+
+    generate_json(system_prompt="s", user_prompt="y" * 200_000)
+
+    sent = recorded[0]["body"]["messages"][1]["content"]
+    assert len(sent) < 60_000
+    assert "context trimmed" in sent
+
+
 def test_openrouter_receives_attribution_headers(monkeypatch):
     captured = {}
 

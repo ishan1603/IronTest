@@ -27,12 +27,50 @@ TRANSIENT_STATUSES = {408, 409, 425, 429, 500, 502, 503, 504}
 TRANSIENT_RETRIES = 2
 MAX_BACKOFF_SECONDS = 8.0
 
+# Safety net: no single request should carry more than this many characters of
+# user prompt (~12k tokens). Small free tiers reject anything much larger.
+MAX_PROMPT_CHARS = 48_000
+
+# Phrases a provider uses to say the request itself is too big -- distinct from
+# a transient rate limit, and worth one shrink-and-retry on the same model.
+_OVERSIZE_MARKERS = (
+    "too large",
+    "tokens per minute",
+    "context length",
+    "maximum context",
+    "reduce the length",
+    "request too large",
+)
+
 # Prompt nudges applied on reparse attempts, in escalating strictness.
 REPAIR_SUFFIXES = (
     "",
     "\n\nIMPORTANT: Return ONLY a valid JSON object. No markdown fences, no commentary, no trailing commas.",
     "\n\nIMPORTANT: Your previous output could not be parsed. Return a shorter, compact JSON object and nothing else.",
 )
+
+
+def _clip_prompt(prompt: str, limit: int) -> str:
+    """Keep the head and tail of an over-budget prompt; drop the middle.
+
+    The head carries the task and the schema; the tail carries the most
+    recently appended context. The middle is the most expendable.
+    """
+    if len(prompt) <= limit:
+        return prompt
+    head = int(limit * 0.62)
+    tail = limit - head - 40
+    marker = "\n\n... [context trimmed to fit the model] ...\n\n"
+    return prompt[:head] + marker + prompt[-tail:]
+
+
+def _looks_oversized(response: requests.Response) -> bool:
+    if response.status_code == 413:
+        return True
+    if response.status_code not in {400, 429}:
+        return False
+    body = _error_summary(response).lower()
+    return any(marker in body for marker in _OVERSIZE_MARKERS)
 
 
 class LLMError(RuntimeError):
@@ -167,13 +205,15 @@ def _try_model(
     attempts: list[str],
 ) -> dict[str, Any] | None:
     url = provider.base_url.rstrip("/") + "/chat/completions"
+    body_prompt = user_prompt.strip()
+    shrunk_once = False
 
     for suffix in REPAIR_SUFFIXES:
         payload = _payload(
             provider,
             model,
             system_prompt,
-            f"{user_prompt.strip()}{suffix}",
+            f"{body_prompt}{suffix}",
             max_output_tokens,
             temperature,
         )
@@ -183,6 +223,15 @@ def _try_model(
 
         if not response.ok:
             attempts.append(f"{provider.name}/{model}: {response.status_code} {_error_summary(response)}")
+
+            # The request itself is too big for this model. Halve the prompt
+            # and try this model once more before failing over.
+            if _looks_oversized(response) and not shrunk_once:
+                shrunk_once = True
+                body_prompt = _clip_prompt(body_prompt, max(4_000, len(body_prompt) // 2))
+                logger.info("%s/%s rejected an oversized request; retrying with a shorter prompt", provider.name, model)
+                continue
+
             # A rejected response_format is a capability problem, not a repair
             # problem, so retry once without it before giving up on this model.
             if response.status_code == 400 and payload.get("response_format"):
@@ -233,6 +282,12 @@ def generate_json(
             "No LLM provider is configured. Set at least one of: "
             "GROQ_API_KEY, GEMINI_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY."
         )
+
+    if len(user_prompt) > MAX_PROMPT_CHARS:
+        logger.warning(
+            "Prompt is %d chars; clipping to %d before sending.", len(user_prompt), MAX_PROMPT_CHARS
+        )
+        user_prompt = _clip_prompt(user_prompt, MAX_PROMPT_CHARS)
 
     attempts: list[str] = []
     for provider in providers:

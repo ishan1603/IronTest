@@ -26,8 +26,8 @@ from models import StoryAnalysis, TestCase
 
 logger = logging.getLogger(__name__)
 
-MAX_SYMBOLS_PER_FILE = 14
-MAX_CONTEXT_FILES = 10
+MAX_SYMBOLS_PER_FILE = 8
+MAX_CONTEXT_FILES = 6
 
 EXISTING_CODE_GUIDANCE = """
 This behavior is ALREADY IMPLEMENTED in the repository. Write tests that
@@ -89,8 +89,9 @@ def _summarize_context(repo_context: dict[str, Any]) -> dict[str, Any]:
                         "kind": s.get("kind"),
                         "name": s.get("name"),
                         "signature": s.get("signature"),
-                        "methods": s.get("methods", [])[:8],
-                        "doc": s.get("doc", ""),
+                        # methods/docs dropped: name + signature is enough to
+                        # import and call, and small free tiers reject the bulk.
+                        **({"methods": s.get("methods", [])[:6]} if s.get("methods") else {}),
                     }
                     for s in symbols
                 ],
@@ -195,7 +196,7 @@ async def generate_repo_tests(
         data = generate_json(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=prompt,
-            max_output_tokens=3500,
+            max_output_tokens=2500,
             temperature=0.2,
         )
 
