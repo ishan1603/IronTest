@@ -167,6 +167,7 @@ class PipelineRun(Base, TimestampMixin):
     tests_result: Mapped[list[Any] | None] = mapped_column(JSON)
     execution_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     defects_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    fixes_result: Mapped[list[Any] | None] = mapped_column(JSON)
 
     total_tests: Mapped[int] = mapped_column(Integer, default=0)
     passed: Mapped[int] = mapped_column(Integer, default=0)

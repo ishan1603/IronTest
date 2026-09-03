@@ -13,6 +13,7 @@ import pytest
 
 import agents.defect_agent as defect_agent
 import agents.story_agent as story_agent
+import agents.fix_agent as fix_agent
 import agents.test_agent as test_agent
 from agents.orchestrator import Orchestrator, RunRequest, SessionManager
 from db import PipelineRun, Repository, User, session_scope
@@ -81,6 +82,18 @@ TESTS_RESPONSE = {
     ]
 }
 
+FIXES_RESPONSE = {
+    "fixes": [
+        {
+            "test_id": "TC-003",
+            "target_file": "app/pricing.py",
+            "explanation": "The discount helper divides before applying the cap.",
+            "suggested_change": "- return total * pct\n+ return round(total * pct, 2)",
+            "confidence": "medium",
+        }
+    ]
+}
+
 DEFECTS_RESPONSE = {
     "module_risks": [],
     "overall_confidence_score": 72,
@@ -99,11 +112,14 @@ def stub_model(monkeypatch):
             return STORY_RESPONSE
         if "Test Generation Agent" in system_prompt:
             return TESTS_RESPONSE
+        if "Fix Suggestion Agent" in system_prompt:
+            return FIXES_RESPONSE
         return DEFECTS_RESPONSE
 
     monkeypatch.setattr(story_agent, "generate_json", fake)
     monkeypatch.setattr(test_agent, "generate_json", fake)
     monkeypatch.setattr(defect_agent, "generate_json", fake)
+    monkeypatch.setattr(fix_agent, "generate_json", fake)
 
 
 # Each test gets a fresh account: runs accumulate history, and a later run of
@@ -210,11 +226,69 @@ def test_completed_run_is_persisted_with_real_counts(user):
         assert len(run.tests_result) == 3
 
 
+class _StubRunner:
+    name = "docker"  # pretend to be sandboxed
+
+    async def run(self, request):
+        from models import TestResult
+        from runners.base import RunnerResult
+
+        return RunnerResult(
+            backend="docker",
+            status="completed",
+            results=[
+                TestResult(test_id="TC-001", status="pass"),
+                TestResult(test_id="TC-002", status="pass"),
+                TestResult(test_id="TC-003", status="fail", error_message="assert 90 == 50"),
+            ],
+            duration_seconds=1.0,
+        )
+
+
+def test_fix_suggestions_are_produced_for_failures_on_a_repo_run(user, repository, monkeypatch):
+    import agents.orchestrator as orch
+
+    monkeypatch.setattr(orch, "select_runner", lambda: _StubRunner())
+
+    async def fake_context(*_a, **_k):
+        return {
+            "repository": "acme/app",
+            "stack": {"language": "python", "test_framework": "pytest"},
+            "files": [{"path": "app/pricing.py", "symbols": [], "excerpt": "def apply(total, pct): return total * pct"}],
+            "existing_tests": [],
+        }
+
+    monkeypatch.setattr(orch.repo_analysis, "build_code_context", fake_context)
+    monkeypatch.setattr(
+        orch, "generate_repo_tests",
+        lambda *a, **k: __import__("asyncio").sleep(0, result=([__import__("models").TestCase(
+            id="TC-003", module="Pricing", description="fails", automated=True,
+            automation_snippet=["def test_x():", "    assert 1 == 2"])], [])),
+    )
+
+    events = run_pipeline(
+        user,
+        repository_id=repository,
+        repo_full_name="acme/app",
+        repo_ref="main",
+        github_token="gho_test",
+    )
+
+    err = next((e for e in events if e["event"] == "error"), None)
+    assert err is None, err
+
+    fix_complete = next(
+        (e for e in events if e["event"] == "agent_complete" and e["agent"] == "fix"), None
+    )
+    assert fix_complete is not None
+    assert fix_complete["result"][0]["test_id"] == "TC-003"
+
+
 def test_dashboard_payload_is_complete(user):
     events = run_pipeline(user)
     dashboard = events[-1]["dashboard"]
 
-    assert set(dashboard) == {"story", "tests", "execution", "defects"}
+    assert set(dashboard) == {"story", "tests", "execution", "defects", "fixes"}
     assert dashboard["defects"]["deployment_recommendation"] in {"GO", "CONDITIONAL GO", "NO-GO"}
 
 

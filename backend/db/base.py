@@ -48,13 +48,42 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 
 def init_db() -> None:
-    """Create any missing tables.
+    """Create missing tables, then add any missing columns.
 
-    Sufficient while the schema only grows. A destructive change needs a real
-    migration tool; this will not alter an existing column.
+    Not a real migration tool -- it only ever ADDs. It will not alter or drop a
+    column, and a destructive change still needs Alembic. But additive schema
+    growth (a new nullable column) is the common case here, and this saves
+    every existing local database from being deleted on each release.
     """
     Base.metadata.create_all(bind=engine)
+    _add_missing_columns()
     logger.info("Database ready at %s", _settings.database_url.split("@")[-1])
+
+
+def _add_missing_columns() -> None:
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(engine)
+    existing_tables = set(inspector.get_table_names())
+
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing_tables:
+                continue  # create_all just made it; it is current
+            have = {col["name"] for col in inspector.get_columns(table.name)}
+            for column in table.columns:
+                if column.name in have:
+                    continue
+                if not (column.nullable or column.default is not None or column.server_default is not None):
+                    logger.warning(
+                        "Skipping non-nullable new column %s.%s; add it with a real migration.",
+                        table.name,
+                        column.name,
+                    )
+                    continue
+                ddl = str(column.type.compile(dialect=engine.dialect))
+                conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN "{column.name}" {ddl}'))
+                logger.info("Added column %s.%s", table.name, column.name)
 
 
 @contextmanager

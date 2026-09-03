@@ -1,12 +1,13 @@
 import clsx from "clsx";
 import { Spinner } from "./ui";
 
-const STAGES = [
+const BASE_STAGES = [
   { key: "story", label: "Story", hint: "Reads the requirement" },
   { key: "test", label: "Tests", hint: "Writes cases against your code" },
   { key: "execution", label: "Execution", hint: "Runs them in a sandbox" },
   { key: "defect", label: "Risk", hint: "Scores release confidence" },
 ];
+const FIX_STAGE = { key: "fix", label: "Fixes", hint: "Drafts a change per failure" };
 
 /**
  * Live view of the four agents.
@@ -14,9 +15,12 @@ const STAGES = [
  * `stages` maps an agent key to "pending" | "running" | "done" | "failed".
  */
 export function Pipeline({ stages, message }) {
+  // The fix stage only exists on repo runs that had failures.
+  const STAGES = stages.fix ? [...BASE_STAGES, FIX_STAGE] : BASE_STAGES;
+
   return (
     <div className="hairline rounded-md p-4">
-      <ol className="grid gap-3 sm:grid-cols-4" role="list">
+      <ol className={clsx("grid gap-3", STAGES.length === 5 ? "sm:grid-cols-5" : "sm:grid-cols-4")} role="list">
         {STAGES.map((stage, index) => {
           const state = stages[stage.key] || "pending";
           return (

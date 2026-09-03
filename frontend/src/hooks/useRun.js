@@ -48,6 +48,7 @@ export function useRun() {
             sandboxed: event.sandboxed,
           }),
           ...(event.agent === "defect" && { defects: event.result }),
+          ...(event.agent === "fix" && { fixes: event.result }),
         }));
         break;
       case "pipeline_complete":

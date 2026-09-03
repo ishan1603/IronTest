@@ -106,6 +106,7 @@ def _serialize_run(run: PipelineRun) -> dict:
         "tests": run.tests_result,
         "execution": run.execution_result,
         "defects": run.defects_result,
+        "fixes": run.fixes_result or [],
     }
 
 

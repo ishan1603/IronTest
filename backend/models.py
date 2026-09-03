@@ -141,8 +141,20 @@ class DefectAnalysis(BaseModel):
     historical_comparison: HistoricalComparison | None = None
 
 
+class FixSuggestion(BaseModel):
+    test_id: str = ""
+    target_file: str = ""
+    #: One or two sentences: why the test fails and what the change does.
+    explanation: str = ""
+    #: A unified-diff-style snippet, or a focused before/after. Advisory only;
+    #: nothing is applied automatically.
+    suggested_change: str = ""
+    confidence: Literal["low", "medium", "high"] = "medium"
+
+
 class PipelineDashboard(BaseModel):
     story: StoryAnalysis
     tests: List[TestCase]
     execution: TestExecutionSummary
     defects: DefectAnalysis
+    fixes: List[FixSuggestion] = Field(default_factory=list)

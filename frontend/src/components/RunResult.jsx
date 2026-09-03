@@ -14,6 +14,7 @@ export function RunResult({ run }) {
   const defects = run.defects || {};
   const story = run.story || {};
   const tests = run.tests || [];
+  const fixes = run.fixes || [];
   const results = execution.results || [];
   const ranOnHost = run.sandboxed === false || run.execution?.backend === "local_host";
 
@@ -86,6 +87,8 @@ export function RunResult({ run }) {
 
       <TestTable tests={tests} results={results} />
 
+      {fixes.length > 0 && <SuggestedFixes fixes={fixes} />}
+
       {Array.isArray(defects.module_risks) && defects.module_risks.length > 0 && (
         <ModuleRisks risks={defects.module_risks} />
       )}
@@ -104,6 +107,43 @@ function SpecificationNotice({ counts }) {
         they pass.
       </p>
     </div>
+  );
+}
+
+function SuggestedFixes({ fixes }) {
+  return (
+    <Card className="overflow-hidden p-0">
+      <div className="flex items-center justify-between border-b border-line/12 px-5 py-3">
+        <Label>Suggested fixes</Label>
+        <span className="font-mono text-xs text-muted">{fixes.length} advisory</span>
+      </div>
+      <ul className="divide-y divide-line/12">
+        {fixes.map((fix, index) => (
+          <li key={index} className="px-5 py-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-xs text-muted">{fix.test_id}</span>
+              {fix.target_file && (
+                <span className="font-mono text-xs">{fix.target_file}</span>
+              )}
+              <Tag
+                tone={fix.confidence === "high" ? "success" : fix.confidence === "low" ? "warning" : "default"}
+              >
+                {fix.confidence} confidence
+              </Tag>
+            </div>
+            {fix.explanation && <p className="mt-2 text-sm">{fix.explanation}</p>}
+            {fix.suggested_change && (
+              <pre className="scroll-x mt-3 rounded-sm border border-line/12 p-3 font-mono text-xs leading-relaxed">
+                {fix.suggested_change}
+              </pre>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p className="border-t border-line/12 px-5 py-2 text-xs text-muted">
+        Advisory only. Nothing is applied to your repository.
+      </p>
+    </Card>
   );
 }
 

@@ -16,6 +16,7 @@ from typing import Any
 import repo_analysis
 from agents.defect_agent import analyze_defects
 from agents.execution_agent import execute_tests
+from agents.fix_agent import suggest_fixes
 from agents.repo_test_agent import generate_repo_tests
 from agents.story_agent import analyze_story
 from agents.suite_builder import build_suite
@@ -23,7 +24,7 @@ from agents.test_agent import generate_tests
 from db import PipelineRun, Repository, session_scope, utcnow
 from email_notifier import send_execution_summary_email
 from history import build_story_identity, global_stats, learning_context, module_stats
-from models import DefectAnalysis, PipelineDashboard, StoryAnalysis, TestCase, TestExecutionSummary
+from models import DefectAnalysis, FixSuggestion, PipelineDashboard, StoryAnalysis, TestCase, TestExecutionSummary
 from runners import SANDBOXED_BACKENDS, RunnerRequest, RunnerUnavailable, select_runner
 
 logger = logging.getLogger(__name__)
@@ -115,9 +116,13 @@ class Orchestrator:
             )
 
             if request.is_repository_run:
-                tests, execution = await self._run_against_repository(emit, request, story, learning)
+                tests, execution, repo_context = await self._run_against_repository(
+                    emit, request, story, learning
+                )
             else:
-                tests, execution = await self._run_standalone(emit, request, story, learning)
+                tests, execution, repo_context = await self._run_standalone(
+                    emit, request, story, learning
+                )
 
             await emit({"event": "agent_start", "agent": "defect", "message": "Assessing release risk..."})
             module_history, overall = await asyncio.to_thread(
@@ -132,12 +137,22 @@ class Orchestrator:
             )
             await emit({"event": "agent_complete", "agent": "defect", "result": defects.model_dump()})
 
-            await asyncio.to_thread(self._complete_run, run_id, story, tests, execution, defects)
+            fixes: list[FixSuggestion] = []
+            if any(r.status in {"fail", "error"} for r in execution.results) and repo_context:
+                await emit({"event": "agent_start", "agent": "fix", "message": "Drafting fix suggestions..."})
+                fixes = await suggest_fixes(story, tests, execution, repo_context)
+                await emit(
+                    {"event": "agent_complete", "agent": "fix", "result": [f.model_dump() for f in fixes]}
+                )
+
+            await asyncio.to_thread(self._complete_run, run_id, story, tests, execution, defects, fixes)
 
             if request.send_email and request.recipient_email:
                 await self._notify(emit, request, story, execution, defects, session_id)
 
-            dashboard = PipelineDashboard(story=story, tests=tests, execution=execution, defects=defects)
+            dashboard = PipelineDashboard(
+                story=story, tests=tests, execution=execution, defects=defects, fixes=fixes
+            )
             await emit({"event": "pipeline_complete", "run_id": run_id, "dashboard": dashboard.model_dump()})
 
         except Exception as exc:  # noqa: BLE001
@@ -153,7 +168,7 @@ class Orchestrator:
 
     async def _run_standalone(
         self, emit, request: RunRequest, story: StoryAnalysis, learning: dict[str, Any]
-    ) -> tuple[list[TestCase], TestExecutionSummary]:
+    ) -> tuple[list[TestCase], TestExecutionSummary, dict[str, Any] | None]:
         """No repository: run self-contained snippets on this host.
 
         Snippets here import nothing, so they validate the behavior described
@@ -176,11 +191,11 @@ class Orchestrator:
                 "result": execution.model_dump(),
             }
         )
-        return tests, execution
+        return tests, execution, None
 
     async def _run_against_repository(
         self, emit, request: RunRequest, story: StoryAnalysis, learning: dict[str, Any]
-    ) -> tuple[list[TestCase], TestExecutionSummary]:
+    ) -> tuple[list[TestCase], TestExecutionSummary, dict[str, Any]]:
         """Generate tests that import the repository's code, then run them in a sandbox."""
         runner = select_runner()
         if runner is None:
@@ -282,7 +297,7 @@ class Orchestrator:
                 "logs": outcome.raw_output[-4000:],
             }
         )
-        return tests, execution
+        return tests, execution, repo_context
 
     # -- database work, all run off the event loop -------------------------
 
@@ -330,6 +345,7 @@ class Orchestrator:
         tests: list[TestCase],
         execution: TestExecutionSummary,
         defects: DefectAnalysis,
+        fixes: list[FixSuggestion] | None = None,
     ) -> None:
         counts = {status: 0 for status in ("pass", "fail", "error", "skipped")}
         for result in execution.results:
@@ -345,6 +361,7 @@ class Orchestrator:
             run.tests_result = [test.model_dump() for test in tests]
             run.execution_result = execution.model_dump()
             run.defects_result = defects.model_dump()
+            run.fixes_result = [f.model_dump() for f in (fixes or [])]
             run.total_tests = len(execution.results)
             run.passed = counts["pass"]
             run.failed = counts["fail"]
