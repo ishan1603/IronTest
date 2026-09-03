@@ -9,7 +9,7 @@ import pytest
 
 from runners import runner_status, select_runner
 from runners.actions_runner import GitHubActionsRunner
-from runners.base import NOT_FOUND, TIMED_OUT, failure_result, parse_junit, run_subprocess
+from runners.base import NOT_FOUND, TIMED_OUT, failure_result, parse_jest_json, parse_junit, run_subprocess
 from runners.docker_runner import DockerRunner
 from runners.local_repo_runner import LocalRepoRunner
 
@@ -112,6 +112,38 @@ def test_parses_junit_emitted_by_a_real_pytest_run(tmp_path):
     assert results["TC-002"].status == "fail"
     assert results["TC-003"].status == "skipped"
     assert "assert 6 == 7" in results["TC-002"].error_message
+
+
+# -- jest JSON parsing ------------------------------------------------------
+
+JEST_JSON = """{"numTotalTests":3,"testResults":[
+  {"name":"/r/__tests__/irontest.generated.test.js","status":"failed","assertionResults":[
+    {"fullName":"test_TC_001 applies discount","status":"passed","failureMessages":[]},
+    {"fullName":"test_TC_002 rejects code","status":"failed","failureMessages":["expect(90).toBe(81)"]},
+    {"title":"TC-003 later","status":"pending","failureMessages":[]}
+  ]},
+  {"name":"/r/db.test.js","status":"failed","assertionResults":[],"message":"Cannot find module '@/lib/db'"}
+]}"""
+
+
+def test_parses_jest_json_outcomes_and_ids():
+    by_id = {r.test_id: r for r in parse_jest_json(JEST_JSON)}
+    assert by_id["TC-001"].status == "pass"
+    assert by_id["TC-002"].status == "fail"
+    assert "expect(90)" in by_id["TC-002"].error_message
+    assert by_id["TC-003"].status == "skipped"
+
+
+def test_a_suite_that_failed_to_load_becomes_one_error_not_a_silent_gap():
+    results = parse_jest_json(JEST_JSON)
+    load_errors = [r for r in results if r.status == "error"]
+    assert len(load_errors) == 1
+    assert "Cannot find module" in load_errors[0].error_message
+
+
+def test_unparseable_jest_json_is_empty_not_an_exception():
+    assert parse_jest_json("not json") == []
+    assert parse_jest_json("") == []
 
 
 # -- subprocess execution -----------------------------------------------------

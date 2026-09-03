@@ -203,6 +203,62 @@ def parse_junit(xml_text: str) -> list[TestResult]:
     return results
 
 
+def parse_jest_json(json_text: str) -> list[TestResult]:
+    """Convert `jest --json` output into TestResults.
+
+    jest-junit is a separate package most repos do not install, but --json is
+    always available. Each assertion result carries a status of passed /
+    failed / pending / todo / skipped and the messages on failure.
+    """
+    import json as _json
+    import re as _re
+
+    try:
+        data = _json.loads(json_text)
+    except ValueError:
+        return []
+
+    status_map = {
+        "passed": "pass",
+        "failed": "fail",
+        "pending": "skipped",
+        "todo": "skipped",
+        "skipped": "skipped",
+        "disabled": "skipped",
+    }
+
+    results: list[TestResult] = []
+    for suite in data.get("testResults", []):
+        # A whole suite that failed to compile/import: no assertions, but a
+        # message. Surface it as one error so it is not silently lost.
+        assertions = suite.get("assertionResults") or []
+        if not assertions and suite.get("status") == "failed" and suite.get("message"):
+            name = suite.get("name", "suite")
+            results.append(
+                TestResult(
+                    test_id=f"{name.rsplit('/', 1)[-1]}::<load>",
+                    status="error",
+                    error_message=_truncate(suite["message"], MAX_MESSAGE_CHARS),
+                )
+            )
+            continue
+
+        for assertion in assertions:
+            title = assertion.get("fullName") or assertion.get("title") or "test"
+            match = _re.search(r"(TC[-_]\d+)", title, _re.IGNORECASE)
+            test_id = match.group(1).upper().replace("_", "-") if match else title
+            status = status_map.get(assertion.get("status", ""), "fail")
+            detail = "\n".join(assertion.get("failureMessages", []))
+            results.append(
+                TestResult(
+                    test_id=test_id,
+                    status=status,
+                    error_message=_truncate(detail, MAX_MESSAGE_CHARS),
+                )
+            )
+    return results
+
+
 def failure_result(backend: str, message: str, *, output: str = "", duration: float = 0.0) -> RunnerResult:
     """A run that could not produce results. Never reports as a pass."""
     return RunnerResult(

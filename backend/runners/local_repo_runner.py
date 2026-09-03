@@ -29,6 +29,7 @@ from runners.base import (
     RunnerUnavailable,
     TestRunner,
     failure_result,
+    parse_jest_json,
     parse_junit,
     run_subprocess,
 )
@@ -216,24 +217,72 @@ class LocalRepoRunner(TestRunner):
 
     async def _run_node(self, clone_dir: str, request: RunnerRequest, budget: int):
         log_parts: list[str] = []
+        common_env = {"CI": "1", "COLUMNS": "200"}
+
         install_cmd = request.stack.get("install_command") or "npm install"
-        _, install_out = await _run(
-            shlex.split(install_cmd), cwd=clone_dir, timeout=INSTALL_TIMEOUT, env={"CI": "1"}
+        code, install_out = await _run(
+            shlex.split(install_cmd), cwd=clone_dir, timeout=INSTALL_TIMEOUT, env=common_env
         )
-        log_parts.append(f"--- {install_cmd} ---\n" + install_out[-2000:])
+        log_parts.append(f"--- {install_cmd} (exit {code}) ---\n" + install_out[-2500:])
 
-        test_cmd = request.stack.get("test_command") or "npx jest --reporters=default --reporters=jest-junit"
-        _, test_out = await _run(
-            shlex.split(test_cmd), cwd=clone_dir, timeout=max(60, budget), env={"CI": "1", "COLUMNS": "200"}
-        )
-        log_parts.append(f"--- {test_cmd} ---\n" + test_out)
+        # Prisma clients are generated, not shipped; the generated tests cannot
+        # import repo code that touches the DB layer without this.
+        if os.path.exists(os.path.join(clone_dir, "prisma", "schema.prisma")) or os.path.exists(
+            os.path.join(clone_dir, "schema.prisma")
+        ):
+            pcode, pout = await _run(
+                ["npx", "prisma", "generate"], cwd=clone_dir, timeout=180, env=common_env
+            )
+            log_parts.append(f"--- prisma generate (exit {pcode}) ---\n" + pout[-1500:])
 
-        results = []
-        for name in ("results.xml", "junit.xml", "test-results.xml"):
+        framework = str(request.stack.get("test_framework", "")).lower()
+        targets = [f.path for f in request.files]
+
+        if "vitest" in framework:
+            # vitest ships a junit reporter -- no extra package needed.
+            report = os.path.join(clone_dir, "irontest-results.xml")
+            cmd = ["npx", "vitest", "run", *targets,
+                   "--reporter=junit", f"--outputFile={report}", "--passWithNoTests"]
+            code, out = await _run(cmd, cwd=clone_dir, timeout=max(60, budget), env=common_env)
+            log_parts.append(f"--- vitest (exit {code}) ---\n" + out[-4000:])
+            if os.path.exists(report):
+                with open(report, encoding="utf-8", errors="replace") as handle:
+                    return "\n".join(log_parts), parse_junit(handle.read())
+        else:
+            # jest: --json is always available; jest-junit is a separate package
+            # the repo usually does not have. Parse the JSON instead. Run through
+            # the repo's own `npm test` where possible so its jest config (path
+            # aliases, transforms) applies.
+            report = os.path.join(clone_dir, "irontest-results.json")
+            has_test_script = "npm-script" in framework or "npm test" in (
+                request.stack.get("test_command") or ""
+            )
+            if has_test_script:
+                cmd = ["npm", "test", "--", *targets, "--json",
+                       f"--outputFile={report}", "--passWithNoTests", "--ci"]
+            else:
+                cmd = ["npx", "jest", *targets, "--json",
+                       f"--outputFile={report}", "--passWithNoTests", "--ci"]
+            code, out = await _run(cmd, cwd=clone_dir, timeout=max(60, budget), env=common_env)
+            log_parts.append(f"--- {' '.join(cmd[:3])} (exit {code}) ---\n" + out[-4000:])
+            if os.path.exists(report):
+                with open(report, encoding="utf-8", errors="replace") as handle:
+                    parsed = parse_jest_json(handle.read())
+                if parsed:
+                    return "\n".join(log_parts), parsed
+
+        # Nothing usable: try any junit file the repo's own config may have left.
+        for name in ("irontest-results.xml", "results.xml", "junit.xml", "test-results.xml"):
             candidate = os.path.join(clone_dir, name)
             if os.path.exists(candidate):
                 with open(candidate, encoding="utf-8", errors="replace") as handle:
-                    results = parse_junit(handle.read())
-            if results:
-                break
-        return "\n".join(log_parts), results
+                    parsed = parse_junit(handle.read())
+                if parsed:
+                    return "\n".join(log_parts), parsed
+
+        log_parts.append(
+            "\nIRONTEST_NOTE: the JS test run produced no parseable results. Common causes for a "
+            "Next.js/TypeScript repo: no test runner is actually configured, path aliases the "
+            "generated imports cannot resolve, or a setup step (e.g. `prisma generate`) is required."
+        )
+        return "\n".join(log_parts), []
