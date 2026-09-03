@@ -9,7 +9,7 @@ import pytest
 
 from runners import runner_status, select_runner
 from runners.actions_runner import GitHubActionsRunner
-from runners.base import failure_result, parse_junit
+from runners.base import NOT_FOUND, TIMED_OUT, failure_result, parse_junit, run_subprocess
 from runners.docker_runner import DockerRunner
 from runners.local_repo_runner import LocalRepoRunner
 
@@ -112,6 +112,50 @@ def test_parses_junit_emitted_by_a_real_pytest_run(tmp_path):
     assert results["TC-002"].status == "fail"
     assert results["TC-003"].status == "skipped"
     assert "assert 6 == 7" in results["TC-002"].error_message
+
+
+# -- subprocess execution -----------------------------------------------------
+
+
+def test_run_subprocess_captures_output_and_exit_code():
+    import sys
+
+    code, out = run_subprocess([sys.executable, "-c", "print('hello'); raise SystemExit(3)"], timeout=15)
+    assert code == 3
+    assert "hello" in out
+
+
+def test_run_subprocess_reports_a_missing_executable():
+    code, out = run_subprocess(["this-command-does-not-exist-xyz"], timeout=5)
+    assert code == NOT_FOUND
+    assert "not" in out.lower()
+
+
+def test_run_subprocess_times_out():
+    import sys
+
+    code, out = run_subprocess([sys.executable, "-c", "import time; time.sleep(30)"], timeout=1)
+    assert code == TIMED_OUT
+    assert "exceeded" in out
+
+
+def test_runner_subprocess_works_under_a_selector_event_loop():
+    """Regression: uvicorn installs a Selector loop on Windows, and
+    asyncio.create_subprocess_exec raises NotImplementedError there. The
+    runners must go through a worker thread instead."""
+    import asyncio
+    import sys
+
+    loop = asyncio.SelectorEventLoop()
+    try:
+        code, out = loop.run_until_complete(
+            asyncio.to_thread(run_subprocess, [sys.executable, "-c", "print('ok')"], timeout=15)
+        )
+    finally:
+        loop.close()
+
+    assert code == 0
+    assert "ok" in out
 
 
 # -- backend selection -----------------------------------------------------

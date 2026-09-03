@@ -22,6 +22,8 @@ import time
 
 from runners.base import (
     MAX_OUTPUT_CHARS,
+    NOT_FOUND,
+    TIMED_OUT,
     GeneratedFile,
     RunnerRequest,
     RunnerResult,
@@ -29,6 +31,7 @@ from runners.base import (
     TestRunner,
     failure_result,
     parse_junit,
+    run_subprocess,
 )
 
 logger = logging.getLogger(__name__)
@@ -136,26 +139,20 @@ exit $TEST_EXIT
                 "sh", "-c", self._build_script(request),
             ]
 
-            try:
-                proc = await asyncio.create_subprocess_exec(
-                    *command,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.STDOUT,
-                )
-                stdout, _ = await asyncio.wait_for(
-                    proc.communicate(), timeout=request.timeout_seconds or self.timeout_seconds
-                )
-            except asyncio.TimeoutError:
-                return failure_result(
-                    self.name,
-                    f"The test run exceeded {request.timeout_seconds}s and was stopped.",
-                    duration=time.time() - started,
-                )
-            except OSError as exc:
-                return failure_result(self.name, f"Could not start Docker: {exc}")
+            timeout = request.timeout_seconds or self.timeout_seconds
+            code, output = await asyncio.to_thread(run_subprocess, command, timeout=timeout)
 
-        output = stdout.decode("utf-8", errors="replace")
         duration = time.time() - started
+
+        if code == TIMED_OUT:
+            return failure_result(
+                self.name,
+                f"The test run exceeded {timeout}s and was stopped.",
+                output=output,
+                duration=duration,
+            )
+        if code == NOT_FOUND:
+            return failure_result(self.name, "Could not start Docker.", output=output, duration=duration)
 
         xml = _extract_between(output, "--- IRONTEST_RESULTS_BEGIN ---", "--- IRONTEST_RESULTS_END ---")
         results = parse_junit(xml)

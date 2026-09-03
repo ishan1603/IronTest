@@ -14,7 +14,10 @@ with its logs attached, rather than as a pass.
 from __future__ import annotations
 
 import logging
+import os
 import re
+import shutil
+import subprocess
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
@@ -26,6 +29,55 @@ logger = logging.getLogger(__name__)
 
 MAX_OUTPUT_CHARS = 12_000
 MAX_MESSAGE_CHARS = 2_000
+
+
+TIMED_OUT = 124
+NOT_FOUND = 127
+
+
+def run_subprocess(
+    cmd: list[str],
+    *,
+    cwd: str | None = None,
+    timeout: int,
+    env: dict[str, str] | None = None,
+) -> tuple[int, str]:
+    """Run a command, returning (exit_code, combined_output).
+
+    Blocking on purpose: asyncio.create_subprocess_exec raises
+    NotImplementedError under the Selector event loop that uvicorn installs on
+    Windows, so runner subprocess work goes through asyncio.to_thread and this.
+
+    Exit code 124 means it timed out; 127 means the executable was not found.
+    """
+    resolved = list(cmd)
+    found = shutil.which(resolved[0])
+    if found:
+        resolved[0] = found  # npm -> npm.cmd, git -> git.exe on Windows
+
+    try:
+        proc = subprocess.run(
+            resolved,
+            cwd=cwd,
+            env={**os.environ, **(env or {})},
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+        )
+        return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
+    except subprocess.TimeoutExpired as exc:
+        partial = ""
+        if isinstance(exc.stdout, str):
+            partial += exc.stdout
+        if isinstance(exc.stderr, str):
+            partial += exc.stderr
+        return TIMED_OUT, partial + f"\n(command exceeded {timeout}s and was stopped)"
+    except FileNotFoundError:
+        return NOT_FOUND, f"(command not found: {cmd[0]})"
+    except OSError as exc:
+        return NOT_FOUND, f"(could not start {cmd[0]}: {exc})"
 
 
 class RunnerUnavailable(RuntimeError):

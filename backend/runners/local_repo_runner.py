@@ -30,6 +30,7 @@ from runners.base import (
     TestRunner,
     failure_result,
     parse_junit,
+    run_subprocess,
 )
 
 CLONE_TIMEOUT = 120
@@ -43,21 +44,8 @@ def _venv_python(venv_dir: str) -> str:
 
 
 async def _run(cmd: list[str], *, cwd: str, timeout: int, env: dict | None = None) -> tuple[int, str]:
-    """Run a command, capturing combined output. Returns (exit_code, output)."""
-    try:
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            cwd=cwd,
-            env={**os.environ, **(env or {})},
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
-        )
-        out, _ = await asyncio.wait_for(proc.communicate(), timeout=timeout)
-        return proc.returncode, out.decode("utf-8", errors="replace")
-    except asyncio.TimeoutError:
-        return 124, f"(command exceeded {timeout}s and was stopped: {' '.join(cmd)})"
-    except FileNotFoundError:
-        return 127, f"(command not found: {cmd[0]})"
+    """Run a command off the event loop. Returns (exit_code, combined_output)."""
+    return await asyncio.to_thread(run_subprocess, cmd, cwd=cwd, timeout=timeout, env=env)
 
 
 class LocalRepoRunner(TestRunner):
