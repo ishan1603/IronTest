@@ -9,6 +9,7 @@ import RepoRun from "./pages/RepoRun";
 import Analytics from "./pages/Analytics";
 import RunDetail from "./pages/RunDetail";
 import PublicReport from "./pages/PublicReport";
+import Integrations from "./pages/Integrations";
 
 function RequireAuth({ children }) {
   const { status } = useAuth();
@@ -45,6 +46,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <Analytics />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/integrations"
+            element={
+              <RequireAuth>
+                <Integrations />
               </RequireAuth>
             }
           />

@@ -178,6 +178,94 @@ async def list_branches(token: str, full_name: str, *, limit: int = 60) -> list[
     return names[:limit]
 
 
+async def _post(client: httpx.AsyncClient, token: str, path: str, json_body: dict) -> Any:
+    response = await client.post(f"{API_BASE}{path}", headers=_headers(token), json=json_body)
+    if response.status_code == 401:
+        raise GitHubError("GitHub token is no longer valid. Please sign in again.", status_code=401)
+    if response.status_code == 403:
+        raise GitHubError(
+            "GitHub refused the write. The token may lack repo write access.", status_code=403
+        )
+    if response.status_code >= 400:
+        detail = ""
+        try:
+            detail = response.json().get("message", "")
+        except ValueError:
+            pass
+        raise GitHubError(f"GitHub write failed ({path}): {detail}", status_code=response.status_code)
+    return response.json()
+
+
+async def default_branch_sha(token: str, full_name: str, branch: str) -> str:
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        ref = await _get(client, token, f"/repos/{full_name}/git/ref/heads/{branch}")
+    return ref["object"]["sha"]
+
+
+async def create_branch(token: str, full_name: str, new_branch: str, from_sha: str) -> None:
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        try:
+            await _post(
+                client,
+                token,
+                f"/repos/{full_name}/git/refs",
+                {"ref": f"refs/heads/{new_branch}", "sha": from_sha},
+            )
+        except GitHubError as exc:
+            if exc.status_code == 422:  # already exists -- reuse it
+                return
+            raise
+
+
+async def put_file(
+    token: str, full_name: str, path: str, content_b64: str, message: str, branch: str
+) -> None:
+    """Create or update a file on a branch. content_b64 is base64-encoded bytes."""
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        existing_sha = None
+        probe = await client.get(
+            f"{API_BASE}/repos/{full_name}/contents/{path}",
+            headers=_headers(token),
+            params={"ref": branch},
+        )
+        if probe.status_code == 200:
+            existing_sha = probe.json().get("sha")
+
+        body = {"message": message, "content": content_b64, "branch": branch}
+        if existing_sha:
+            body["sha"] = existing_sha
+        response = await client.put(
+            f"{API_BASE}/repos/{full_name}/contents/{path}", headers=_headers(token), json=body
+        )
+        if response.status_code >= 400:
+            raise GitHubError(f"Could not write {path}", status_code=response.status_code)
+
+
+async def create_pull_request(
+    token: str, full_name: str, *, title: str, body: str, head: str, base: str
+) -> dict[str, Any]:
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        return await _post(
+            client,
+            token,
+            f"/repos/{full_name}/pulls",
+            {"title": title, "body": body, "head": head, "base": base},
+        )
+
+
+async def comment_on_issue(token: str, full_name: str, issue_number: int, body: str) -> dict[str, Any]:
+    """PRs are issues for the comments API."""
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        return await _post(
+            client, token, f"/repos/{full_name}/issues/{issue_number}/comments", {"body": body}
+        )
+
+
+async def get_pull_request(token: str, full_name: str, number: int) -> dict[str, Any]:
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        return await _get(client, token, f"/repos/{full_name}/pulls/{number}")
+
+
 async def fetch_repo_tree(token: str, full_name: str, ref: str) -> list[dict[str, Any]]:
     """Flat file listing for a ref. Large repos come back truncated by GitHub."""
     async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:

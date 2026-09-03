@@ -85,6 +85,10 @@ export const api = {
   },
   reportMarkdownUrl: (token) => `${BASE}/api/reports/${encodeURIComponent(token)}/export.md`,
 
+  openPullRequest: (runId) => request(`/api/analytics/runs/${runId}/pull-request`, { method: "POST" }),
+  getApiKey: () => request("/api/auth/api-key"),
+  rotateApiKey: () => request("/api/auth/api-key", { method: "POST" }),
+  revokeApiKey: () => request("/api/auth/api-key", { method: "DELETE" }),
   chats: () => request("/api/chats"),
   createChat: (repositoryId, title) =>
     request("/api/chats", { method: "POST", body: { repository_id: repositoryId, title } }),

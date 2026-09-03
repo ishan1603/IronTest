@@ -100,6 +100,8 @@ class RunRequest:
     #: When set, run the same generated suite against this base ref too and
     #: diff the outcomes -- the regression gate.
     compare_ref: str = ""
+    #: {full_name, pr_number} -> post a summary comment when the run completes.
+    pr_comment: dict[str, Any] | None = None
 
     @property
     def is_repository_run(self) -> bool:
@@ -193,12 +195,16 @@ class Orchestrator:
                     {"event": "agent_complete", "agent": "fix", "result": [f.model_dump() for f in fixes]}
                 )
 
+            suite_files = (repo_context or {}).get("_suite_files")
             await asyncio.to_thread(
-                self._complete_run, run_id, story, tests, execution, defects, fixes, comparison
+                self._complete_run, run_id, story, tests, execution, defects, fixes, comparison, suite_files
             )
 
             if request.send_email and request.recipient_email:
                 await self._notify(emit, request, story, execution, defects, session_id)
+
+            if request.pr_comment:
+                await asyncio.to_thread(self._post_pr_comment, request, run_id)
 
             dashboard = PipelineDashboard(
                 story=story, tests=tests, execution=execution, defects=defects, fixes=fixes
@@ -307,6 +313,7 @@ class Orchestrator:
         files = build_suite(tests, imports, language=stack.get("language", "python"))
         if not files:
             raise ValueError("No runnable tests were generated for this repository.")
+        repo_context["_suite_files"] = [{"path": f.path, "content": f.content} for f in files]
 
         await emit(
             {
@@ -426,6 +433,7 @@ class Orchestrator:
         defects: DefectAnalysis,
         fixes: list[FixSuggestion] | None = None,
         comparison: dict[str, Any] | None = None,
+        suite_files: list[dict] | None = None,
     ) -> None:
         counts = {status: 0 for status in ("pass", "fail", "error", "skipped")}
         for result in execution.results:
@@ -443,6 +451,7 @@ class Orchestrator:
             run.defects_result = defects.model_dump()
             run.fixes_result = [f.model_dump() for f in (fixes or [])]
             run.compare_result = comparison
+            run.suite_files = suite_files
             run.total_tests = len(execution.results)
             run.passed = counts["pass"]
             run.failed = counts["fail"]
@@ -464,6 +473,56 @@ class Orchestrator:
             run.status = "failed"
             run.error_message = message[:2000]
             run.finished_at = utcnow()
+
+    @staticmethod
+    def _post_pr_comment(request: "RunRequest", run_id: str) -> None:
+        """Post the run's verdict back on the pull request that triggered it."""
+        import asyncio as _asyncio
+        import secrets
+
+        import github_client
+        from db import PipelineRun as _Run
+
+        try:
+            with session_scope() as session:
+                run = session.get(_Run, run_id)
+                if run is None or run.status != "complete":
+                    return
+                if not run.share_token:
+                    run.share_token = secrets.token_urlsafe(24)
+                token_link = run.share_token
+                executed = run.passed + run.failed + run.errors
+                pct = round((run.passed / executed) * 100) if executed else 0
+                verdict = (run.defects_result or {}).get("deployment_recommendation", "?")
+                compare = run.compare_result or {}
+                regressions = len(compare.get("regressions", []))
+
+            frontend = get_settings().frontend_url.rstrip("/")
+            lines = [
+                "### IronTest",
+                "",
+                f"**{verdict}** — {run.passed}/{executed} passed ({pct}%)"
+                + (f", confidence {run.confidence_score}/100" if run.confidence_score is not None else ""),
+            ]
+            if compare:
+                lines.append("")
+                lines.append(
+                    f"Regression gate ({compare.get('base_ref')} → {compare.get('head_ref')}): "
+                    + (f"**{regressions} regression(s)**" if regressions else "no regressions")
+                )
+            lines.append("")
+            lines.append(f"[Full report]({frontend}/r/{token_link})")
+
+            _asyncio.run(
+                github_client.comment_on_issue(
+                    request.github_token,
+                    request.pr_comment["full_name"],
+                    int(request.pr_comment["pr_number"]),
+                    "\n".join(lines),
+                )
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Could not post PR comment for run %s: %s", run_id, exc)
 
     @staticmethod
     async def _notify(emit, request, story, execution, defects, session_id) -> None:

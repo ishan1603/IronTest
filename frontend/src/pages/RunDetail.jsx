@@ -70,14 +70,54 @@ export default function RunDetail() {
           <RunResult run={run} />
         )}
 
-        {run.chat_id && (
-          <div className="mt-6">
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          {run.chat_id && (
             <Button as={Link} to={`/chat/${run.chat_id}`} variant="secondary" size="sm">
               Open the conversation
             </Button>
-          </div>
-        )}
+          )}
+          <OpenPrButton runId={run.id} />
+        </div>
       </div>
     </Shell>
+  );
+}
+
+
+function OpenPrButton({ runId }) {
+  const [state, setState] = useState({ status: "idle" });
+
+  async function go() {
+    setState({ status: "busy" });
+    try {
+      const { pull_request_url } = await api.openPullRequest(runId);
+      setState({ status: "done", url: pull_request_url });
+    } catch (exc) {
+      setState({ status: "error", message: exc.message });
+    }
+  }
+
+  if (state.status === "done") {
+    return (
+      <a
+        href={state.url}
+        target="_blank"
+        rel="noreferrer"
+        className="rounded-pill border border-line/25 px-4 py-1.5 text-xs underline-offset-2 hover:underline"
+      >
+        Pull request opened ↗
+      </a>
+    );
+  }
+
+  return (
+    <>
+      <Button size="sm" variant="secondary" onClick={go} disabled={state.status === "busy"}>
+        {state.status === "busy" ? "Opening…" : "Open a PR with these tests"}
+      </Button>
+      {state.status === "error" && (
+        <span className="text-xs text-danger">{state.message}</span>
+      )}
+    </>
   );
 }

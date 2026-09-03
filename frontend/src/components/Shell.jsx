@@ -70,6 +70,9 @@ export function Shell({ children, aside }) {
             <NavLink to="/runs" active={pathname.startsWith("/runs")}>
               Analytics
             </NavLink>
+            <NavLink to="/integrations" active={pathname.startsWith("/integrations")}>
+              Integrations
+            </NavLink>
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
@@ -114,6 +117,9 @@ export function Shell({ children, aside }) {
               </NavLink>
               <NavLink to="/runs" active={pathname.startsWith("/runs")}>
                 Analytics
+              </NavLink>
+              <NavLink to="/integrations" active={pathname.startsWith("/integrations")}>
+                Integrations
               </NavLink>
               {user && (
                 <button onClick={signOut} className="px-3 py-2 text-left text-sm text-muted">

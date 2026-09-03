@@ -132,6 +132,24 @@ async def me(user: User = Depends(current_user)):
     }
 
 
+@router.get("/api-key")
+async def get_api_key(user: User = Depends(current_user)):
+    return {"api_key": user.api_key}
+
+
+@router.post("/api-key")
+async def rotate_api_key(user: User = Depends(current_user), session: Session = Depends(get_session)):
+    user.api_key = "irt_" + secrets.token_urlsafe(28)
+    session.commit()
+    return {"api_key": user.api_key}
+
+
+@router.delete("/api-key", status_code=204)
+async def revoke_api_key(user: User = Depends(current_user), session: Session = Depends(get_session)):
+    user.api_key = None
+    session.commit()
+
+
 @router.post("/logout")
 async def logout(user: User = Depends(current_user), session: Session = Depends(get_session)):
     """Drop the stored GitHub token.

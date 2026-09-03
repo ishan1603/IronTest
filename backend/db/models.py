@@ -60,6 +60,9 @@ class User(Base, TimestampMixin):
     encrypted_access_token: Mapped[str | None] = mapped_column(Text)
     token_scopes: Mapped[str] = mapped_column(String(400), default="")
 
+    #: Personal key for the CI endpoint (X-IronTest-Key). Rotatable.
+    api_key: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
+
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     repositories: Mapped[list["Repository"]] = relationship(
@@ -170,6 +173,8 @@ class PipelineRun(Base, TimestampMixin):
     fixes_result: Mapped[list[Any] | None] = mapped_column(JSON)
     #: Regression-gate diff when the run compared two refs.
     compare_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    #: The generated suite files [{path, content}], for the 'open a PR' action.
+    suite_files: Mapped[list[Any] | None] = mapped_column(JSON)
 
     #: Set when the run is shared. Anyone with the token can view a read-only
     #: report; None means not shared. Cleared to revoke.

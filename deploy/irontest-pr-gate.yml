@@ -1,0 +1,40 @@
+# IronTest PR gate.
+#
+# Drop this into .github/workflows/ in a repository you have connected to
+# IronTest. On every pull request it asks your IronTest instance to generate
+# and run a test suite against the PR branch and post the result as a comment.
+#
+# Setup (once, in the repo's Settings -> Secrets and variables -> Actions):
+#   IRONTEST_API_KEY   your key from IronTest -> Integrations
+#   IRONTEST_API_BASE  your IronTest API URL, e.g. https://irontest-api.onrender.com
+#
+# The job only kicks off the run; the pass/fail signal comes back as the PR
+# comment, so this workflow succeeding just means "IronTest was reached".
+
+name: IronTest PR gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  irontest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger IronTest
+        env:
+          KEY: ${{ secrets.IRONTEST_API_KEY }}
+          BASE: ${{ secrets.IRONTEST_API_BASE }}
+          REPO: ${{ github.repository }}
+          HEAD: ${{ github.head_ref }}
+          TARGET: ${{ github.base_ref }}
+          PR: ${{ github.event.number }}
+        run: |
+          if [ -z "$KEY" ] || [ -z "$BASE" ]; then
+            echo "IRONTEST_API_KEY and IRONTEST_API_BASE must be set as Actions secrets." >&2
+            exit 1
+          fi
+          curl --fail --silent --show-error -X POST "$BASE/api/ci/run" \
+            -H "X-IronTest-Key: $KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"repository\":\"$REPO\",\"head_ref\":\"$HEAD\",\"base_ref\":\"$TARGET\",\"pr_number\":$PR}"
