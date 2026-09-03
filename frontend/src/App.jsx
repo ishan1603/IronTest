@@ -8,6 +8,7 @@ import Chat from "./pages/Chat";
 import RepoRun from "./pages/RepoRun";
 import Analytics from "./pages/Analytics";
 import RunDetail from "./pages/RunDetail";
+import PublicReport from "./pages/PublicReport";
 
 function RequireAuth({ children }) {
   const { status } = useAuth();
@@ -30,6 +31,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/r/:token" element={<PublicReport />} />
           <Route
             path="/dashboard"
             element={

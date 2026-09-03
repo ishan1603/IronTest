@@ -3,6 +3,7 @@
 // session.
 
 const BASE = (import.meta.env.VITE_API_BASE || "http://localhost:8000").replace(/\/$/, "");
+export const API_BASE = BASE;
 const TOKEN_KEY = "irontest.token";
 
 export function getToken() {
@@ -74,6 +75,15 @@ export const api = {
   analytics: () => request("/api/analytics"),
   analyticsRuns: (limit = 100) => request(`/api/analytics/runs?limit=${limit}`),
   analyticsRun: (runId) => request(`/api/analytics/runs/${runId}`),
+  shareRun: (runId) => request(`/api/analytics/runs/${runId}/share`, { method: "POST" }),
+  unshareRun: (runId) => request(`/api/analytics/runs/${runId}/share`, { method: "DELETE" }),
+  publicReport: async (token) => {
+    const res = await fetch(`${BASE}/api/reports/${encodeURIComponent(token)}`);
+    if (!res.ok) throw new ApiError((await res.json().catch(() => null))?.detail || "Report not found", res.status);
+    return res.json();
+  },
+  reportMarkdownUrl: (token) => `${BASE}/api/reports/${encodeURIComponent(token)}/export.md`,
+
   chats: () => request("/api/chats"),
   createChat: (repositoryId, title) =>
     request("/api/chats", { method: "POST", body: { repository_id: repositoryId, title } }),

@@ -119,3 +119,24 @@
     opacity: 0;
   }
 }
+
+/* Print / PDF export of a shared report. */
+@media print {
+  header button,
+  .print\:hidden {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .card,
+  .hairline {
+    border-color: #ddd !important;
+    break-inside: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}

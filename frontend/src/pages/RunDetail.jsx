@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { Shell } from "../components/Shell";
 import { RunResult } from "../components/RunResult";
+import { ShareButton } from "../components/ShareButton";
 import { Banner, Button, Label, Spinner, Tag } from "../components/ui";
 
 /** Read-only view of one stored run, reached from the analytics table. */
@@ -54,6 +55,11 @@ export default function RunDetail() {
             <Label>Run</Label>
             <Tag tone="solid">{run.mode === "specification" ? "Specification" : "Existing code"}</Tag>
             <span className="text-sm text-muted">{new Date(run.created_at).toLocaleString()}</span>
+            {run.status === "complete" && (
+              <span className="ml-auto">
+                <ShareButton runId={run.id} />
+              </span>
+            )}
           </div>
           <p className="mt-3 max-w-prose text-base">{run.story_text}</p>
         </header>

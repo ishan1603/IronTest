@@ -169,6 +169,10 @@ class PipelineRun(Base, TimestampMixin):
     defects_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     fixes_result: Mapped[list[Any] | None] = mapped_column(JSON)
 
+    #: Set when the run is shared. Anyone with the token can view a read-only
+    #: report; None means not shared. Cleared to revoke.
+    share_token: Mapped[str | None] = mapped_column(String(48), unique=True, index=True)
+
     total_tests: Mapped[int] = mapped_column(Integer, default=0)
     passed: Mapped[int] = mapped_column(Integer, default=0)
     failed: Mapped[int] = mapped_column(Integer, default=0)
