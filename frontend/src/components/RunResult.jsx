@@ -12,8 +12,10 @@ const VERDICT_TONE = {
 export function RunResult({ run }) {
   const execution = run.execution || {};
   const defects = run.defects || {};
+  const story = run.story || {};
   const tests = run.tests || [];
   const results = execution.results || [];
+  const ranOnHost = run.sandboxed === false || run.execution?.backend === "local_host";
 
   const counts = results.reduce(
     (acc, item) => ({ ...acc, [item.status]: (acc[item.status] || 0) + 1 }),
@@ -26,6 +28,12 @@ export function RunResult({ run }) {
   return (
     <div className="flex flex-col gap-4">
       {isSpec && <SpecificationNotice counts={counts} />}
+      {isSpec && <BuildGuidance story={story} defects={defects} />}
+      {ranOnHost && (
+        <p className="font-mono text-xs text-muted">
+          Ran on this machine (not a sandbox). A deployed install uses Docker or GitHub Actions.
+        </p>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <Card className="p-5">
@@ -96,6 +104,35 @@ function SpecificationNotice({ counts }) {
         they pass.
       </p>
     </div>
+  );
+}
+
+function BuildGuidance({ story, defects }) {
+  const cautions = [
+    ...(story.risk_factors || []),
+    ...(story.security_vectors || []).map((v) => `Security: ${v}`),
+  ];
+  if (!cautions.length && !defects.recommendation_rationale) return null;
+
+  return (
+    <Card className="p-5">
+      <Label>What to watch out for while building</Label>
+      {cautions.length > 0 && (
+        <ul className="mt-3 flex flex-col gap-2 text-sm">
+          {cautions.map((item, index) => (
+            <li key={index} className="flex gap-2">
+              <span aria-hidden="true" className="mt-1.5 h-1 w-1 shrink-0 rounded-pill bg-ink" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {defects.recommendation_rationale && (
+        <p className="mt-3 border-t border-line/12 pt-3 text-sm text-muted">
+          {defects.recommendation_rationale}
+        </p>
+      )}
+    </Card>
   );
 }
 

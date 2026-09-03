@@ -5,6 +5,7 @@ import Landing from "./pages/Landing";
 import AuthCallback from "./pages/AuthCallback";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
+import RepoRun from "./pages/RepoRun";
 import Runs from "./pages/Runs";
 
 function RequireAuth({ children }) {
@@ -41,6 +42,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <Runs />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/repo/:repoId"
+            element={
+              <RequireAuth>
+                <RepoRun />
               </RequireAuth>
             }
           />

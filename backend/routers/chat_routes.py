@@ -30,10 +30,30 @@ class SendMessageRequest(BaseModel):
 
 
 class StartRunRequest(BaseModel):
-    requirement: str = Field(..., min_length=10, max_length=20_000)
+    # Optional for existing-code runs: the pipeline can test a repository as it
+    # stands with no prompt. A specification run must describe the feature.
+    requirement: str | None = Field(default=None, max_length=20_000)
     mode: PipelineMode = "existing_code"
     send_email: bool = False
     recipient_email: str | None = None
+
+
+def _resolve_requirement(request: "StartRunRequest", repo: Repository) -> str:
+    text = (request.requirement or "").strip()
+    if request.mode == "specification":
+        if len(text) < 10:
+            raise HTTPException(
+                status_code=400,
+                detail="Describe the feature you are planning (at least a sentence).",
+            )
+        return text
+    # existing_code: fall back to a repo-wide regression sweep.
+    if len(text) >= 10:
+        return text
+    return (
+        f"Review the existing code in {repo.full_name} and generate a regression "
+        f"test suite for its core modules, covering their main paths and edge cases."
+    )
 
 
 def _owned_chat(session: Session, user: User, chat_id: str) -> Chat:
@@ -184,9 +204,11 @@ async def start_run(
     if request.send_email and not (request.recipient_email or "").strip():
         raise HTTPException(status_code=400, detail="recipient_email is required when send_email is enabled.")
 
-    session.add(Message(chat_id=chat.id, role="user", content=request.requirement))
+    requirement = _resolve_requirement(request, repo)
+
+    session.add(Message(chat_id=chat.id, role="user", content=requirement))
     if len(chat.messages) <= 1:
-        chat.title = request.requirement[:TITLE_LENGTH].strip() or chat.title
+        chat.title = requirement[:TITLE_LENGTH].strip() or chat.title
     chat.updated_at = utcnow()
     repo.last_run_at = utcnow()
     session.commit()
@@ -197,7 +219,7 @@ async def start_run(
             stream_id,
             RunRequest(
                 user_id=user.id,
-                story_text=request.requirement,
+                story_text=requirement,
                 repository_id=repo.id,
                 chat_id=chat.id,
                 mode=request.mode,

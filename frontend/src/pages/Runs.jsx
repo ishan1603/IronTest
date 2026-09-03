@@ -12,7 +12,9 @@ export default function Runs() {
   useEffect(() => {
     api
       .chats()
-      .then((data) => setChats(data.chats))
+      // Hide the per-repo suite chats the "Test existing code" page uses
+      // internally; they are runs, not conversations.
+      .then((data) => setChats(data.chats.filter((c) => !c.title.startsWith("Test suite ·"))))
       .catch((exc) => setError(exc.message))
       .finally(() => setLoading(false));
   }, []);

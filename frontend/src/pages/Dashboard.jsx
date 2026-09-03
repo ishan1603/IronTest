@@ -38,25 +38,34 @@ export default function Dashboard() {
     return unconnected.filter((repo) => repo.full_name.toLowerCase().includes(term));
   }, [available, query]);
 
-  async function connect(fullName) {
-    setBusy(fullName);
+  // "Test existing code" and "Plan a feature" both need a connected repo first.
+  async function ensureConnected(repo) {
+    if (repo.id) return repo; // already a connected-repo record
+    return api.connectRepo(repo.full_name);
+  }
+
+  async function goTestExisting(repo) {
+    setBusy(`${repo.github_repo_id || repo.id}:existing`);
     setError("");
     try {
-      const repo = await api.connectRepo(fullName);
-      const chat = await api.createChat(repo.id);
-      navigate(`/chat/${chat.id}`);
+      const full = await ensureConnected(repo);
+      navigate(`/repo/${full.id}`);
     } catch (exc) {
       setError(exc.message);
       setBusy("");
     }
   }
 
-  async function openRepo(repo) {
-    setBusy(repo.id);
+  async function goPlanFeature(repo) {
+    setBusy(`${repo.github_repo_id || repo.id}:feature`);
+    setError("");
     try {
+      const full = await ensureConnected(repo);
       const { chats } = await api.chats();
-      const existing = chats.find((chat) => chat.repository_id === repo.id);
-      const chat = existing || (await api.createChat(repo.id));
+      const featureChat = chats.find(
+        (c) => c.repository_id === full.id && !c.title.startsWith("Test suite ·"),
+      );
+      const chat = featureChat || (await api.createChat(full.id, `Feature · ${full.name}`));
       navigate(`/chat/${chat.id}`);
     } catch (exc) {
       setError(exc.message);
@@ -69,10 +78,11 @@ export default function Dashboard() {
       <div className="px-4 py-8 sm:px-6 sm:py-10">
         <header className="mb-8">
           <Label>Repositories</Label>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Choose a repository to test</h1>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Choose a repository</h1>
           <p className="mt-2 max-w-prose text-sm text-muted">
-            Connect a repository, then describe a feature. IronTest reads the code, writes tests that import
-            it, and runs them.
+            <span className="text-ink">Test existing code</span> runs a regression suite against the
+            repository as it stands. <span className="text-ink">Plan a feature</span> opens a chat to
+            describe upcoming work and get the tests it must pass.
           </p>
         </header>
 
@@ -97,8 +107,9 @@ export default function Dashboard() {
                       key={repo.id}
                       repo={repo}
                       connected
-                      busy={busy === repo.id}
-                      onOpen={() => openRepo(repo)}
+                      busy={busy.startsWith(`${repo.id}:`) ? busy.split(":")[1] : ""}
+                      onTestExisting={() => goTestExisting(repo)}
+                      onPlanFeature={() => goPlanFeature(repo)}
                     />
                   ))}
                 </div>
@@ -137,8 +148,11 @@ export default function Dashboard() {
                     <RepoCard
                       key={repo.github_repo_id}
                       repo={repo}
-                      busy={busy === repo.full_name}
-                      onOpen={() => connect(repo.full_name)}
+                      busy={
+                        busy.startsWith(`${repo.github_repo_id}:`) ? busy.split(":")[1] : ""
+                      }
+                      onTestExisting={() => goTestExisting(repo)}
+                      onPlanFeature={() => goPlanFeature(repo)}
                     />
                   ))}
                 </div>
@@ -151,7 +165,7 @@ export default function Dashboard() {
   );
 }
 
-function RepoCard({ repo, connected = false, busy, onOpen }) {
+function RepoCard({ repo, connected = false, busy, onTestExisting, onPlanFeature }) {
   const stack = repo.stack_profile || {};
 
   return (
@@ -172,23 +186,34 @@ function RepoCard({ repo, connected = false, busy, onOpen }) {
         {connected && stack.has_tests === false && <Tag tone="warning">no tests</Tag>}
       </div>
 
-      <div className="mt-auto flex items-center gap-2 pt-1">
-        <Button size="sm" onClick={onOpen} disabled={busy} className="flex-1">
-          {busy ? <Spinner className="h-3.5 w-3.5" /> : connected ? "Open" : "Connect"}
+      <div className="mt-auto flex flex-col gap-2 pt-1">
+        <Button size="sm" onClick={onTestExisting} disabled={Boolean(busy)}>
+          {busy === "existing" ? <Spinner className="h-3.5 w-3.5" /> : "Test existing code"}
         </Button>
-        {repo.html_url && (
+        <div className="flex items-center gap-2">
           <Button
-            as="a"
-            href={repo.html_url}
-            target="_blank"
-            rel="noreferrer"
             variant="secondary"
             size="sm"
-            aria-label={`Open ${repo.full_name} on GitHub`}
+            onClick={onPlanFeature}
+            disabled={Boolean(busy)}
+            className="flex-1"
           >
-            ↗
+            {busy === "feature" ? <Spinner className="h-3.5 w-3.5" /> : "Plan a feature"}
           </Button>
-        )}
+          {repo.html_url && (
+            <Button
+              as="a"
+              href={repo.html_url}
+              target="_blank"
+              rel="noreferrer"
+              variant="secondary"
+              size="sm"
+              aria-label={`Open ${repo.full_name} on GitHub`}
+            >
+              ↗
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );
