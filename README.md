@@ -59,6 +59,24 @@ graph LR
 4. **Risk Agent** scores release confidence against this user's own run
    history and returns GO / CONDITIONAL GO / NO-GO.
 
+## Beyond a single run
+
+- **Analytics** — pass-rate and confidence trends, flaky-test detection (a test
+  that flips pass/fail across runs of the same requirement), and the modules
+  that fail most, all per user.
+- **Fix suggestions** — a fifth agent proposes a concrete change for each
+  failing test. Advisory; nothing is applied.
+- **Regression gate** — run the same generated suite against a base branch and
+  the working branch, and see exactly what newly fails.
+- **Shareable reports** — any run gets a public read-only link (`/r/<token>`)
+  plus Markdown / PDF export. Identity and repo name are stripped.
+- **Open a PR** — turn a run's generated tests into a real pull request on the
+  repository.
+- **CI gate** — `deploy/irontest-pr-gate.yml` plus a personal API key runs
+  IronTest on every pull request and posts the verdict as a PR comment.
+- **Jira / Azure DevOps** — connect once on the Integrations page, then pick a
+  requirement straight from your assigned issues.
+
 ## Honesty guarantees
 
 These are enforced by tests, not convention:
