@@ -2,12 +2,13 @@ import clsx from "clsx";
 import { useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
-// Codex primitives. Every interactive element is a pill; every boundary is a
-// hairline; nothing casts a shadow or carries a gradient.
+// Shared primitives. Dark ground, hairline boundaries, pill geometry, and one
+// neon accent reserved for signal and the primary action.
 
 const BUTTON_VARIANTS = {
-  primary: "bg-contrast text-contrast-ink hover:opacity-85 disabled:opacity-40",
-  secondary: "bg-transparent text-ink border border-line/25 hover:border-line/60 disabled:opacity-40",
+  // The accent is the primary action colour, matching the landing CTA.
+  primary: "bg-accent text-[#060607] hover:brightness-110 disabled:opacity-40",
+  secondary: "bg-transparent text-ink border border-line/25 hover:border-accent hover:text-accent disabled:opacity-40",
   ghost: "bg-transparent text-muted hover:text-ink disabled:opacity-40",
   danger: "bg-transparent text-danger border border-danger/30 hover:border-danger disabled:opacity-40",
 };

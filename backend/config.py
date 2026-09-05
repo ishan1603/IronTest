@@ -10,6 +10,10 @@ from __future__ import annotations
 import os
 import secrets
 from functools import lru_cache
+from pathlib import Path
+
+# Settings must resolve the same .env regardless of the process working directory.
+_BACKEND_DIR = Path(__file__).resolve().parent
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -17,7 +21,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(".env", "../.env"),
+        env_file=(_BACKEND_DIR / ".env", _BACKEND_DIR.parent / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )

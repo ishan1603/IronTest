@@ -8,9 +8,17 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
+from pathlib import Path
+
 from dotenv import load_dotenv
 
-load_dotenv()
+# Anchor to this file rather than the CWD or the call stack: bare load_dotenv()
+# resolves by frame introspection, which does not survive uvicorn's reloader
+# and silently leaves provider keys unset.
+_BACKEND_DIR = Path(__file__).resolve().parent
+for _candidate in (_BACKEND_DIR / ".env", _BACKEND_DIR.parent / ".env"):
+    if _candidate.is_file():
+        load_dotenv(_candidate, override=False)
 
 import requests
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
