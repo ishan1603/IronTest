@@ -81,9 +81,13 @@
   .card { @apply hairline rounded-md bg-surface; }
   .card-contrast { @apply rounded-md bg-contrast text-contrast-ink; }
 
-  /* Oversized display type that bleeds past the viewport edge. */
+  /* Oversized display type that bleeds past the viewport edge.
+     The family is written out rather than @apply'd: @apply resolves against
+     the config at build time, so a component-layer rule that depends on a
+     custom theme key breaks whenever the config is stale. */
   .display {
-    @apply font-display font-bold uppercase;
+    font-family: "Space Grotesk", Inter, system-ui, sans-serif;
+    @apply font-bold uppercase;
     text-wrap: balance;
   }
 
