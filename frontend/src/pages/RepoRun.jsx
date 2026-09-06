@@ -179,13 +179,18 @@ export default function RepoRun() {
                   value={compareRef}
                   onChange={(event) => setCompareRef(event.target.value)}
                   disabled={run.running}
-                  className="h-9 rounded-pill border border-line/20 bg-transparent px-3 text-sm focus:border-line/50"
+                  /* Native option lists use the OS palette, so the colours are
+                     set explicitly -- otherwise it renders white on white. */
+                  className="h-9 rounded-pill border border-line/20 bg-surface px-3 text-sm text-ink focus:border-accent"
+                  style={{ colorScheme: "dark" }}
                 >
-                  <option value="">Don't compare</option>
+                  <option value="" style={{ background: "#0e0e10", color: "#f5f5f7" }}>
+                    Don&apos;t compare
+                  </option>
                   {branches
                     .filter((b) => b !== (repo.default_branch || "main"))
                     .map((b) => (
-                      <option key={b} value={b}>
+                      <option key={b} value={b} style={{ background: "#0e0e10", color: "#f5f5f7" }}>
                         Compare against {b}
                       </option>
                     ))}

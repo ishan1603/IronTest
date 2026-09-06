@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AuthProvider, useAuth } from "./lib/auth";
 import { Spinner } from "./components/ui";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import Landing from "./pages/Landing";
 import AuthCallback from "./pages/AuthCallback";
 
@@ -47,7 +48,8 @@ function AnimatedRoutes() {
         exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
       >
-        <Suspense fallback={<Loading />}>
+        <ErrorBoundary>
+          <Suspense fallback={<Loading />}>
           <Routes location={location}>
             <Route path="/" element={<Landing />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
@@ -60,7 +62,8 @@ function AnimatedRoutes() {
             <Route path="/chat/:chatId" element={protect(<Chat />)} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </Suspense>
+          </Suspense>
+        </ErrorBoundary>
       </motion.div>
     </AnimatePresence>
   );

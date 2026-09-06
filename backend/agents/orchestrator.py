@@ -310,7 +310,12 @@ class Orchestrator:
         )
 
         stack = repo_context.get("stack", {})
-        files = build_suite(tests, imports, language=stack.get("language", "python"))
+        files = build_suite(
+            tests,
+            imports,
+            language=stack.get("language", "python"),
+            module_system=stack.get("module_system", "cjs"),
+        )
         if not files:
             raise ValueError("No runnable tests were generated for this repository.")
         repo_context["_suite_files"] = [{"path": f.path, "content": f.content} for f in files]

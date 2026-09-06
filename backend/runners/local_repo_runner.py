@@ -254,8 +254,10 @@ class LocalRepoRunner(TestRunner):
             # the repo's own `npm test` where possible so its jest config (path
             # aliases, transforms) applies.
             report = os.path.join(clone_dir, "irontest-results.json")
-            has_test_script = "npm-script" in framework or "npm test" in (
-                request.stack.get("test_command") or ""
+            # The repo's own test script carries its jest config: path
+            # aliases, ts/babel transforms, setup files. Always prefer it.
+            has_test_script = bool(request.stack.get("has_test_script")) or (
+                "npm-script" in framework or "npm test" in (request.stack.get("test_command") or "")
             )
             if has_test_script:
                 cmd = ["npm", "test", "--", *targets, "--json",

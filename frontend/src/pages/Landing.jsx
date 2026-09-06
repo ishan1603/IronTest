@@ -4,7 +4,8 @@ import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { Spinner } from "../components/ui";
 import { HeroAnimation } from "../components/HeroAnimation";
-import { Brackets, Crosshair, Marquee, StepMeter, Tick, TickField, TickStrip } from "../components/motifs";
+import { Brackets, Marquee, StepMeter, Tick, TickField, TickStrip } from "../components/motifs";
+import { PipelineVisual } from "../components/PipelineVisual";
 
 const STEPS = [
   {
@@ -87,6 +88,9 @@ export default function Landing() {
             opacity: 0,
             duration: 0.8,
             ease: "power3.out",
+            // Without clearProps the tween leaves inline opacity behind, which
+            // outranks the Tailwind class that drives the active-step state.
+            clearProps: "opacity,transform",
             scrollTrigger: { trigger: el, start: "top 88%" },
           });
         });
@@ -225,12 +229,10 @@ export default function Landing() {
       <section data-steps className="relative">
         <div data-steps-inner className="min-h-screen border-t border-line/10">
           <div className="mx-auto grid max-w-shell gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:py-24">
-            <div className="relative order-2 min-h-[200px] lg:order-1 lg:min-h-[380px]">
-              <TickField />
-              <div className="relative flex h-full flex-col justify-end gap-6">
-                <Crosshair className="mx-auto" size={20} />
-                <StepMeter step={activeStep} total={STEPS.length} />
-              </div>
+            <div className="relative order-2 flex flex-col gap-6 lg:order-1">
+              <TickField className="hidden lg:block" />
+              <PipelineVisual step={activeStep} className="relative" />
+              <StepMeter step={activeStep} total={STEPS.length} className="relative" />
             </div>
 
             <div className="order-1 lg:order-2">
@@ -240,7 +242,6 @@ export default function Landing() {
                   <li
                     key={step.n}
                     data-step
-                    data-rise
                     className={
                       "transition-opacity duration-500 " +
                       (step.n === activeStep ? "opacity-100" : "opacity-100 lg:opacity-30")

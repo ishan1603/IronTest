@@ -66,6 +66,10 @@ class StackProfile:
     test_dirs: list[str] = field(default_factory=list)
     has_tests: bool = False
     manifest_files: list[str] = field(default_factory=list)
+    #: "esm" when the generated suite may use import syntax, else "cjs".
+    module_system: str = "cjs"
+    #: The repo defines scripts.test, so its own runner config applies.
+    has_test_script: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -78,6 +82,8 @@ class StackProfile:
             "test_dirs": self.test_dirs,
             "has_tests": self.has_tests,
             "manifest_files": self.manifest_files,
+            "module_system": self.module_system,
+            "has_test_script": self.has_test_script,
         }
 
 
@@ -160,6 +166,21 @@ def _detect_node(files: set[str], contents: dict[str, str]) -> StackProfile:
 
     if any(key in deps for key in ("typescript", "@types/node")) or "tsconfig.json" in files:
         profile.language = "typescript"
+
+    profile.has_test_script = bool(manifest.get("scripts", {}).get("test"))
+
+    # Generated tests may only use import syntax when something will transform
+    # them: an explicit ESM package, a babel/jest/next config, or ts-jest.
+    has_transform = bool(
+        files
+        & {
+            "jest.config.js", "jest.config.ts", "jest.config.mjs", "jest.config.cjs",
+            "babel.config.js", "babel.config.json", ".babelrc", ".babelrc.js",
+            "vitest.config.ts", "vitest.config.js",
+        }
+    )
+    is_esm_package = manifest.get("type") == "module"
+    profile.module_system = "esm" if (is_esm_package or has_transform or "vitest" in deps) else "cjs"
     return profile
 
 
